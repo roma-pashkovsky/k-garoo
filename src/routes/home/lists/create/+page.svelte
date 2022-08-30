@@ -134,8 +134,15 @@
 			.filter((item) => item.isEdited || item.itemDescription?.length > 0);
 	}
 
+	export function onItemCategoryClicked(id: string): void {
+		items = items.map((s) => ({ ...s, checked: id === s.id ? !s.checked : s.checked }));
+	}
+
+	export function onItemCategoryDoubleClicked(id: string): void {
+		items = items.map((s) => ({ ...s, checked: id === s.id }));
+	}
+
 	export function onItemSwipe(id: string, event): void {
-		console.log(event);
 		if (event.detail.direction === 'left') {
 			items = items.filter((item) => item.id !== id);
 		}
@@ -278,7 +285,7 @@
 			</div>
 		</div>
 	{/if}
-	<div class="scroll-auto flex-1 p-8" on:click={onCloseAllEdits}>
+	<div class="scroll-auto flex-1 p-8" on:click={onCloseAllEdits} style="padding-bottom: 200px;">
 		<div
 			on:click|stopPropagation={onInsertBeforeListClick}
 			class="insert-before-button"
@@ -289,17 +296,23 @@
 				use:swipe={{ timeframe: 300, minSwipeDistance: 100, touchAction: 'pan-left pan-y' }}
 				on:click|stopPropagation={() => onItemClick(item.id)}
 				on:swipe={() => onItemSwipe(item.id, event)}
-				class="flex justify-between"
+				class="flex items-center"
 			>
-				<div class="checkbox flex mr-3 items-center" style="height: 42px; width: 20px">
-					<input
-						style="width: 20px; height: 20px;"
-						type="checkbox"
-						bind:checked={item.checked}
-						onclick="event.stopPropagation()"
-					/>
+				<div
+					onclick="event.stopPropagation()"
+					class="checkbox flex items-center mr-3"
+					style="height: 42px;"
+				>
+					<div class="flex">
+						<input
+							style="width: 20px; height: 20px;"
+							type="checkbox"
+							bind:checked={item.checked}
+							onclick="event.stopPropagation()"
+						/>
+					</div>
 				</div>
-				<div class="left space-x-2 flex-1 flex items-center" style="height: 42px">
+				<div class="left space-x-2 flex items-center flex-1" style="height: 42px;">
 					{#if item.isEdited}
 						<form on:submit|preventDefault={() => handleInputSubmit(item.id)}>
 							<input
@@ -313,8 +326,12 @@
 						{item.itemDescription}
 					{/if}
 				</div>
-				<div class="right flex flex-col ml-2 text-sm text-gray-600">
-					<div class="flex justify-end items-center" style="height: 42px;">
+				<div
+					onclick="event.stopPropagation()"
+					class="checkbox flex items-center justify-end ml-2"
+					style="height: 42px;"
+				>
+					<div on:click={() => onItemCategoryClicked(item.id)} class="text-sm text-gray-600">
 						{item.category}
 					</div>
 				</div>
@@ -366,6 +383,3 @@
 		</div>
 	{/if}
 </section>
-
-<style>
-</style>

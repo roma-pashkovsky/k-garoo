@@ -61,18 +61,21 @@
 			id: 1,
 			itemDescription: 'Bananas',
 			isEdited: false,
+			checked: false,
 			category: 'Fruit'
 		},
 		{
 			id: 2,
 			itemDescription: 'Candies',
 			isEdited: false,
+			checked: false,
 			category: 'Dessert'
 		},
 		{
 			id: 3,
 			itemDescription: 'Oil',
 			isEdited: false,
+			checked: false,
 			category: 'Food'
 		}
 	];
@@ -83,6 +86,9 @@
 		);
 	});
 
+	$: isAnyItemsChecked = items.some((it) => it.checked);
+
+	export let changeCategoryTo = '';
 	export let customInputCategory = '';
 
 	export function submitCustomCategory(id: string): void {
@@ -114,6 +120,7 @@
 			id: new Date().getTime(),
 			itemDescription: prop.itemDescription,
 			category: prop.category,
+			checked: false,
 			isEdited: false
 		});
 		items = items.map((s) => ({ ...s }));
@@ -141,6 +148,7 @@
 			id: newId,
 			itemDescription: '',
 			category: 'Other',
+			checked: false,
 			isEdited: true
 		});
 		items = items
@@ -156,6 +164,7 @@
 			id: newId,
 			itemDescription: '',
 			category: 'Other',
+			checked: false,
 			isEdited: true
 		});
 		items = items
@@ -174,6 +183,7 @@
 				id: newId,
 				itemDescription: '',
 				category: 'Other',
+				checked: false,
 				isEdited: true
 			});
 			items = items.map((s) => ({ ...s, isEdited: s.id === newId }));
@@ -197,6 +207,24 @@
 		items = items
 			.map((s) => ({ ...s, isEdited: false }))
 			.filter((s) => s.itemDescription.length > 0);
+	}
+
+	export function handleChangeCategoryForSelectedClicked(): void {
+		if (changeCategoryTo === 'Custom') {
+			if (!categoryOptions.some((c) => c.name === customInputCategory)) {
+				categoryOptions.push({ name: customInputCategory });
+			}
+			changeCategoryTo = customInputCategory;
+			categoryOptions = [...categoryOptions];
+		}
+		items.forEach((item) => {
+			if (item.checked) {
+				item.category = changeCategoryTo;
+			}
+		});
+		items = items.map((it) => ({ ...it, checked: false }));
+		changeCategoryTo = undefined;
+		customInputCategory = undefined;
 	}
 </script>
 
@@ -263,6 +291,14 @@
 				on:swipe={() => onItemSwipe(item.id, event)}
 				class="flex justify-between"
 			>
+				<div class="checkbox flex mr-3 items-center" style="height: 42px; width: 20px">
+					<input
+						style="width: 20px; height: 20px;"
+						type="checkbox"
+						bind:checked={item.checked}
+						onclick="event.stopPropagation()"
+					/>
+				</div>
 				<div class="left space-x-2 flex-1 flex items-center" style="height: 42px">
 					{#if item.isEdited}
 						<form on:submit|preventDefault={() => handleInputSubmit(item.id)}>
@@ -278,37 +314,9 @@
 					{/if}
 				</div>
 				<div class="right flex flex-col ml-2 text-sm text-gray-600">
-					{#if item.isEdited}
-						<select
-							style="height: 42px;"
-							onclick="event.stopPropagation()"
-							bind:value={item.category}
-						>
-							{#each categoryOptions as cOption}
-								<option value={cOption.name}>{cOption.name}</option>
-							{/each}
-						</select>
-						{#if item.category === 'Custom'}
-							<form
-								id="custom-category-form"
-								class="mt-2"
-								on:submit|preventDefault={() => submitCustomCategory(item.id)}
-							>
-								<input
-									style="height: 42px; display: block; width: 100%;"
-									onclick="event.stopPropagation()"
-									type="text"
-									id="custom-category-input"
-									bind:value={customInputCategory}
-									placeholder="My category"
-								/>
-							</form>
-						{/if}
-					{:else}
-						<div class="flex justify-end items-center" style="height: 42px;">
-							{item.category}
-						</div>
-					{/if}
+					<div class="flex justify-end items-center" style="height: 42px;">
+						{item.category}
+					</div>
 				</div>
 			</div>
 			<div
@@ -318,6 +326,45 @@
 			/>
 		{/each}
 	</div>
+	{#if isAnyItemsChecked}
+		<div
+			class="absolute bottom-0 left-0 right-0 bg-white p-4 flex justify-end items-start"
+			style="box-shadow: 0px -2px 12px -1px rgba(0,0,0,0.41);"
+		>
+			<div class="mr-3">Change category to:</div>
+			<div class="mr-3">
+				<select
+					style="height: 42px;"
+					onclick="event.stopPropagation()"
+					bind:value={changeCategoryTo}
+				>
+					{#each categoryOptions as cOption}
+						<option value={cOption.name}>{cOption.name}</option>
+					{/each}
+				</select>
+				{#if changeCategoryTo === 'Custom'}
+					<form id="custom-category-form" class="mt-2">
+						<input
+							style="height: 42px; display: block; width: 129px;"
+							onclick="event.stopPropagation()"
+							type="text"
+							id="custom-category-input"
+							bind:value={customInputCategory}
+							placeholder="My category"
+						/>
+					</form>
+				{/if}
+			</div>
+			<div class="space-x-2">
+				<button
+					style="width: 40px; height: 42px; border-radius: 3px; background-color: #1C64F2; color: white"
+					on:click={handleChangeCategoryForSelectedClicked}
+				>
+					OK
+				</button>
+			</div>
+		</div>
+	{/if}
 </section>
 
 <style>

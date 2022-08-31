@@ -1,8 +1,18 @@
 <script lang="ts">
-	import { ArrowLeft, DotsHorizontal } from 'svelte-heros';
+	import { goto } from '$app/navigation';
+	import { ArrowLeft, DotsHorizontal, Check } from 'svelte-heros';
 	import { navigateBack } from '../../../../utils/navigate-back';
 	import { swipe } from 'svelte-gestures';
+	import { getState, setState } from '../../../../utils/local-storage-state';
+	import type {
+		CategoryOption,
+		CheckList,
+		CheckListItem,
+		KGarooState,
+		Proposition
+	} from '../../../../types';
 
+	const state = getState();
 	export let isShowPropositions = false;
 	export let listName = 'New list';
 	export let isEditListName = false;
@@ -12,71 +22,22 @@
 	export function onEditListNameSubmit(): void {
 		isEditListName = false;
 	}
-	export let categoryOptions = [
-		{
-			name: 'Fruit'
-		},
-		{
-			name: 'Dessert'
-		},
-		{
-			name: 'Food'
-		},
+	export let categoryOptions = state.categoryOptions || [
 		{
 			name: 'Other'
-		},
-		{
-			name: 'Fish'
-		},
-		{
-			name: 'Clothing'
-		},
-		{
-			name: 'Chemistry'
 		},
 		{
 			name: 'Custom'
 		}
 	];
-	export let propositions = [
-		{
-			itemDescription: 'Shrimps',
-			category: 'Fish'
-		},
-		{
-			itemDescription: 'Boots',
-			category: 'Clothing'
-		},
-		{
-			itemDescription: 'Washing liquid',
-			category: 'Chemistry'
-		},
-		{
-			itemDescription: 'Apples',
-			category: 'Fruit'
-		}
-	];
+	export let propositions = state.propositions || [];
 	export let items = [
 		{
 			id: 1,
-			itemDescription: 'Bananas',
-			isEdited: false,
+			itemDescription: '',
+			isEdited: true,
 			checked: false,
-			category: 'Fruit'
-		},
-		{
-			id: 2,
-			itemDescription: 'Candies',
-			isEdited: false,
-			checked: false,
-			category: 'Dessert'
-		},
-		{
-			id: 3,
-			itemDescription: 'Oil',
-			isEdited: false,
-			checked: false,
-			category: 'Food'
+			category: 'Other'
 		}
 	];
 
@@ -104,6 +65,9 @@
 	}
 
 	export function onBackClicked(): void {
+		if (items.length > 1) {
+			saveList();
+		}
 		navigateBack();
 	}
 
@@ -127,19 +91,16 @@
 	}
 
 	export function onItemClick(id: string): void {
-		items = items
-			.map((source) => {
-				return { ...source, isEdited: id === source.id ? !source.isEdited : false };
-			})
-			.filter((item) => item.isEdited || item.itemDescription?.length > 0);
+		items = items.map((source) => {
+			return { ...source, isEdited: id === source.id };
+		});
+		if (items.length > 1) {
+			items = items.filter((item) => item.isEdited || item.itemDescription?.length > 0);
+		}
 	}
 
 	export function onItemCategoryClicked(id: string): void {
 		items = items.map((s) => ({ ...s, checked: id === s.id ? !s.checked : s.checked }));
-	}
-
-	export function onItemCategoryDoubleClicked(id: string): void {
-		items = items.map((s) => ({ ...s, checked: id === s.id }));
 	}
 
 	export function onItemSwipe(id: string, event): void {
@@ -200,20 +161,19 @@
 	}
 
 	export function handleInputBlur(id: string): void {
-		const itemIndex = items.findIndex((item) => item.id === id);
-		if (items[itemIndex].category === 'Custom') {
-			submitCustomCategory(id);
-		}
-		const item = items[itemIndex];
-		if (item?.itemDescription?.length < 1) {
+		const item = items.find((item) => item.id === id);
+		if (items.length > 1 && item && item?.itemDescription?.length < 1) {
 			items = items.filter((s) => s.id !== id);
 		}
 	}
 
 	export function onCloseAllEdits(): void {
+		if (items.length === 1) {
+			return;
+		}
 		items = items
 			.map((s) => ({ ...s, isEdited: false }))
-			.filter((s) => s.itemDescription.length > 0);
+			.filter((s, ind) => s.itemDescription.length > 0);
 	}
 
 	export function handleChangeCategoryForSelectedClicked(): void {
@@ -233,9 +193,63 @@
 		changeCategoryTo = undefined;
 		customInputCategory = undefined;
 	}
+
+	export function onSaveClicked(): void {
+		const list = saveList();
+		goto(`/home/lists/${list.id}`);
+	}
+
+	function saveList(): CheckList {
+		const listItems: CheckListItem[] = items.map(
+			(it) =>
+				({
+					id: it.id,
+					itemDescription: it.itemDescription,
+					category: it.category,
+					checked: false
+				} as CheckListItem)
+		);
+		const propositionsMap = propositions.reduce((prev, curr) => {
+			return { ...prev, [curr.itemDescription]: true };
+		}, {});
+		const propositionsToAdd = listItems
+			.filter((it) => !propositionsMap[it.itemDescription])
+			.map((it) => ({ itemDescription: it.itemDescription, id: it.id, category: it.category }));
+		const list: CheckList = {
+			id: 'abc' + new Date().getTime() + Math.random(),
+			created_utc: new Date().getTime(),
+			name: listName,
+			items: listItems
+		};
+		const prevState = getState();
+		const oldListData = prevState.listData || {};
+		const listIds = prevState.listIds || [];
+		const oldPropositions = prevState.propositions || [];
+		const oldCategoryOptions = prevState.categoryOptions || [];
+		const newListData: { [id: string]: CheckList } = {
+			...oldListData,
+			[list.id]: list
+		};
+		listIds.unshift(list.id);
+		const newPropositions: Proposition[] = [...propositionsToAdd, ...oldPropositions];
+
+		const oldCategoryOptionsMap = oldCategoryOptions.reduce((prev, curr) => {
+			return { ...prev, [curr.name]: true };
+		}, {});
+		const categoryOptionsToAdd = categoryOptions.filter((opt) => !oldCategoryOptionsMap[opt.name]);
+		const newCategoryOptions: CategoryOption[] = [...categoryOptionsToAdd, ...oldCategoryOptions];
+		const newState: KGarooState = {
+			listIds,
+			listData: newListData,
+			propositions: newPropositions,
+			categoryOptions: newCategoryOptions
+		};
+		setState(newState);
+		return list;
+	}
 </script>
 
-<section on:click={onEditListNameSubmit} class="section-container h-screen w-screen flex flex-col">
+<section class="section-container h-screen w-screen flex flex-col">
 	<div
 		class="flex justify-between items-center"
 		style="padding-left: 2rem; padding-right: 2rem; padding-top: 1rem;"
@@ -246,7 +260,13 @@
 		<div class="flex items-center left" style="height: 25px">
 			{#if isEditListName}
 				<form on:submit|preventDefault={onEditListNameSubmit}>
-					<input id="list-name" autofocus type="text" bind:value={listName} />
+					<input
+						id="list-name"
+						autofocus
+						type="text"
+						bind:value={listName}
+						on:blur={onEditListNameSubmit}
+					/>
 				</form>
 			{:else}
 				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-2xl">
@@ -255,8 +275,19 @@
 			{/if}
 		</div>
 		<div class="flex items-center right">
-			<button on:click={onShowPropositionsClicked} style="width: 25px; height: 25px;">
+			<button
+				on:click={onShowPropositionsClicked}
+				style="width: 42px; height: 42px;"
+				class="flex items-center justify-center"
+			>
 				<DotsHorizontal class="w-25 h-25" />
+			</button>
+			<button
+				on:click={onSaveClicked}
+				style="width: 42px; height: 42px;"
+				class="ml-4 flex items-center justify-center bg-blue-700 rounded-sm"
+			>
+				<Check class="w-25 h-25" color="white" />
 			</button>
 		</div>
 	</div>
@@ -268,6 +299,11 @@
 				style="background-color: black"
 			/>
 			<div class="propositions-pane absolute top-0 bottom-0 right-0 bg-white w-80 z-50 p-0.5">
+				{#if !filteredPropositions?.length}
+					<div class="flex justify-center items-center text-gray-600 p-6">
+						No recent suggestions
+					</div>
+				{/if}
 				{#each filteredPropositions as prop}
 					<div
 						on:click={() => onAddPropositionClicked(prop)}
@@ -285,11 +321,15 @@
 			</div>
 		</div>
 	{/if}
-	<div class="scroll-auto flex-1 p-8" on:click={onCloseAllEdits} style="padding-bottom: 200px;">
+	<div
+		class="scroll-auto flex-1 pr-8 pl-8 pr-8"
+		on:click={onCloseAllEdits}
+		style="padding-bottom: 200px;"
+	>
 		<div
 			on:click|stopPropagation={onInsertBeforeListClick}
 			class="insert-before-button"
-			style="height: 20px"
+			style="height: 40px"
 		/>
 		{#each items as item}
 			<div
@@ -345,7 +385,7 @@
 	</div>
 	{#if isAnyItemsChecked}
 		<div
-			class="fixed bottom-0 left-0 right-0 bg-white p-4 flex justify-end items-start z-20"
+			class="fixed bottom-0 left-0 right-0 bg-white p-4 flex justify-end items-center z-20"
 			style="box-shadow: 0px -2px 12px -1px rgba(0,0,0,0.41);"
 		>
 			<div class="mr-3">Change category to:</div>
@@ -360,10 +400,15 @@
 					{/each}
 				</select>
 				{#if changeCategoryTo === 'Custom'}
-					<form id="custom-category-form" class="mt-2">
+					<form
+						id="custom-category-form"
+						class="mt-2"
+						on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
+					>
 						<input
 							style="height: 42px; display: block; width: 129px;"
 							onclick="event.stopPropagation()"
+							autocomplete="off"
 							type="text"
 							id="custom-category-input"
 							bind:value={customInputCategory}

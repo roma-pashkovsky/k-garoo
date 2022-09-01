@@ -16,6 +16,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>K-garoo - Current lists</title>
+</svelte:head>
+
 <div class="p-8">
 	<Button on:click={onAddButtonClicked} class="!p-2" o><Plus class="w-8 h-8" /></Button>
 </div>

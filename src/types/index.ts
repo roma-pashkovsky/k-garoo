@@ -28,4 +28,7 @@ export type KGarooState = {
 	};
 	categoryOptions: CategoryOption[];
 	propositions: Proposition[];
+	checklistSettings: {
+		isGroupByCategory: boolean;
+	};
 };

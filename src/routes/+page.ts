@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+import { isAuthed } from '../utils/is-authed';
 
 export const load: PageServerLoad = async ({ params }) => {
 	return isAuthed().then((isAuthed) => {
@@ -7,7 +8,3 @@ export const load: PageServerLoad = async ({ params }) => {
 		};
 	});
 };
-
-async function isAuthed(): Promise<boolean> {
-	return Promise.resolve(true);
-}

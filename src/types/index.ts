@@ -31,4 +31,5 @@ export type KGarooState = {
 	checklistSettings: {
 		isGroupByCategory: boolean;
 	};
+	appVersion: number;
 };

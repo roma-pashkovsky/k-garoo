@@ -3,7 +3,7 @@
 	import { ArrowLeft, DotsHorizontal, Check, DocumentRemove } from 'svelte-heros';
 	import { navigateBack } from '../utils/navigate-back';
 	import { swipe } from 'svelte-gestures';
-	import { getState, setState } from '../utils/local-storage-state';
+	import { customCategoryName, getState, setState } from '../utils/local-storage-state';
 	import type {
 		CategoryOption,
 		CheckList,
@@ -12,12 +12,35 @@
 		Proposition
 	} from '../types';
 	import BottomMenu from './BottomMenu.svelte';
-	import { Button } from 'flowbite-svelte';
-
+	import { Button, Modal, Toast } from 'flowbite-svelte';
+	import { onMount } from 'svelte';
 	const state = getState();
 	export let isShowPropositions = false;
 	export let listName = 'New list';
 	export let listId = '' + new Date().getTime() + Math.random();
+	let listFuzzySearch: any;
+	let listHash: string;
+	let isShowPossibleDuplicateToast = false;
+	let highlighted = {};
+	onMount(() => {
+		reInitListFuzzySearch();
+		listHash = getListHash();
+	});
+
+	function reInitListFuzzySearch(): void {
+		const options = {
+			includeScore: true,
+			keys: ['itemDescription'],
+			shouldSort: true,
+			minMatchCharLength: 2,
+			threshold: 0.4
+		};
+		listFuzzySearch = new (window as any).Fuse(items, options);
+	}
+
+	function getListHash(): string {
+		return items.reduce((p, c) => p + c.itemDescription, '');
+	}
 
 	let isEditListName = false;
 	export function onEditListNameOpen(): void {
@@ -26,12 +49,13 @@
 	export function onEditListNameSubmit(): void {
 		isEditListName = false;
 	}
-	export let categoryOptions = state.categoryOptions || [
+	const customCategoryNameLocal = customCategoryName;
+	let categoryOptions = state.categoryOptions || [
 		{
 			name: 'Other'
 		},
 		{
-			name: 'Custom'
+			name: customCategoryNameLocal
 		}
 	];
 	export let propositions = state.propositions || [];
@@ -54,19 +78,42 @@
 
 	$: isAnyItemsChecked = items.some((it) => it.selected);
 
+	$: isCustomCategoryPopupOpen = changeCategoryTo === customCategoryNameLocal;
 	export let changeCategoryTo = '';
 	export let customInputCategory = '';
 
-	export function submitCustomCategory(id: string): void {
-		const item = items.find((s) => s.id === id);
-		item.category = customInputCategory;
-		item.isEdited = false;
-		if (!categoryOptions.some((c) => c.name === customInputCategory)) {
-			categoryOptions.push({ name: customInputCategory });
+	export function handleChangeCategoryForSelectedClicked(): void {
+		if (
+			!changeCategoryTo?.length ||
+			(changeCategoryTo === customCategoryNameLocal && !customInputCategory?.length)
+		) {
+			items = items.map((it) => ({ ...it, selected: false }));
+			changeCategoryTo = '';
+			customInputCategory = '';
+			return;
 		}
+		if (changeCategoryTo === customCategoryNameLocal) {
+			if (!categoryOptions.some((c) => c.name === customInputCategory)) {
+				categoryOptions.push({ name: customInputCategory });
+			}
+			changeCategoryTo = customInputCategory;
+			categoryOptions = [...categoryOptions];
+		}
+		items = items.map((it) => ({
+			...it,
+			category: it.selected ? changeCategoryTo : it.category,
+			selected: false
+		}));
+		changeCategoryTo = '';
 		customInputCategory = '';
-		items = items.map((s) => ({ ...s }));
-		categoryOptions = categoryOptions.map((c) => ({ ...c }));
+	}
+
+	function removeSelectedItems(): void {
+		if (confirm('Selected items will be removed. Are you sure?')) {
+			items = items.filter((it) => !it.selected);
+			reInitListFuzzySearch();
+			listHash = getListHash();
+		}
 	}
 
 	export function onBackClicked(): void {
@@ -99,11 +146,30 @@
 			items.push(newItem);
 		}
 		items = [...items];
+		// check for duplicate items
+
+		if (newItem?.itemDescription?.length) {
+			const dups = listFuzzySearch
+				.search(newItem.itemDescription)
+				.filter((dup) => dup.item.id !== newItem.id);
+			if (dups?.length) {
+				isShowPossibleDuplicateToast = true;
+				highlighted = dups.reduce((p, c) => {
+					return { ...p, [c.item.id]: true };
+				}, {});
+				highlighted = { ...highlighted, [newItem.id]: true };
+				setTimeout(() => {
+					(isShowPossibleDuplicateToast = false), (highlighted = {});
+				}, 5000);
+			}
+		}
+		reInitListFuzzySearch();
+		listHash = getListHash();
 	}
 
 	export function onItemClick(id: string): void {
 		items = items.map((source) => {
-			return { ...source, isEdited: id === source.id };
+			return { ...source, isEdited: id === source.id, selected: false };
 		});
 		if (items.length > 1) {
 			items = items.filter((item) => item.isEdited || item.itemDescription?.length > 0);
@@ -117,6 +183,8 @@
 	export function onItemSwipe(id: string, event): void {
 		if (event.detail.direction === 'left') {
 			items = items.filter((item) => item.id !== id);
+			reInitListFuzzySearch();
+			listHash = getListHash();
 		}
 	}
 
@@ -155,9 +223,6 @@
 
 	export function handleInputSubmit(id: string): void {
 		const index = items.findIndex((item) => item.id === id);
-		if (items[index].category === 'Custom') {
-			submitCustomCategory(id);
-		}
 		if (index === items.length - 1) {
 			const newId = new Date().getTime();
 			items.push({
@@ -172,13 +237,67 @@
 		} else {
 			items = items.map((s) => ({ ...s, isEdited: false }));
 		}
+		const item = items.find((item) => item.id === id);
+		// check for duplicate items
+		const currHash = getListHash();
+		if (currHash !== listHash && item?.itemDescription?.length) {
+			const dups = listFuzzySearch
+				.search(item.itemDescription)
+				.filter((dup) => dup.item.id !== item.id);
+			if (dups?.length) {
+				isShowPossibleDuplicateToast = true;
+				highlighted = dups.reduce((p, c) => {
+					return { ...p, [c.item.id]: true };
+				}, {});
+				highlighted = { ...highlighted, [item.id]: true };
+				setTimeout(() => {
+					(isShowPossibleDuplicateToast = false), (highlighted = {});
+				}, 5000);
+			}
+		}
+		reInitListFuzzySearch();
+		listHash = currHash;
+
+		// try to match category
+		if (item?.itemDescription?.length > 1 && item?.category === 'Other') {
+			const matchingCategory = findMatchingCategory(item as CheckListItem);
+			if (matchingCategory) {
+				item.category = matchingCategory;
+				items = [...items];
+			}
+		}
 	}
 
 	export function handleInputBlur(id: string): void {
-		console.log('blur');
 		const item = items.find((item) => item.id === id);
 		if (items.length > 1 && item && item?.itemDescription?.length < 1) {
 			items = items.filter((s) => s.id !== id);
+		}
+		// check for duplicate items
+		const currHash = getListHash();
+		if (currHash !== listHash && item?.itemDescription?.length) {
+			const dups = listFuzzySearch
+				.search(item.itemDescription)
+				.filter((dup) => dup.item.id !== item.id);
+			if (dups?.length) {
+				isShowPossibleDuplicateToast = true;
+				highlighted = dups.reduce((p, c) => {
+					return { ...p, [c.item.id]: true };
+				}, {});
+				highlighted = { ...highlighted, [item.id]: true };
+				setTimeout(() => {
+					(isShowPossibleDuplicateToast = false), (highlighted = {});
+				}, 5000);
+			}
+		}
+		reInitListFuzzySearch();
+		listHash = currHash;
+		if (item?.itemDescription?.length > 1 && item?.category === 'Other') {
+			const matchingCategory = findMatchingCategory(item as CheckListItem);
+			if (matchingCategory) {
+				item.category = matchingCategory;
+				items = [...items];
+			}
 		}
 	}
 
@@ -191,33 +310,25 @@
 			.filter((s, ind) => s.itemDescription.length > 0);
 	}
 
-	export function handleChangeCategoryForSelectedClicked(): void {
-		if (changeCategoryTo === 'Custom') {
-			if (!categoryOptions.some((c) => c.name === customInputCategory)) {
-				categoryOptions.push({ name: customInputCategory });
-			}
-			changeCategoryTo = customInputCategory;
-			categoryOptions = [...categoryOptions];
-		}
-		items.forEach((item) => {
-			if (item.selected) {
-				item.category = changeCategoryTo;
-			}
-		});
-		items = items.map((it) => ({ ...it, selected: false }));
-		changeCategoryTo = undefined;
-		customInputCategory = undefined;
-	}
-
-	function removeSelectedItems(): void {
-		if (confirm('Selected items will be removed. Are you sure?')) {
-			items = items.filter((it) => !it.selected);
-		}
-	}
-
 	export function onSaveClicked(): void {
 		const list = saveList();
 		goto(`/home/lists/${list.id}`);
+	}
+
+	function findMatchingCategory(item: CheckListItem): string {
+		const options = {
+			includeScore: true,
+			keys: ['itemDescription'],
+			shouldSort: true,
+			minMatchCharLength: 2,
+			threshold: 0.6
+		};
+
+		const fuse = new (window as any).Fuse(propositions, options);
+		const matches = fuse.search(item.itemDescription);
+		if (matches?.length) {
+			return matches[0].item?.category;
+		}
 	}
 
 	function saveList(): CheckList {
@@ -278,7 +389,7 @@
 	<title>K-garoo - Add checklist</title>
 </svelte:head>
 
-<section on:dblclick={onSaveClicked} class="section-container h-screen w-screen flex flex-col">
+<section class="section-container h-screen w-screen flex flex-col">
 	<div
 		class="flex justify-between items-center sticky-top"
 		style="padding-left: 2rem; padding-right: 2rem; padding-top: 1rem; padding-bottom: 5px;"
@@ -361,6 +472,7 @@
 	<div
 		class="scroll-auto flex-1 pr-8 pl-8 pr-8"
 		on:click={onCloseAllEdits}
+		on:dblclick={onSaveClicked}
 		style="padding-bottom: 200px;"
 	>
 		<div
@@ -373,7 +485,8 @@
 				use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
 				on:click|stopPropagation={() => onItemClick(item.id)}
 				on:swipe={() => onItemSwipe(item.id, event)}
-				class="flex items-center"
+				class="flex items-center {highlighted[item.id] ? 'bg-blue-100' : ''}"
+				style="padding: 5px; border-radius: 7px;"
 			>
 				<div
 					onclick="event.stopPropagation()"
@@ -389,11 +502,15 @@
 						/>
 					</div>
 				</div>
-				<div class="left space-x-2 flex items-center flex-1" style="height: 42px;">
+				<div
+					class="left space-x-2 flex items-center flex-1"
+					style="height: 42px; position: relative"
+				>
 					{#if item.isEdited}
-						<form on:submit|preventDefault={() => handleInputSubmit(item.id)}>
+						<form on:submit|preventDefault={() => handleInputSubmit(item.id)} style="width: 100%">
 							<input
 								autofocus
+								style="box-sizing: border-box; width: 100%"
 								on:blur={() => handleInputBlur(item.id)}
 								type="text"
 								bind:value={item.itemDescription}
@@ -432,7 +549,7 @@
 					</Button>
 				</div>
 				<div class="flex justify-end items-center z-20">
-					<div class="mr-3 sm:text-xs flex justify-end">Set category to:</div>
+					<div class="mr-3 text-xs sm:text-base flex justify-end">Set category to:</div>
 					<div class="mr-3">
 						<select
 							class="sm:text-sm"
@@ -444,24 +561,6 @@
 								<option value={cOption.name}>{cOption.name}</option>
 							{/each}
 						</select>
-						{#if changeCategoryTo === 'Custom'}
-							<form
-								id="custom-category-form"
-								class="mt-2"
-								on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
-							>
-								<input
-									class="sm:text-sm"
-									style="height: 38px; display: block; width: 129px;"
-									onclick="event.stopPropagation()"
-									autocomplete="off"
-									type="text"
-									id="custom-category-input"
-									bind:value={customInputCategory}
-									placeholder="My category"
-								/>
-							</form>
-						{/if}
 					</div>
 					<div class="space-x-2">
 						<Button
@@ -476,6 +575,32 @@
 				</div>
 			</div>
 		</BottomMenu>
+		<Modal size="xs" bind:open={isCustomCategoryPopupOpen} onclick="event.stopPropagation()">
+			<form
+				id="custom-category-form"
+				class="mt-2"
+				on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
+			>
+				<div class="flex items-center">
+					<input
+						class="sm:text-sm"
+						style="height: 38px; display: block; width: 200px;"
+						autofocus
+						autocomplete="off"
+						type="text"
+						id="custom-category-input"
+						bind:value={customInputCategory}
+						placeholder="My category"
+					/>
+					<Button class="ml-3" type="submit">OK</Button>
+				</div>
+			</form>
+		</Modal>
+	{/if}
+	{#if isShowPossibleDuplicateToast}
+		<div class="fixed left-0 right-0 top-0 flex justify-center z-50">
+			<Toast simple={true} class="bg-blue-200">The list might contain duplicates</Toast>
+		</div>
 	{/if}
 </section>
 

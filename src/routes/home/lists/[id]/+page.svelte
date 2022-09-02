@@ -126,7 +126,7 @@
 	<title>K-garoo - {list?.name}</title>
 </svelte:head>
 
-<div on:dblclick={onListBodyDblClick} class="section-container h-screen w-screen flex flex-col">
+<div class="section-container h-screen w-screen flex flex-col">
 	<div
 		class="sticky flex justify-between items-center bg-white z-30"
 		style="padding-left: 2rem; padding-right: 2rem; padding-top: 1rem;"
@@ -189,7 +189,11 @@
 			{/if}
 		</div>
 	</div>
-	<div class="scroll-auto flex-1 p-8" style="padding-bottom: 200px;">
+	<div
+		on:dblclick={onListBodyDblClick}
+		class="scroll-auto flex-1 p-8"
+		style="padding-bottom: 200px;"
+	>
 		{#if !list}
 			<EmptyPage>The list was not found.</EmptyPage>
 		{/if}

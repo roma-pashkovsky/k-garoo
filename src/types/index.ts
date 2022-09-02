@@ -11,6 +11,11 @@ export type CheckListItem = {
 	checked: boolean;
 };
 
+export type CheckListItemEditModel = CheckListItem & {
+	selected: boolean;
+	isEdited: boolean;
+};
+
 export type CategoryOption = {
 	name: string;
 };

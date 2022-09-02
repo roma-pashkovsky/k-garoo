@@ -116,7 +116,6 @@
 	}
 
 	function onListBodyDblClick(): void {
-		console.log('dbl click');
 		saveCurrentList();
 		goto(`/home/lists/${list?.id}/edit`);
 	}
@@ -148,10 +147,7 @@
 					/>
 				</form>
 			{:else}
-				<h3
-					on:click|stopPropagation={onEditListNameOpen}
-					class="font-medium sm:text-sm lg:text-2xl"
-				>
+				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-sm sm:text-2xl">
 					{listName}
 				</h3>
 			{/if}

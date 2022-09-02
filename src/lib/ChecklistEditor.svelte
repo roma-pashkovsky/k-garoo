@@ -8,12 +8,13 @@
 		CategoryOption,
 		CheckList,
 		CheckListItem,
+		CheckListItemEditModel,
 		KGarooState,
 		Proposition
 	} from '../types';
 	import BottomMenu from './BottomMenu.svelte';
 	import { Button, Modal, Toast } from 'flowbite-svelte';
-	import { onMount } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	const state = getState();
 	export let isShowPropositions = false;
 	export let listName = 'New list';
@@ -25,6 +26,20 @@
 	onMount(() => {
 		reInitListFuzzySearch();
 		listHash = getListHash();
+	});
+
+	afterUpdate(() => {
+		if (items?.length === 0) {
+			items.push({
+				id: '' + new Date().getTime() + Math.random(),
+				itemDescription: '',
+				isEdited: true,
+				checked: false,
+				selected: false,
+				category: 'Other'
+			});
+			items = [...items];
+		}
 	});
 
 	function reInitListFuzzySearch(): void {
@@ -59,9 +74,9 @@
 		}
 	];
 	export let propositions = state.propositions || [];
-	export let items = [
+	export let items: CheckListItemEditModel[] = [
 		{
-			id: 1,
+			id: '' + new Date().getTime() + Math.random(),
 			itemDescription: '',
 			isEdited: true,
 			checked: false,
@@ -117,9 +132,7 @@
 	}
 
 	export function onBackClicked(): void {
-		if (items.length > 1) {
-			saveList();
-		}
+		saveList();
 		navigateBack();
 	}
 
@@ -190,7 +203,7 @@
 
 	export function onInsertBeforeListClick(): void {
 		items = items.map((s) => ({ ...s, isEdited: false }));
-		const newId = new Date().getTime();
+		const newId = '' + new Date().getTime();
 		items.unshift({
 			id: newId,
 			itemDescription: '',
@@ -207,7 +220,7 @@
 	export function onItemInsertAfterClick(id: number): void {
 		items = items.map((s) => ({ ...s, isEdited: false }));
 		const index = items.findIndex((item) => item.id === id);
-		const newId = new Date().getTime();
+		const newId = '' + new Date().getTime();
 		items.splice(index + 1, 0, {
 			id: newId,
 			itemDescription: '',
@@ -224,7 +237,7 @@
 	export function handleInputSubmit(id: string): void {
 		const index = items.findIndex((item) => item.id === id);
 		if (index === items.length - 1) {
-			const newId = new Date().getTime();
+			const newId = '' + new Date().getTime();
 			items.push({
 				id: newId,
 				itemDescription: '',
@@ -344,11 +357,19 @@
 					} as CheckListItem)
 			);
 		const propositionsMap = propositions.reduce((prev, curr) => {
-			return { ...prev, [curr.itemDescription]: true };
+			return { ...prev, [curr.itemDescription]: curr };
 		}, {});
-		const propositionsToAdd = listItems
-			.filter((it) => !propositionsMap[it.itemDescription])
-			.map((it) => ({ itemDescription: it.itemDescription, id: it.id, category: it.category }));
+		listItems
+			.filter((it) => !!it?.itemDescription)
+			.forEach(
+				(it) =>
+					(propositionsMap[it.itemDescription] = {
+						itemDescription: it.itemDescription,
+						id: it.id,
+						category: it.category
+					})
+			);
+		const propositionsToAdd = Object.keys(propositionsMap).map((desc) => propositionsMap[desc]);
 		const list: CheckList = {
 			id: listId,
 			created_utc: new Date().getTime(),
@@ -360,13 +381,12 @@
 		let listIds = prevState.listIds || [];
 		listIds = listIds.filter((lId) => lId !== list.id);
 		listIds.unshift(list.id);
-		const oldPropositions = prevState.propositions || [];
 		const oldCategoryOptions = prevState.categoryOptions || [];
 		const newListData: { [id: string]: CheckList } = {
 			...oldListData,
 			[list.id]: list
 		};
-		const newPropositions: Proposition[] = [...propositionsToAdd, ...oldPropositions];
+		const newPropositions: Proposition[] = [...propositionsToAdd];
 
 		const oldCategoryOptionsMap = oldCategoryOptions.reduce((prev, curr) => {
 			return { ...prev, [curr.name]: true };
@@ -410,10 +430,7 @@
 					/>
 				</form>
 			{:else}
-				<h3
-					on:click|stopPropagation={onEditListNameOpen}
-					class="font-medium sm:text-sm lg:text-2xl"
-				>
+				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-sm sm:text-2xl">
 					{listName}
 				</h3>
 			{/if}

@@ -17,6 +17,7 @@ export type CheckListItemEditModel = CheckListItem & {
 };
 
 export type CategoryOption = {
+	id?: string;
 	name: string;
 };
 
@@ -34,6 +35,7 @@ export type KGarooState = {
 	categoryOptions: CategoryOption[];
 	propositions: Proposition[];
 	checklistSettings: {
+		lang: string | undefined;
 		isGroupByCategory: boolean;
 	};
 	appVersion: number;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { t } from '../utils/i18n';
 
 	export let data;
 
@@ -14,5 +15,5 @@
 </script>
 
 <svelte:head>
-	<title>K-garoo - Easy checklists</title>
+	<title>K-garoo - {$t('app.logo')}</title>
 </svelte:head>

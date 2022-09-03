@@ -3,7 +3,12 @@
 	import { ArrowLeft, DotsHorizontal, Check, DocumentRemove } from 'svelte-heros';
 	import { navigateBack } from '../utils/navigate-back';
 	import { swipe } from 'svelte-gestures';
-	import { customCategoryName, getState, setState } from '../utils/local-storage-state';
+	import {
+		customCategoryId,
+		getState,
+		otherCategoryId,
+		setState
+	} from '../utils/local-storage-state';
 	import type {
 		CategoryOption,
 		CheckList,
@@ -15,9 +20,12 @@
 	import BottomMenu from './BottomMenu.svelte';
 	import { Button, Modal, Toast } from 'flowbite-svelte';
 	import { afterUpdate, onMount } from 'svelte';
+	import { locale, t, translate } from '../utils/i18n';
 	const state = getState();
 	export let isShowPropositions = false;
-	export let listName = 'New list';
+	export let listName: string = translate($locale, 'lists.create_new_list.header');
+	const otherCategoryName = translate($locale, 'lists.create_new_list.other-category');
+	const customCategoryName = translate($locale, 'lists.create_new_list.create-category');
 	export let listId = '' + new Date().getTime() + Math.random();
 	let listFuzzySearch: any;
 	let listHash: string;
@@ -36,10 +44,25 @@
 				isEdited: true,
 				checked: false,
 				selected: false,
-				category: 'Other'
+				category: otherCategoryName
 			});
 			items = [...items];
 		}
+		categoryOptions = categoryOptions.map((opt) => {
+			if (opt.id === otherCategoryId) {
+				return {
+					...opt,
+					name: otherCategoryName
+				};
+			}
+			if (opt.id === customCategoryId) {
+				return {
+					...opt,
+					name: customCategoryName
+				};
+			}
+			return opt;
+		});
 	});
 
 	function reInitListFuzzySearch(): void {
@@ -64,13 +87,14 @@
 	export function onEditListNameSubmit(): void {
 		isEditListName = false;
 	}
-	const customCategoryNameLocal = customCategoryName;
 	let categoryOptions = state.categoryOptions || [
 		{
-			name: 'Other'
+			id: otherCategoryId,
+			name: otherCategoryName
 		},
 		{
-			name: customCategoryNameLocal
+			id: customCategoryId,
+			name: customCategoryName
 		}
 	];
 	export let propositions = state.propositions || [];
@@ -81,7 +105,7 @@
 			isEdited: true,
 			checked: false,
 			selected: false,
-			category: 'Other'
+			category: otherCategoryName
 		}
 	];
 
@@ -93,21 +117,21 @@
 
 	$: isAnyItemsChecked = items.some((it) => it.selected);
 
-	$: isCustomCategoryPopupOpen = changeCategoryTo === customCategoryNameLocal;
+	$: isCustomCategoryPopupOpen = changeCategoryTo === customCategoryName;
 	export let changeCategoryTo = '';
 	export let customInputCategory = '';
 
 	export function handleChangeCategoryForSelectedClicked(): void {
 		if (
 			!changeCategoryTo?.length ||
-			(changeCategoryTo === customCategoryNameLocal && !customInputCategory?.length)
+			(changeCategoryTo === customCategoryName && !customInputCategory?.length)
 		) {
 			items = items.map((it) => ({ ...it, selected: false }));
 			changeCategoryTo = '';
 			customInputCategory = '';
 			return;
 		}
-		if (changeCategoryTo === customCategoryNameLocal) {
+		if (changeCategoryTo === customCategoryName) {
 			if (!categoryOptions.some((c) => c.name === customInputCategory)) {
 				categoryOptions.push({ name: customInputCategory });
 			}
@@ -132,7 +156,9 @@
 	}
 
 	export function onBackClicked(): void {
-		saveList();
+		if (!isEmptyList()) {
+			saveList();
+		}
 		navigateBack();
 	}
 
@@ -146,7 +172,7 @@
 
 	export function onAddPropositionClicked(prop): void {
 		const newItem = {
-			id: new Date().getTime(),
+			id: '' + new Date().getTime(),
 			itemDescription: prop.itemDescription,
 			category: prop.category,
 			checked: false,
@@ -207,7 +233,7 @@
 		items.unshift({
 			id: newId,
 			itemDescription: '',
-			category: 'Other',
+			category: otherCategoryName,
 			checked: false,
 			selected: false,
 			isEdited: true
@@ -224,7 +250,7 @@
 		items.splice(index + 1, 0, {
 			id: newId,
 			itemDescription: '',
-			category: 'Other',
+			category: otherCategoryName,
 			checked: false,
 			selected: false,
 			isEdited: true
@@ -241,7 +267,7 @@
 			items.push({
 				id: newId,
 				itemDescription: '',
-				category: 'Other',
+				category: otherCategoryName,
 				checked: false,
 				selected: false,
 				isEdited: true
@@ -272,7 +298,7 @@
 		listHash = currHash;
 
 		// try to match category
-		if (item?.itemDescription?.length > 1 && item?.category === 'Other') {
+		if (item?.itemDescription?.length > 1 && item?.category === otherCategoryName) {
 			const matchingCategory = findMatchingCategory(item as CheckListItem);
 			if (matchingCategory) {
 				item.category = matchingCategory;
@@ -305,7 +331,7 @@
 		}
 		reInitListFuzzySearch();
 		listHash = currHash;
-		if (item?.itemDescription?.length > 1 && item?.category === 'Other') {
+		if (item?.itemDescription?.length > 1 && item?.category === otherCategoryName) {
 			const matchingCategory = findMatchingCategory(item as CheckListItem);
 			if (matchingCategory) {
 				item.category = matchingCategory;
@@ -315,12 +341,11 @@
 	}
 
 	export function onCloseAllEdits(): void {
+		items = items.map((s) => ({ ...s, selected: false }));
 		if (items.length === 1) {
 			return;
 		}
-		items = items
-			.map((s) => ({ ...s, isEdited: false }))
-			.filter((s, ind) => s.itemDescription.length > 0);
+		items = items.filter((s, ind) => s.itemDescription.length > 0);
 	}
 
 	export function onSaveClicked(): void {
@@ -342,6 +367,10 @@
 		if (matches?.length) {
 			return matches[0].item?.category;
 		}
+	}
+
+	function isEmptyList(): boolean {
+		return items.length <= 1 && !items[0]?.itemDescription?.length;
 	}
 
 	function saveList(): CheckList {
@@ -391,7 +420,9 @@
 		const oldCategoryOptionsMap = oldCategoryOptions.reduce((prev, curr) => {
 			return { ...prev, [curr.name]: true };
 		}, {});
-		const categoryOptionsToAdd = categoryOptions.filter((opt) => !oldCategoryOptionsMap[opt.name]);
+		const categoryOptionsToAdd = categoryOptions.filter(
+			(opt) => !oldCategoryOptionsMap[opt.name] && !opt.id
+		);
 		const newCategoryOptions: CategoryOption[] = [...categoryOptionsToAdd, ...oldCategoryOptions];
 		const newState: KGarooState = {
 			...prevState,
@@ -565,58 +596,56 @@
 						<DocumentRemove />
 					</Button>
 				</div>
-				<div class="flex justify-end items-center z-20">
-					<div class="mr-3 text-xs sm:text-base flex justify-end">Set category to:</div>
-					<div class="mr-3">
-						<select
-							class="sm:text-sm"
-							style="height: 38px;"
-							onclick="event.stopPropagation()"
-							bind:value={changeCategoryTo}
-						>
-							{#each categoryOptions as cOption}
-								<option value={cOption.name}>{cOption.name}</option>
-							{/each}
-						</select>
-					</div>
-					<div class="space-x-2">
-						<Button
-							class="!p-2 text-white"
-							color="blue"
-							style="width: 38px; height: 38px;"
-							on:click={handleChangeCategoryForSelectedClicked}
-						>
-							OK
-						</Button>
-					</div>
+				<div>
+					<form
+						class="flex justify-end items-center z-20"
+						on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
+					>
+						<div class="mr-3 text-xs sm:text-base flex justify-end">Set category to:</div>
+						<div class="mr-3" style="width: min-content">
+							<select
+								class="sm:text-sm"
+								style="height: 38px;"
+								onclick="event.stopPropagation()"
+								bind:value={changeCategoryTo}
+							>
+								{#each categoryOptions as cOption}
+									<option value={cOption.name}>{cOption.name}</option>
+								{/each}
+							</select>
+							{#if isCustomCategoryPopupOpen}
+								<input
+									class="sm:text-sm mt-1"
+									style="height: 38px; display: inline-block; width: 100%; box-sizing: border-box"
+									autofocus
+									autocomplete="off"
+									type="text"
+									id="custom-category-input"
+									bind:value={customInputCategory}
+									placeholder="My category"
+								/>
+							{/if}
+						</div>
+						<div class="space-x-2">
+							<Button
+								class="!p-2 text-white"
+								color="blue"
+								style="width: 38px; height: 38px;"
+								type="submit"
+							>
+								OK
+							</Button>
+						</div>
+					</form>
 				</div>
 			</div>
 		</BottomMenu>
-		<Modal size="xs" bind:open={isCustomCategoryPopupOpen} onclick="event.stopPropagation()">
-			<form
-				id="custom-category-form"
-				class="mt-2"
-				on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
-			>
-				<div class="flex items-center">
-					<input
-						class="sm:text-sm"
-						style="height: 38px; display: block; width: 200px;"
-						autofocus
-						autocomplete="off"
-						type="text"
-						id="custom-category-input"
-						bind:value={customInputCategory}
-						placeholder="My category"
-					/>
-					<Button class="ml-3" type="submit">OK</Button>
-				</div>
-			</form>
-		</Modal>
 	{/if}
 	{#if isShowPossibleDuplicateToast}
-		<div class="fixed left-0 right-0 top-0 flex justify-center z-50">
-			<Toast simple={true} class="bg-blue-200">The list might contain duplicates</Toast>
+		<div class="absolute left-0 right-0 top-0 flex justify-center z-50">
+			<Toast simple={true} class="bg-blue-200"
+				>{$t('lists.create_new_list.possible_duplicates')}</Toast
+			>
 		</div>
 	{/if}
 </section>

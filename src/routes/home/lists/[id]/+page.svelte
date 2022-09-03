@@ -8,6 +8,7 @@
 	import { copyToClipboard } from '../../../../utils/copy-to-clipboard';
 	import { Toast, Button } from 'flowbite-svelte';
 	import { swipe } from 'svelte-gestures';
+	import { locale, t, translate } from '../../../../utils/i18n.js';
 
 	let state: KGarooState = getState();
 	const list = (state.listData || {})[$page.params.id] as CheckList;
@@ -45,7 +46,10 @@
 		isByCategoryView = !isByCategoryView;
 		state = {
 			...state,
-			checklistSettings: { ...(state.checklistSettings || {}), isGroupByCategory: isByCategoryView }
+			checklistSettings: {
+				...(state.checklistSettings || ({} as any)),
+				isGroupByCategory: isByCategoryView
+			}
 		};
 		setState(state);
 	}
@@ -68,7 +72,7 @@
 	}
 
 	function onRemoveClicked() {
-		if (confirm('Will remove list. Are you sure?')) {
+		if (confirm(translate($locale, 'lists.details.remove-warning'))) {
 			const oldState = { ...state };
 			delete oldState.listData[list.id];
 			oldState.listIds = oldState.listIds.filter((id) => id !== list.id);
@@ -244,7 +248,7 @@
 	</div>
 	{#if isShowLinkCopiedToast}
 		<div class="toast-wrapper">
-			<Toast simple={true} class="bg-blue-200">Link copied to clipboard</Toast>
+			<Toast simple={true} class="bg-blue-200">{$t('lists.details.link-created')}</Toast>
 		</div>
 	{/if}
 </div>

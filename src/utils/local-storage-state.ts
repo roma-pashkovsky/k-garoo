@@ -1,21 +1,25 @@
 import { browser } from '$app/environment';
 import type { CheckList, KGarooState } from '../types';
 
-export const customCategoryName = 'Add category';
+export const customCategoryId = 'custom';
+export const otherCategoryId = 'other';
 
 export const getInitialState = (): KGarooState => {
 	return {
 		listData: {},
 		listIds: [],
 		checklistSettings: {
-			isGroupByCategory: false
+			isGroupByCategory: false,
+			lang: undefined
 		},
 		categoryOptions: [
 			{
+				id: otherCategoryId,
 				name: 'Other'
 			},
 			{
-				name: customCategoryName
+				id: customCategoryId,
+				name: 'Add category'
 			}
 		],
 		propositions: [],

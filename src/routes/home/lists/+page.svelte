@@ -3,6 +3,7 @@
 	import { DocumentRemove, Plus } from 'svelte-heros';
 	import { goto } from '$app/navigation';
 	import { getState, setState } from '../../../utils/local-storage-state';
+	import { locale, t, translate } from '../../../utils/i18n';
 	import type { KGarooState, CheckList } from '../../../types';
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
 	import { swipe } from 'svelte-gestures';
@@ -13,7 +14,7 @@
 	$: cards = ids.map((id) => data[id]) as CheckList[];
 
 	function onListRemove(list: CheckList): void {
-		if (confirm(`${list.name} will be removed. Are you sure?`)) {
+		if (confirm(translate($locale, 'lists.remove-warning', { list: list.name }))) {
 			ids = ids.filter((id) => id !== list.id);
 			delete data[list.id];
 			setState({
@@ -34,7 +35,7 @@
 </script>
 
 <svelte:head>
-	<title>K-garoo - My lists</title>
+	<title>K-garoo - {$t('app.my_lists')}</title>
 </svelte:head>
 
 <div class="p-8">
@@ -43,7 +44,11 @@
 <div class="min-h-screen flex items-start justify-center">
 	{#if !cards?.length}
 		<EmptyPage>
-			No lists. Let's <a class="underline cursor-pointer" href="/home/lists/create">add one</a>
+			{$t('lists.no_lists')}
+			{$t('lists.no_lists_cta_1')}
+			<a class="underline cursor-pointer" href="/home/lists/create"
+				>{$t('lists.no_lists_cta_link')}</a
+			>
 		</EmptyPage>
 	{/if}
 	<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 p-5">

@@ -1,4 +1,5 @@
 import { derived, writable } from 'svelte/store';
+import type { Readable } from 'svelte/store';
 import translations from './i18n-translations';
 
 export const defaultLocale = 'en';
@@ -25,7 +26,7 @@ export function translate(locale: string, key: string, vars: { [key: string]: st
 	return text;
 }
 
-export const t = derived(
+export const t: Readable<(key: string, vars?: any) => string> = derived(
 	locale,
 	($locale) =>
 		(key: string, vars = {}) =>

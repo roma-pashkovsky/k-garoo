@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { ArrowLeft, DotsHorizontal, Check, DocumentRemove } from 'svelte-heros';
-	import { navigateBack } from '../utils/navigate-back';
+	import { Check, DocumentRemove, DotsHorizontal } from 'svelte-heros';
+	import { navigateBack } from '../../utils/navigate-back';
 	import { swipe } from 'svelte-gestures';
 	import {
 		customCategoryId,
 		getState,
 		otherCategoryId,
 		setState
-	} from '../utils/local-storage-state';
+	} from '../../utils/local-storage-state';
 	import type {
 		CategoryOption,
 		CheckList,
@@ -16,11 +16,18 @@
 		CheckListItemEditModel,
 		KGarooState,
 		Proposition
-	} from '../types';
-	import BottomMenu from './BottomMenu.svelte';
-	import { Button, Modal, Toast } from 'flowbite-svelte';
+	} from '../../types';
+	import BottomMenu from '../BottomMenu.svelte';
+	import { Button, Checkbox, Input, Popover, Select } from 'flowbite-svelte';
 	import { afterUpdate, onMount } from 'svelte';
-	import { locale, t, translate } from '../utils/i18n';
+	import { locale, t, translate } from '../../utils/i18n';
+	import DetailsPage from '../DetailsPage.svelte';
+	import DetailsTopBar from '../DetailsTopBar.svelte';
+	import DetailsBody from '../DetailsBody.svelte';
+	import type { ToastManagerType } from '../../utils/toasts';
+	import { ToastService } from '../../utils/toasts';
+	import RightDrawer from '../RightDrawer.svelte';
+
 	const state = getState();
 	export let isShowPropositions = false;
 	export let listName: string = translate($locale, 'lists.create_new_list.header');
@@ -29,8 +36,9 @@
 	export let listId = '' + new Date().getTime() + Math.random();
 	let listFuzzySearch: any;
 	let listHash: string;
-	let isShowPossibleDuplicateToast = false;
+	let showPossibleDuplicateHandler: any;
 	let highlighted = {};
+	const toastManager: ToastManagerType = ToastService.getInstance();
 	onMount(() => {
 		reInitListFuzzySearch();
 		listHash = getListHash();
@@ -97,6 +105,7 @@
 			name: customCategoryName
 		}
 	];
+	$: categoryOptionsForSelect = categoryOptions.map((o) => ({ value: o.name, name: o.name }));
 	export let propositions = state.propositions || [];
 	export let items: CheckListItemEditModel[] = [
 		{
@@ -187,23 +196,7 @@
 		items = [...items];
 		// check for duplicate items
 
-		if (newItem?.itemDescription?.length) {
-			const dups = listFuzzySearch
-				.search(newItem.itemDescription)
-				.filter((dup) => dup.item.id !== newItem.id);
-			if (dups?.length) {
-				isShowPossibleDuplicateToast = true;
-				highlighted = dups.reduce((p, c) => {
-					return { ...p, [c.item.id]: true };
-				}, {});
-				highlighted = { ...highlighted, [newItem.id]: true };
-				setTimeout(() => {
-					(isShowPossibleDuplicateToast = false), (highlighted = {});
-				}, 5000);
-			}
-		}
-		reInitListFuzzySearch();
-		listHash = getListHash();
+		checkIfItemDuplicate(newItem);
 	}
 
 	export function onItemClick(id: string): void {
@@ -277,25 +270,7 @@
 			items = items.map((s) => ({ ...s, isEdited: false }));
 		}
 		const item = items.find((item) => item.id === id);
-		// check for duplicate items
-		const currHash = getListHash();
-		if (currHash !== listHash && item?.itemDescription?.length) {
-			const dups = listFuzzySearch
-				.search(item.itemDescription)
-				.filter((dup) => dup.item.id !== item.id);
-			if (dups?.length) {
-				isShowPossibleDuplicateToast = true;
-				highlighted = dups.reduce((p, c) => {
-					return { ...p, [c.item.id]: true };
-				}, {});
-				highlighted = { ...highlighted, [item.id]: true };
-				setTimeout(() => {
-					(isShowPossibleDuplicateToast = false), (highlighted = {});
-				}, 5000);
-			}
-		}
-		reInitListFuzzySearch();
-		listHash = currHash;
+		checkIfItemDuplicate(item);
 
 		// try to match category
 		if (item?.itemDescription?.length > 1 && item?.category === otherCategoryName) {
@@ -312,25 +287,7 @@
 		if (items.length > 1 && item && item?.itemDescription?.length < 1) {
 			items = items.filter((s) => s.id !== id);
 		}
-		// check for duplicate items
-		const currHash = getListHash();
-		if (currHash !== listHash && item?.itemDescription?.length) {
-			const dups = listFuzzySearch
-				.search(item.itemDescription)
-				.filter((dup) => dup.item.id !== item.id);
-			if (dups?.length) {
-				isShowPossibleDuplicateToast = true;
-				highlighted = dups.reduce((p, c) => {
-					return { ...p, [c.item.id]: true };
-				}, {});
-				highlighted = { ...highlighted, [item.id]: true };
-				setTimeout(() => {
-					(isShowPossibleDuplicateToast = false), (highlighted = {});
-				}, 5000);
-			}
-		}
-		reInitListFuzzySearch();
-		listHash = currHash;
+		checkIfItemDuplicate(item);
 		if (item?.itemDescription?.length > 1 && item?.category === otherCategoryName) {
 			const matchingCategory = findMatchingCategory(item as CheckListItem);
 			if (matchingCategory) {
@@ -349,6 +306,8 @@
 	}
 
 	export function onSaveClicked(): void {
+		toastManager.clear();
+		listHash = getListHash();
 		const list = saveList();
 		goto(`/home/lists/${list.id}`);
 	}
@@ -371,6 +330,32 @@
 
 	function isEmptyList(): boolean {
 		return items.length <= 1 && !items[0]?.itemDescription?.length;
+	}
+
+	function checkIfItemDuplicate(item: CheckListItem): void {
+		// check for duplicate items
+		const currHash = getListHash();
+		if (currHash !== listHash && item?.itemDescription?.length) {
+			const dups = listFuzzySearch
+				.search(item.itemDescription)
+				.filter((dup) => dup.item.id !== item.id);
+			if (dups?.length) {
+				highlighted = dups.reduce((p, c) => {
+					return { ...p, [c.item.id]: true };
+				}, {});
+				toastManager.push({
+					text: ($t as any)('lists.create_new_list.possible_duplicates'),
+					type: 'details-top',
+					duration: 5000
+				});
+				highlighted = { ...highlighted, [item.id]: true };
+				showPossibleDuplicateHandler = setTimeout(() => {
+					highlighted = {};
+				}, 5000);
+			}
+		}
+		reInitListFuzzySearch();
+		listHash = currHash;
 	}
 
 	function saveList(): CheckList {
@@ -440,18 +425,33 @@
 	<title>K-garoo - Add checklist</title>
 </svelte:head>
 
-<section class="section-container h-screen w-screen flex flex-col">
-	<div
-		class="flex justify-between items-center sticky-top"
-		style="padding-left: 2rem; padding-right: 2rem; padding-top: 1rem; padding-bottom: 5px;"
-	>
-		<div class="flex items-center" style="height: 25px">
-			<ArrowLeft on:click={onBackClicked} class="w-25 h-25" />
+<RightDrawer on:backdrop-click={onShowPropositionsCloseClicked} isOpen={isShowPropositions}>
+	<div class="font-medium flex justify-center">
+		{$t('lists.create_new_list.click-to-add')}
+	</div>
+	{#if !filteredPropositions?.length}
+		<div class="flex justify-center items-center text-gray-600 p-6">No recent suggestions</div>
+	{/if}
+	{#each filteredPropositions as prop}
+		<div
+			on:click|stopPropagation={() => onAddPropositionClicked(prop)}
+			class="px-2 py-3 flex justify-between"
+		>
+			<div>
+				{prop.itemDescription}
+			</div>
+			<div class="text-sm text-gray-600">
+				{prop.category}
+			</div>
 		</div>
-		<div class="flex items-center left" style="height: 25px">
+	{/each}
+</RightDrawer>
+<DetailsPage>
+	<DetailsTopBar on:back-clicked={onBackClicked}>
+		<div slot="page-title">
 			{#if isEditListName}
 				<form on:submit|preventDefault={onEditListNameSubmit}>
-					<input
+					<Input
 						id="list-name"
 						autofocus
 						autocomplete="off"
@@ -466,14 +466,15 @@
 				</h3>
 			{/if}
 		</div>
-		<div class="flex items-center right">
-			<button
-				on:click|stopPropagation={onShowPropositionsClicked}
+		<div slot="right-content" class="flex items-center right" onclick="event.stopPropagation()">
+			<Button
+				color="light"
+				on:click={onShowPropositionsClicked}
 				style="width: 42px; height: 42px;"
-				class="flex items-center justify-center"
+				class="!p-2 flex items-center justify-center"
 			>
 				<DotsHorizontal class="w-25 h-25" />
-			</button>
+			</Button>
 			<Button
 				on:click={onSaveClicked}
 				style="width: 42px; height: 42px;"
@@ -483,45 +484,11 @@
 				<Check class="w-25 h-25" color="white" />
 			</Button>
 		</div>
-	</div>
-	{#if isShowPropositions}
-		<div class="fixed left-0 top-0 bottom-0 right-0 z-50 text-base">
-			<div
-				on:click|stopPropagation={onShowPropositionsCloseClicked}
-				class="absolute left-0 top-0 bottom-0 right-0 z-40 bg-black opacity-50"
-				style="background-color: black"
-			/>
-			<div
-				class="propositions-pane absolute top-0 bottom-0 right-0 bg-white w-80 z-50 px-0.5 py-2 overflow-y-auto"
-			>
-				<div class="font-medium flex justify-center">Click to add</div>
-				{#if !filteredPropositions?.length}
-					<div class="flex justify-center items-center text-gray-600 p-6">
-						No recent suggestions
-					</div>
-				{/if}
-				{#each filteredPropositions as prop}
-					<div
-						on:click|stopPropagation={() => onAddPropositionClicked(prop)}
-						class="px-2 py-3 flex justify-between"
-					>
-						<div>
-							{prop.itemDescription}
-						</div>
-						<div class="text-sm text-gray-600">
-							{prop.category}
-						</div>
-					</div>
-				{/each}
-				<div />
-			</div>
-		</div>
-	{/if}
-	<div
-		class="scroll-auto flex-1 pr-8 pl-8 pr-8"
-		on:click={onCloseAllEdits}
-		on:dblclick={onSaveClicked}
-		style="padding-bottom: 200px;"
+	</DetailsTopBar>
+	<DetailsBody
+		noTopPadding="true"
+		on:body-click={onCloseAllEdits}
+		on:body-long-press={onSaveClicked}
 	>
 		<div
 			on:click|stopPropagation={onInsertBeforeListClick}
@@ -542,7 +509,7 @@
 					style="height: 42px;"
 				>
 					<div class="flex">
-						<input
+						<Checkbox
 							style="width: 20px; height: 20px;"
 							type="checkbox"
 							bind:checked={item.selected}
@@ -556,7 +523,8 @@
 				>
 					{#if item.isEdited}
 						<form on:submit|preventDefault={() => handleInputSubmit(item.id)} style="width: 100%">
-							<input
+							<Input
+								id="form-input"
 								autofocus
 								style="box-sizing: border-box; width: 100%"
 								on:blur={() => handleInputBlur(item.id)}
@@ -564,6 +532,9 @@
 								bind:value={item.itemDescription}
 							/>
 						</form>
+						<!--						<Popover arrow={false} class="w-64 text-sm font-light" triggeredBy="#form-input">-->
+						<!--							Foo bar Foo bar-->
+						<!--						</Popover>-->
 					{:else}
 						{item.itemDescription}
 					{/if}
@@ -583,80 +554,67 @@
 				class="insert-after-button {index === items.length - 1 ? 'last-insert' : ''}"
 			/>
 		{/each}
-	</div>
-	{#if isAnyItemsChecked}
-		<BottomMenu>
-			<div class="flex justify-between items-center">
-				<div class="mr-1">
-					<Button
-						on:click={removeSelectedItems}
-						class="!p-2 flex justify-center items-center"
-						style="height: 38px; width: 38px"
-					>
-						<DocumentRemove />
-					</Button>
-				</div>
-				<div>
-					<form
-						class="flex justify-end items-center z-20"
-						on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
-					>
-						<div class="mr-3 text-xs sm:text-base flex justify-end">Set category to:</div>
-						<div class="mr-3" style="width: min-content">
-							<select
-								class="sm:text-sm"
-								style="height: 38px;"
-								onclick="event.stopPropagation()"
-								bind:value={changeCategoryTo}
-							>
-								{#each categoryOptions as cOption}
-									<option value={cOption.name}>{cOption.name}</option>
-								{/each}
-							</select>
-							{#if isCustomCategoryPopupOpen}
-								<input
-									class="sm:text-sm mt-1"
-									style="height: 38px; display: inline-block; width: 100%; box-sizing: border-box"
-									autofocus
-									autocomplete="off"
-									type="text"
-									id="custom-category-input"
-									bind:value={customInputCategory}
-									placeholder="My category"
-								/>
-							{/if}
-						</div>
-						<div class="space-x-2">
-							<Button
-								class="!p-2 text-white"
-								color="blue"
-								style="width: 38px; height: 38px;"
-								type="submit"
-							>
-								OK
-							</Button>
-						</div>
-					</form>
-				</div>
+	</DetailsBody>
+</DetailsPage>
+{#if isAnyItemsChecked}
+	<BottomMenu>
+		<div class="flex justify-between items-center">
+			<div class="mr-1">
+				<Button
+					on:click={removeSelectedItems}
+					class="!p-2 flex justify-center items-center"
+					style="height: 38px; width: 38px"
+				>
+					<DocumentRemove />
+				</Button>
 			</div>
-		</BottomMenu>
-	{/if}
-	{#if isShowPossibleDuplicateToast}
-		<div class="absolute left-0 right-0 top-0 flex justify-center z-50">
-			<Toast simple={true} class="bg-blue-200"
-				>{$t('lists.create_new_list.possible_duplicates')}</Toast
-			>
+			<div>
+				<form
+					class="flex justify-end items-center z-20"
+					on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
+				>
+					<div class="mr-3 text-xs sm:text-base flex justify-end">
+						{$t('lists.create_new_list.set-category-to')}
+					</div>
+					<div class="mr-3" style="width: min-content">
+						<Select
+							class="sm:text-sm"
+							style="height: 38px; min-width: max-content"
+							onclick="event.stopPropagation()"
+							items={categoryOptionsForSelect}
+							placeholder="--"
+							bind:value={changeCategoryTo}
+						/>
+						{#if isCustomCategoryPopupOpen}
+							<Input
+								class="sm:text-sm mt-1"
+								style="height: 38px; display: inline-block; width: 100%; box-sizing: border-box"
+								autofocus
+								autocomplete="off"
+								type="text"
+								id="custom-category-input"
+								bind:value={customInputCategory}
+								placeholder={$t('lists.create_new_list.my-category')}
+							/>
+						{/if}
+					</div>
+					<div class="space-x-2">
+						<Button
+							class="!p-2 text-white"
+							color="blue"
+							style="width: 38px; height: 38px;"
+							type="submit"
+						>
+							OK
+						</Button>
+					</div>
+				</form>
+			</div>
 		</div>
-	{/if}
-</section>
+	</BottomMenu>
+{/if}
 
 <style>
-	.sticky-top {
-		position: sticky;
-		top: 0;
-		background-color: white;
-		z-index: 30;
-	}
 	.insert-after-button {
 		height: 22px;
 	}

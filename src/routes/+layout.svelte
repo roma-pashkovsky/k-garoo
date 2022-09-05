@@ -10,8 +10,9 @@
 		const state = getState();
 		const l = state?.checklistSettings?.lang || getLocaleFromBrowser();
 		locale.set(l);
-		if (state && state.appVersion !== appVersion) {
+		if (state.appVersion !== appVersion) {
 			if (
+				!Object.keys(state).length ||
 				confirm(
 					'K-garoo was updated. Your lists should be cleaned for the app to work correctly. Continue?'
 				)

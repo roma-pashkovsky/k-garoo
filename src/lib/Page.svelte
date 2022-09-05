@@ -1,0 +1,10 @@
+<div class="absolute top-0 bottom-0 left-0 right-0 flex flex-col">
+	<div class="px-2 sm:px-4 pt-6">
+		<slot name="top-bar" />
+	</div>
+	<div class="flex-1 relative">
+		<div class="absolute top-0 bottom-0 left-2 right-2 sm:left-4 sm:right-4 overflow-y-auto ">
+			<slot name="body" />
+		</div>
+	</div>
+</div>

@@ -1,15 +1,21 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { ArrowLeft, Briefcase, DocumentRemove, DocumentDuplicate } from 'svelte-heros';
+	import { Briefcase, DocumentDuplicate, DocumentRemove } from 'svelte-heros';
 	import { getState, setState } from '../../../../utils/local-storage-state';
 	import type { CheckList, CheckListItem, KGarooState } from '../../../../types';
 	import { page } from '$app/stores';
 	import EmptyPage from '../../../../lib/EmptyPage.svelte';
 	import { copyToClipboard } from '../../../../utils/copy-to-clipboard';
-	import { Toast, Button } from 'flowbite-svelte';
+	import { Button } from 'flowbite-svelte';
 	import { swipe } from 'svelte-gestures';
 	import { locale, t, translate } from '../../../../utils/i18n.js';
+	import DetailsTopBar from '../../../../lib/DetailsTopBar.svelte';
+	import DetailsPage from '../../../../lib/DetailsPage.svelte';
+	import DetailsBody from '../../../../lib/DetailsBody.svelte';
+	import { ToastService } from '../../../../utils/toasts';
+	import type { ToastManagerType } from '../../../../utils/toasts';
 
+	const toastManager: ToastManagerType = ToastService.getInstance();
 	let state: KGarooState = getState();
 	const list = (state.listData || {})[$page.params.id] as CheckList;
 
@@ -86,7 +92,6 @@
 		saveCurrentList();
 	}
 
-	export let isShowLinkCopiedToast = false;
 	async function onDuplicateClicked(): Promise<void> {
 		const listToDuplicate: CheckList = {
 			id: list.id,
@@ -98,10 +103,9 @@
 		const encoded = encodeURIComponent(stringified);
 		const url = window.origin + '/decode/' + encoded;
 		await copyToClipboard(url);
-		isShowLinkCopiedToast = true;
-		setTimeout(() => {
-			isShowLinkCopiedToast = false;
-		}, 3000);
+		toastManager.push({
+			text: ($t as any)('lists.details.link-created')
+		});
 	}
 
 	function saveCurrentList(): void {
@@ -129,17 +133,9 @@
 	<title>K-garoo - {list?.name}</title>
 </svelte:head>
 
-<div class="section-container h-screen w-screen flex flex-col">
-	<div
-		class="sticky flex justify-between items-center bg-white z-30"
-		style="padding-left: 2rem; padding-right: 2rem; padding-top: 1rem;"
-	>
-		<div class="flex items-center" style="height: 25px">
-			<Button color="white" class="!p-2">
-				<ArrowLeft on:click={onBackClicked} class="w-25 h-25" />
-			</Button>
-		</div>
-		<div class="flex items-center left" style="height: 25px">
+<DetailsPage>
+	<DetailsTopBar on:back-clicked={onBackClicked}>
+		<div slot="page-title">
 			{#if isEditListName}
 				<form on:submit|preventDefault={onEditListNameSubmit}>
 					<input
@@ -156,7 +152,7 @@
 				</h3>
 			{/if}
 		</div>
-		<div class="flex items-center right">
+		<div slot="right-content" class="flex items-center right">
 			{#if !!list}
 				<div on:click={onDuplicateClicked}>
 					<Button
@@ -188,70 +184,67 @@
 				</div>
 			{/if}
 		</div>
-	</div>
-	<div
-		on:dblclick={onListBodyDblClick}
-		class="scroll-auto flex-1 p-8"
-		style="padding-bottom: 200px;"
-	>
-		{#if !list}
-			<EmptyPage>The list was not found.</EmptyPage>
-		{/if}
-		{#if isByCategoryView}
-			{#each byCategoryList as categoryItem}
-				<div class="mb-6">
-					<div>
-						<h5 class="text-gray-600 text-sm">{categoryItem.category}</h5>
+	</DetailsTopBar>
+	<DetailsBody on:body-long-press={onListBodyDblClick}>
+		<div>
+			{#if !list}
+				<EmptyPage>The list was not found.</EmptyPage>
+			{/if}
+			{#if isByCategoryView}
+				{#each byCategoryList as categoryItem}
+					<div class="mb-6">
+						<div>
+							<h5 class="text-gray-600 text-sm">{categoryItem.category}</h5>
+						</div>
+						<div class="filler-block" />
+						<ul>
+							{#each categoryItem.items as item}
+								<li
+									use:swipe={{
+										timeframe: 300,
+										minSwipeDistance: 80,
+										touchAction: 'pan-left pan-y'
+									}}
+									on:swipe={() => onRemoveItemFromTheList(item.id)}
+									on:click|stopPropagation={() => onItemClick(item.id)}
+									class="checklist-item space-x-2 flex items-center flex-1 pl-4 {item.checked
+										? 'completed'
+										: ''}"
+								>
+									{item.itemDescription}
+								</li>
+								<div class="filler-block" />
+							{/each}
+						</ul>
 					</div>
-					<div class="filler-block" />
-					<ul>
-						{#each categoryItem.items as item}
-							<li
-								use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
-								on:swipe={() => onRemoveItemFromTheList(item.id)}
-								on:click|stopPropagation={() => onItemClick(item.id)}
-								class="checklist-item space-x-2 flex items-center flex-1 pl-4 {item.checked
-									? 'completed'
-									: ''}"
-							>
-								{item.itemDescription}
-							</li>
-							<div class="filler-block" />
-						{/each}
-					</ul>
-				</div>
-			{/each}
-		{:else}
-			{#each items as item}
-				<div
-					use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
-					on:swipe={() => onRemoveItemFromTheList(item.id)}
-					on:click|stopPropagation={() => onItemClick(item?.id)}
-					class="checklist-item flex items-center {item?.checked ? 'completed' : ''}"
-				>
-					<div class="left space-x-2 flex items-center flex-1">
-						{item?.itemDescription}
-					</div>
+				{/each}
+			{:else}
+				{#each items as item}
 					<div
-						onclick="event.stopPropagation()"
-						class="checkbox flex items-center justify-end ml-2"
-						style="height: 42px;"
+						use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
+						on:swipe={() => onRemoveItemFromTheList(item.id)}
+						on:click|stopPropagation={() => onItemClick(item?.id)}
+						class="checklist-item flex items-center {item?.checked ? 'completed' : ''}"
 					>
-						<div class="text-sm text-gray-600">
-							{item?.category}
+						<div class="left space-x-2 flex items-center flex-1">
+							{item?.itemDescription}
+						</div>
+						<div
+							onclick="event.stopPropagation()"
+							class="checkbox flex items-center justify-end ml-2"
+							style="height: 42px;"
+						>
+							<div class="text-sm text-gray-600">
+								{item?.category}
+							</div>
 						</div>
 					</div>
-				</div>
-				<div class="filler-block" />
-			{/each}
-		{/if}
-	</div>
-	{#if isShowLinkCopiedToast}
-		<div class="toast-wrapper">
-			<Toast simple={true} class="bg-blue-200">{$t('lists.details.link-created')}</Toast>
+					<div class="filler-block" />
+				{/each}
+			{/if}
 		</div>
-	{/if}
-</div>
+	</DetailsBody>
+</DetailsPage>
 
 <style>
 	.checklist-item {
@@ -270,21 +263,7 @@
 		border-bottom: 1px solid black;
 	}
 
-	.toast-wrapper {
-		position: fixed;
-		bottom: 3px;
-		left: 0;
-		right: 0;
-		display: flex;
-		justify-content: center;
-	}
-
 	.filler-block {
 		height: 20px;
-	}
-
-	.sticky {
-		position: sticky;
-		top: 0;
 	}
 </style>

@@ -1,5 +1,5 @@
 <script>
-	import ChecklistEditor from '../../../../lib/ChecklistEditor.svelte';
+	import ChecklistEditor from '../../../../lib/list-editor/ChecklistEditor.svelte';
 </script>
 
 <ChecklistEditor />

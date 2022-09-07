@@ -6,21 +6,52 @@
 	import { page } from '$app/stores';
 	import EmptyPage from '../../../../lib/EmptyPage.svelte';
 	import { copyToClipboard } from '../../../../utils/copy-to-clipboard';
-	import { Button } from 'flowbite-svelte';
+	import { Alert, Button, Input } from 'flowbite-svelte';
 	import { swipe } from 'svelte-gestures';
 	import { locale, t, translate } from '../../../../utils/i18n.js';
 	import DetailsTopBar from '../../../../lib/DetailsTopBar.svelte';
 	import DetailsPage from '../../../../lib/DetailsPage.svelte';
 	import DetailsBody from '../../../../lib/DetailsBody.svelte';
-	import { ToastService } from '../../../../utils/toasts';
 	import type { ToastManagerType } from '../../../../utils/toasts';
+	import { ToastService } from '../../../../utils/toasts';
+	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	const toastManager: ToastManagerType = ToastService.getInstance();
 	let state: KGarooState = getState();
 	const list = (state.listData || {})[$page.params.id] as CheckList;
 
+	onMount(() => {
+		checkInstructions();
+	});
+
+	async function checkInstructions(): Promise<void> {
+		await checkEditListInstruction();
+	}
+
+	let isEditListInstruction = false;
+	async function checkEditListInstruction(): Promise<void> {
+		if (!state?.appInstructions?.isEditListFromDetailsViewed) {
+			return new Promise((resolve) => {
+				isEditListInstruction = true;
+				setTimeout(() => {
+					isEditListInstruction = false;
+					setState({
+						...state,
+						appInstructions: {
+							...state.appInstructions,
+							isEditListFromDetailsViewed: true
+						}
+					});
+					resolve();
+				}, 5000);
+			});
+		}
+	}
+
 	export let listName = list?.name;
 	export let isEditListName = false;
+
 	export function onEditListNameOpen(): void {
 		isEditListName = true;
 	}
@@ -138,7 +169,7 @@
 		<div slot="page-title">
 			{#if isEditListName}
 				<form on:submit|preventDefault={onEditListNameSubmit}>
-					<input
+					<Input
 						id="list-name"
 						autofocus
 						type="text"
@@ -147,7 +178,7 @@
 					/>
 				</form>
 			{:else}
-				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-sm sm:text-2xl">
+				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-base sm:text-2xl">
 					{listName}
 				</h3>
 			{/if}
@@ -186,6 +217,13 @@
 		</div>
 	</DetailsTopBar>
 	<DetailsBody on:body-long-press={onListBodyDblClick}>
+		{#if isEditListInstruction}
+			<div transition:fade class="absolute inset-1/2 w-max">
+				<div class="relative w-max -left-1/2">
+					<Alert>{$t('lists.details.edit-instruction')}</Alert>
+				</div>
+			</div>
+		{/if}
 		<div>
 			{#if !list}
 				<EmptyPage>The list was not found.</EmptyPage>
@@ -252,15 +290,7 @@
 	}
 	.completed {
 		position: relative;
-	}
-	.completed:before {
-		content: '';
-		position: absolute;
-		top: 13px;
-		left: 0;
-		right: 0;
-		z-index: 2;
-		border-bottom: 1px solid black;
+		text-decoration: line-through;
 	}
 
 	.filler-block {

@@ -50,6 +50,7 @@
 		justify-content: center;
 		align-items: center;
 		flex-direction: column;
+		z-index: 50;
 	}
 
 	.toast:not(:last-child) {

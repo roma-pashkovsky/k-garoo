@@ -27,6 +27,19 @@ export type Proposition = {
 	category: string;
 };
 
+export type ChecklistSettings = {
+	isGroupByCategory: boolean;
+};
+
+export type AppSettings = {
+	lang: string | undefined;
+};
+
+export type AppInstructions = {
+	isEditListFromDetailsViewed: boolean;
+	isAddFromPropositionsViewed: boolean;
+};
+
 export type KGarooState = {
 	listIds: string[];
 	listData: {
@@ -34,9 +47,8 @@ export type KGarooState = {
 	};
 	categoryOptions: CategoryOption[];
 	propositions: Proposition[];
-	checklistSettings: {
-		lang: string | undefined;
-		isGroupByCategory: boolean;
-	};
+	checklistSettings: ChecklistSettings;
+	appSettings: AppSettings;
+	appInstructions: AppInstructions;
 	appVersion: number;
 };

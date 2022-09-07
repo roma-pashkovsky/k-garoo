@@ -9,8 +9,7 @@ export const getInitialState = (): KGarooState => {
 		listData: {},
 		listIds: [],
 		checklistSettings: {
-			isGroupByCategory: false,
-			lang: undefined
+			isGroupByCategory: false
 		},
 		categoryOptions: [
 			{
@@ -23,6 +22,13 @@ export const getInitialState = (): KGarooState => {
 			}
 		],
 		propositions: [],
+		appSettings: {
+			lang: undefined
+		},
+		appInstructions: {
+			isAddFromPropositionsViewed: false,
+			isEditListFromDetailsViewed: false
+		},
 		appVersion: 0
 	};
 };

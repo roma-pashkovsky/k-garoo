@@ -47,20 +47,21 @@
 		{#if !cards?.length}
 			<EmptyPage>
 				{$t('lists.no_lists')}
+				<br />
 				{@html $t('lists.no_lists_cta_1')}
 				<a class="underline cursor-pointer" href="/home/lists/create"
 					>{$t('lists.no_lists_cta_link')}</a
 				>
 			</EmptyPage>
 		{/if}
-		<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 p-5">
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 			{#each cards as card}
 				<div
 					use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
 					on:swipe={() => onListRemove(card)}
 					on:click={() => onCardClicked(card.id)}
 				>
-					<Card class="!p-1 hover:bg-gray-50 cursor-pointer">
+					<Card class="!p-1 hover:bg-gray-50 cursor-pointer w-70 sm:w-80">
 						<figure
 							class="flex flex-col justify-center items-center p-6 text-center border-b border-gray-200  dark:bg-gray-800 dark:border-gray-700"
 						>
@@ -109,14 +110,6 @@
 	.checked {
 		position: relative;
 		display: inline-block;
-	}
-
-	.checked:before {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 11px;
-		border-bottom: 1px solid black;
+		text-decoration: line-through;
 	}
 </style>

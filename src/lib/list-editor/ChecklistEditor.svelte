@@ -18,7 +18,7 @@
 		Proposition
 	} from '../../types';
 	import BottomMenu from '../BottomMenu.svelte';
-	import { Button, Checkbox, Input, Popover, Select } from 'flowbite-svelte';
+	import { Alert, Button, Checkbox, Input, Select } from 'flowbite-svelte';
 	import { afterUpdate, onMount } from 'svelte';
 	import { locale, t, translate } from '../../utils/i18n';
 	import DetailsPage from '../DetailsPage.svelte';
@@ -29,7 +29,7 @@
 	import RightDrawer from '../RightDrawer.svelte';
 
 	const state = getState();
-	export let isShowPropositions = false;
+	export let isHidePropositions = true;
 	export let listName: string = translate($locale, 'lists.create_new_list.header');
 	const otherCategoryName = translate($locale, 'lists.create_new_list.other-category');
 	const customCategoryName = translate($locale, 'lists.create_new_list.create-category');
@@ -42,6 +42,7 @@
 	onMount(() => {
 		reInitListFuzzySearch();
 		listHash = getListHash();
+		isShowPropositionsInstructions = !state.appInstructions.isAddFromPropositionsViewed;
 	});
 
 	afterUpdate(() => {
@@ -157,7 +158,7 @@
 	}
 
 	function removeSelectedItems(): void {
-		if (confirm('Selected items will be removed. Are you sure?')) {
+		if (confirm(($t as any)('lists.create_new_list.remove-selected-warning'))) {
 			items = items.filter((it) => !it.selected);
 			reInitListFuzzySearch();
 			listHash = getListHash();
@@ -171,12 +172,20 @@
 		navigateBack();
 	}
 
+	let isShowPropositionsInstructions: boolean;
 	export function onShowPropositionsClicked(): void {
-		isShowPropositions = true;
+		isHidePropositions = false;
+		setState({
+			...state,
+			appInstructions: {
+				...state.appInstructions,
+				isAddFromPropositionsViewed: true
+			}
+		});
 	}
 
 	export function onShowPropositionsCloseClicked(): void {
-		isShowPropositions = false;
+		isHidePropositions = true;
 	}
 
 	export function onAddPropositionClicked(prop): void {
@@ -188,13 +197,8 @@
 			selected: false,
 			isEdited: false
 		};
-		if (items[items.length - 1]?.isEdited) {
-			items.splice(items.length - 1, 0, newItem);
-		} else {
-			items.push(newItem);
-		}
-		items = [...items];
-		// check for duplicate items
+		items.push(newItem);
+		items = items.map((s) => ({ ...s, isEdited: false }));
 
 		checkIfItemDuplicate(newItem);
 	}
@@ -425,12 +429,20 @@
 	<title>K-garoo - Add checklist</title>
 </svelte:head>
 
-<RightDrawer on:backdrop-click={onShowPropositionsCloseClicked} isOpen={isShowPropositions}>
+<RightDrawer on:backdrop-click={onShowPropositionsCloseClicked} bind:hidden={isHidePropositions}>
 	<div class="font-medium flex justify-center">
 		{$t('lists.create_new_list.click-to-add')}
 	</div>
+	{#if isShowPropositionsInstructions}
+		<Alert class="mt-4">
+			{$t('lists.create_new_list.propositions-instructions')}
+		</Alert>
+	{/if}
+
 	{#if !filteredPropositions?.length}
-		<div class="flex justify-center items-center text-gray-600 p-6">No recent suggestions</div>
+		<div class="flex justify-center items-center text-gray-600 p-6">
+			{$t('lists.create_new_list.no-recent-suggestions')}
+		</div>
 	{/if}
 	{#each filteredPropositions as prop}
 		<div
@@ -461,7 +473,7 @@
 					/>
 				</form>
 			{:else}
-				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-sm sm:text-2xl">
+				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-base sm:text-2xl">
 					{listName}
 				</h3>
 			{/if}
@@ -532,11 +544,8 @@
 								bind:value={item.itemDescription}
 							/>
 						</form>
-						<!--						<Popover arrow={false} class="w-64 text-sm font-light" triggeredBy="#form-input">-->
-						<!--							Foo bar Foo bar-->
-						<!--						</Popover>-->
 					{:else}
-						{item.itemDescription}
+						<div class={item.checked ? 'line-through' : ''}>{item.itemDescription}</div>
 					{/if}
 				</div>
 				<div
@@ -573,10 +582,10 @@
 					class="flex justify-end items-center z-20"
 					on:submit|preventDefault={handleChangeCategoryForSelectedClicked}
 				>
-					<div class="mr-3 text-xs sm:text-base flex justify-end">
+					<div class="mr-1 sm:mr-3 text-xs sm:text-base flex justify-end text-right">
 						{$t('lists.create_new_list.set-category-to')}
 					</div>
-					<div class="mr-3" style="width: min-content">
+					<div class="mr-1 sm:mr-3">
 						<Select
 							class="sm:text-sm"
 							style="height: 38px; min-width: max-content"

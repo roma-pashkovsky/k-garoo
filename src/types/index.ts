@@ -7,8 +7,13 @@ export type CheckList = {
 export type CheckListItem = {
 	id: string;
 	itemDescription: string;
-	category: string;
+	category: CategoryOption;
 	checked: boolean;
+};
+
+export type GroupedByCategoryItem = {
+	category: CategoryOption;
+	items: CheckListItem[];
 };
 
 export type CheckListItemEditModel = CheckListItem & {
@@ -17,14 +22,14 @@ export type CheckListItemEditModel = CheckListItem & {
 };
 
 export type CategoryOption = {
-	id?: string;
+	id: string;
 	name: string;
 };
 
 export type Proposition = {
 	id: string;
 	itemDescription: string;
-	category: string;
+	category: CategoryOption;
 };
 
 export type ChecklistSettings = {

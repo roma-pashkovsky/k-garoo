@@ -43,60 +43,62 @@
 	<div slot="top-bar" class="flex justify-end">
 		<Button on:click={onAddButtonClicked} class="!p-2" o><Plus class="w-8 h-8" /></Button>
 	</div>
-	<div slot="body" class="flex items-start justify-center">
-		{#if !cards?.length}
-			<EmptyPage>
-				{$t('lists.no_lists')}
-				<br />
-				{@html $t('lists.no_lists_cta_1')}
-				<a class="underline cursor-pointer" href="/home/lists/create"
-					>{$t('lists.no_lists_cta_link')}</a
-				>
-			</EmptyPage>
-		{/if}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-			{#each cards as card}
-				<div
-					use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
-					on:swipe={() => onListRemove(card)}
-					on:click={() => onCardClicked(card.id)}
-				>
-					<Card class="!p-1 hover:bg-gray-50 cursor-pointer w-70 sm:w-80">
-						<figure
-							class="flex flex-col justify-center items-center p-6 text-center border-b border-gray-200  dark:bg-gray-800 dark:border-gray-700"
-						>
-							<div class="list-details">
-								<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
-									{card.name}
-								</h5>
-								<div class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
-									<ul>
-										{#if card?.items?.length}
-											<div>
-												<li class="mb-1 {card.items[0]?.checked ? 'checked' : ''}">
-													{card.items[0].itemDescription}
+	<div slot="body">
+		<div class="flex items-start justify-center">
+			{#if !cards?.length}
+				<EmptyPage class="pt-6">
+					{$t('lists.no_lists')}
+					<br />
+					{@html $t('lists.no_lists_cta_1')}
+					<a class="underline cursor-pointer" href="/home/lists/create"
+						>{$t('lists.no_lists_cta_link')}</a
+					>
+				</EmptyPage>
+			{/if}
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				{#each cards as card}
+					<div
+						use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
+						on:swipe={() => onListRemove(card)}
+						on:click={() => onCardClicked(card.id)}
+					>
+						<Card class="!p-1 hover:bg-gray-50 cursor-pointer w-70 sm:w-80">
+							<figure
+								class="flex flex-col justify-center items-center p-6 text-center border-b border-gray-200  dark:bg-gray-800 dark:border-gray-700"
+							>
+								<div class="list-details">
+									<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
+										{card.name}
+									</h5>
+									<div class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
+										<ul>
+											{#if card?.items?.length}
+												<div>
+													<li class="mb-1 {card.items[0]?.checked ? 'checked' : ''}">
+														{card.items[0].itemDescription}
+													</li>
+												</div>
+											{/if}
+											{#if card?.items?.length > 1}
+												<li class={card.items[1]?.checked ? 'checked' : ''}>
+													{card.items[1].itemDescription}
 												</li>
-											</div>
-										{/if}
-										{#if card?.items?.length > 1}
-											<li class={card.items[1]?.checked ? 'checked' : ''}>
-												{card.items[1].itemDescription}
-											</li>
-										{/if}
-									</ul>
+											{/if}
+										</ul>
+									</div>
 								</div>
-							</div>
-						</figure>
-						<figure class="flex flex-col justify-center items-center py-2 px-8 text-center">
-							<div onclick="event.stopPropagation()" class="list-actions p-1 ml-3">
-								<Button on:click={() => onListRemove(card)} class="!p-2" color="light">
-									<DocumentRemove />
-								</Button>
-							</div>
-						</figure>
-					</Card>
-				</div>
-			{/each}
+							</figure>
+							<figure class="flex flex-col justify-center items-center py-2 px-8 text-center">
+								<div onclick="event.stopPropagation()" class="list-actions p-1 ml-3">
+									<Button on:click={() => onListRemove(card)} class="!p-2" color="light">
+										<DocumentRemove />
+									</Button>
+								</div>
+							</figure>
+						</Card>
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 </Page>

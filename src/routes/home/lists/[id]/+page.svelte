@@ -16,6 +16,7 @@
 	import { ToastService } from '../../../../utils/toasts';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { getChecklistGroupedByCategory } from '../../../../utils/get-checklist-grouped-by-category';
 
 	const toastManager: ToastManagerType = ToastService.getInstance();
 	let state: KGarooState = getState();
@@ -25,27 +26,18 @@
 		checkInstructions();
 	});
 
-	async function checkInstructions(): Promise<void> {
-		await checkEditListInstruction();
-	}
-
 	let isEditListInstruction = false;
-	async function checkEditListInstruction(): Promise<void> {
-		if (!state?.appInstructions?.isEditListFromDetailsViewed) {
-			return new Promise((resolve) => {
-				isEditListInstruction = true;
-				setTimeout(() => {
-					isEditListInstruction = false;
-					setState({
-						...state,
-						appInstructions: {
-							...state.appInstructions,
-							isEditListFromDetailsViewed: true
-						}
-					});
-					resolve();
-				}, 5000);
+	function checkInstructions(): void {
+		isEditListInstruction = !state?.appInstructions?.isEditListFromDetailsViewed;
+		if (isEditListInstruction) {
+			setState({
+				...state,
+				appInstructions: {
+					...state.appInstructions,
+					isEditListFromDetailsViewed: true
+				}
 			});
+			state = getState();
 		}
 	}
 
@@ -90,23 +82,7 @@
 		};
 		setState(state);
 	}
-	$: byCategoryList = getByCategoryList(items);
-
-	function getByCategoryList(items): any[] {
-		const byCategoryObj = {};
-		items.forEach((item) => {
-			if (!byCategoryObj[item.category]) {
-				byCategoryObj[item.category] = [];
-			}
-			byCategoryObj[item.category].push(item);
-		});
-		return Object.keys(byCategoryObj).map((category) => {
-			return {
-				category,
-				items: byCategoryObj[category]
-			};
-		});
-	}
+	$: byCategoryList = getChecklistGroupedByCategory(items);
 
 	function onRemoveClicked() {
 		if (confirm(translate($locale, 'lists.details.remove-warning'))) {
@@ -217,13 +193,15 @@
 		</div>
 	</DetailsTopBar>
 	<DetailsBody on:body-long-press={onListBodyDblClick}>
-		{#if isEditListInstruction}
-			<div transition:fade class="absolute inset-1/2 w-max">
-				<div class="relative w-max -left-1/2">
-					<Alert>{$t('lists.details.edit-instruction')}</Alert>
+		<div>
+			{#if isEditListInstruction}
+				<div transition:fade class="absolute inset-1/2 w-8/12">
+					<div class="relative w-px-[120] -left-1/2">
+						<Alert>{$t('lists.details.edit-instruction')}</Alert>
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 		<div>
 			{#if !list}
 				<EmptyPage>The list was not found.</EmptyPage>
@@ -232,7 +210,7 @@
 				{#each byCategoryList as categoryItem}
 					<div class="mb-6">
 						<div>
-							<h5 class="text-gray-600 text-sm">{categoryItem.category}</h5>
+							<h5 class="text-gray-600 text-sm">{categoryItem.category.name}</h5>
 						</div>
 						<div class="filler-block" />
 						<ul>
@@ -273,7 +251,7 @@
 							style="height: 42px;"
 						>
 							<div class="text-sm text-gray-600">
-								{item?.category}
+								{item?.category.name}
 							</div>
 						</div>
 					</div>

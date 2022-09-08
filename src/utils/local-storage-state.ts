@@ -33,6 +33,11 @@ export const getInitialState = (): KGarooState => {
 	};
 };
 
+export const specialCategories = {
+	[customCategoryId]: {},
+	[otherCategoryId]: {}
+};
+
 export const getState = (): KGarooState => {
 	if (!browser) {
 		return {} as KGarooState;

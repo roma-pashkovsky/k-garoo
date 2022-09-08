@@ -7,7 +7,8 @@
 		customCategoryId,
 		getState,
 		otherCategoryId,
-		setState
+		setState,
+		specialCategories
 	} from '../../utils/local-storage-state';
 	import type {
 		CategoryOption,
@@ -27,8 +28,9 @@
 	import type { ToastManagerType } from '../../utils/toasts';
 	import { ToastService } from '../../utils/toasts';
 	import RightDrawer from '../RightDrawer.svelte';
+	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 
-	const state = getState();
+	const state: KGarooState = getState();
 	export let isHidePropositions = true;
 	export let listName: string = translate($locale, 'lists.create_new_list.header');
 	const otherCategoryName = translate($locale, 'lists.create_new_list.other-category');
@@ -53,7 +55,7 @@
 				isEdited: true,
 				checked: false,
 				selected: false,
-				category: otherCategoryName
+				category: { id: otherCategoryId, name: otherCategoryName }
 			});
 			items = [...items];
 		}
@@ -73,6 +75,9 @@
 			return opt;
 		});
 	});
+
+	let isByCategoryView = state?.checklistSettings?.isGroupByCategory;
+	$: listByCategory = getChecklistGroupedByCategory(items);
 
 	function reInitListFuzzySearch(): void {
 		const options = {
@@ -106,7 +111,7 @@
 			name: customCategoryName
 		}
 	];
-	$: categoryOptionsForSelect = categoryOptions.map((o) => ({ value: o.name, name: o.name }));
+	$: categoryOptionsForSelect = categoryOptions.map((o) => ({ value: o.id, name: o.name }));
 	export let propositions = state.propositions || [];
 	export let items: CheckListItemEditModel[] = [
 		{
@@ -115,7 +120,7 @@
 			isEdited: true,
 			checked: false,
 			selected: false,
-			category: otherCategoryName
+			category: { id: otherCategoryId, name: otherCategoryName }
 		}
 	];
 
@@ -127,30 +132,38 @@
 
 	$: isAnyItemsChecked = items.some((it) => it.selected);
 
-	$: isCustomCategoryPopupOpen = changeCategoryTo === customCategoryName;
+	$: isCustomCategoryPopupOpen = changeCategoryTo === customCategoryId;
 	export let changeCategoryTo = '';
 	export let customInputCategory = '';
 
 	export function handleChangeCategoryForSelectedClicked(): void {
 		if (
 			!changeCategoryTo?.length ||
-			(changeCategoryTo === customCategoryName && !customInputCategory?.length)
+			(changeCategoryTo === customCategoryId && !customInputCategory?.length)
 		) {
 			items = items.map((it) => ({ ...it, selected: false }));
 			changeCategoryTo = '';
 			customInputCategory = '';
 			return;
 		}
-		if (changeCategoryTo === customCategoryName) {
-			if (!categoryOptions.some((c) => c.name === customInputCategory)) {
-				categoryOptions.push({ name: customInputCategory });
+		let targetCategory: CategoryOption;
+		if (changeCategoryTo === customCategoryId) {
+			const prevSame = categoryOptions.find((c) => c.name === customInputCategory);
+			if (!prevSame) {
+				const newOption = { id: '' + new Date().getTime(), name: customInputCategory };
+				categoryOptions.push(newOption);
+				categoryOptions = [...categoryOptions];
+				targetCategory = newOption;
+			} else {
+				targetCategory = { ...prevSame };
 			}
-			changeCategoryTo = customInputCategory;
-			categoryOptions = [...categoryOptions];
+		} else {
+			targetCategory = categoryOptions.find((c) => c.id === changeCategoryTo);
 		}
+		console.log(targetCategory);
 		items = items.map((it) => ({
 			...it,
-			category: it.selected ? changeCategoryTo : it.category,
+			category: it.selected ? { ...targetCategory } : it.category,
 			selected: false
 		}));
 		changeCategoryTo = '';
@@ -224,13 +237,19 @@
 		}
 	}
 
-	export function onInsertBeforeListClick(): void {
+	export function onInsertBeforeListClick(categoryId?: string): void {
+		const category = categoryId
+			? categoryOptions.find((opt) => opt.id === categoryId)
+			: {
+					id: otherCategoryId,
+					name: otherCategoryName
+			  };
 		items = items.map((s) => ({ ...s, isEdited: false }));
 		const newId = '' + new Date().getTime();
 		items.unshift({
 			id: newId,
 			itemDescription: '',
-			category: otherCategoryName,
+			category: { ...category },
 			checked: false,
 			selected: false,
 			isEdited: true
@@ -240,14 +259,20 @@
 			.filter((item) => item.isEdited || item.itemDescription?.length > 0);
 	}
 
-	export function onItemInsertAfterClick(id: number): void {
+	export function onItemInsertAfterClick(id: number, categoryId?: string): void {
+		const category = categoryId
+			? categoryOptions.find((opt) => opt.id === categoryId)
+			: {
+					id: otherCategoryId,
+					name: otherCategoryName
+			  };
 		items = items.map((s) => ({ ...s, isEdited: false }));
 		const index = items.findIndex((item) => item.id === id);
 		const newId = '' + new Date().getTime();
 		items.splice(index + 1, 0, {
 			id: newId,
 			itemDescription: '',
-			category: otherCategoryName,
+			category: category,
 			checked: false,
 			selected: false,
 			isEdited: true
@@ -264,7 +289,7 @@
 			items.push({
 				id: newId,
 				itemDescription: '',
-				category: otherCategoryName,
+				category: { id: otherCategoryId, name: otherCategoryName },
 				checked: false,
 				selected: false,
 				isEdited: true
@@ -277,7 +302,7 @@
 		checkIfItemDuplicate(item);
 
 		// try to match category
-		if (item?.itemDescription?.length > 1 && item?.category === otherCategoryName) {
+		if (item?.itemDescription?.length > 1 && item?.category.name === otherCategoryName) {
 			const matchingCategory = findMatchingCategory(item as CheckListItem);
 			if (matchingCategory) {
 				item.category = matchingCategory;
@@ -316,7 +341,7 @@
 		goto(`/home/lists/${list.id}`);
 	}
 
-	function findMatchingCategory(item: CheckListItem): string {
+	function findMatchingCategory(item: CheckListItem): CategoryOption {
 		const options = {
 			includeScore: true,
 			keys: ['itemDescription'],
@@ -410,7 +435,7 @@
 			return { ...prev, [curr.name]: true };
 		}, {});
 		const categoryOptionsToAdd = categoryOptions.filter(
-			(opt) => !oldCategoryOptionsMap[opt.name] && !opt.id
+			(opt) => !oldCategoryOptionsMap[opt.name] && !specialCategories[opt.id]
 		);
 		const newCategoryOptions: CategoryOption[] = [...categoryOptionsToAdd, ...oldCategoryOptions];
 		const newState: KGarooState = {
@@ -502,67 +527,132 @@
 		on:body-click={onCloseAllEdits}
 		on:body-long-press={onSaveClicked}
 	>
-		<div
-			on:click|stopPropagation={onInsertBeforeListClick}
-			class="insert-before-button"
-			style="height: 40px"
-		/>
-		{#each items as item, index}
-			<div
-				use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
-				on:click|stopPropagation={() => onItemClick(item.id)}
-				on:swipe={() => onItemSwipe(item.id, event)}
-				class="flex items-center {highlighted[item.id] ? 'bg-blue-100' : ''}"
-				style="padding: 5px; border-radius: 7px;"
-			>
-				<div
-					onclick="event.stopPropagation()"
-					class="checkbox flex items-center mr-3"
-					style="height: 42px;"
-				>
-					<div class="flex">
-						<Checkbox
-							style="width: 20px; height: 20px;"
-							type="checkbox"
-							bind:checked={item.selected}
-							onclick="event.stopPropagation()"
+		{#if isByCategoryView}
+			{#each listByCategory as catItem}
+				<div>
+					<h5 class="text-gray-600 text-sm mt-2">{catItem.category.name}</h5>
+				</div>
+				<ul>
+					<div
+						on:click|stopPropagation={() => onInsertBeforeListClick(catItem.category.id)}
+						class="insert-before-button"
+						style="height: 20px"
+					/>
+					{#each catItem.items as item, index}
+						<div
+							use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
+							on:click|stopPropagation={() => onItemClick(item.id)}
+							on:swipe={() => onItemSwipe(item.id, event)}
+							class="!pl-4 flex items-center {highlighted[item.id] ? 'bg-blue-100' : ''}"
+							style="padding: 5px; border-radius: 7px;"
+						>
+							<div
+								onclick="event.stopPropagation()"
+								class="checkbox flex items-center mr-3"
+								style="height: 42px;"
+							>
+								<div class="flex">
+									<Checkbox
+										style="width: 20px; height: 20px;"
+										type="checkbox"
+										bind:checked={item.selected}
+										onclick="event.stopPropagation()"
+									/>
+								</div>
+							</div>
+							<div
+								class="left space-x-2 flex items-center flex-1"
+								style="height: 42px; position: relative"
+							>
+								{#if item.isEdited}
+									<form
+										on:submit|preventDefault={() => handleInputSubmit(item.id)}
+										style="width: 100%"
+									>
+										<Input
+											id="form-input"
+											autofocus
+											style="box-sizing: border-box; width: 100%"
+											on:blur={() => handleInputBlur(item.id)}
+											type="text"
+											bind:value={item.itemDescription}
+										/>
+									</form>
+								{:else}
+									<div class={item.checked ? 'line-through' : ''}>{item.itemDescription}</div>
+								{/if}
+							</div>
+						</div>
+						<div
+							on:click|stopPropagation={() => onItemInsertAfterClick(item.id, catItem.category.id)}
+							class="insert-after-button {index === items.length - 1 ? 'last-insert' : ''}"
 						/>
-					</div>
-				</div>
-				<div
-					class="left space-x-2 flex items-center flex-1"
-					style="height: 42px; position: relative"
-				>
-					{#if item.isEdited}
-						<form on:submit|preventDefault={() => handleInputSubmit(item.id)} style="width: 100%">
-							<Input
-								id="form-input"
-								autofocus
-								style="box-sizing: border-box; width: 100%"
-								on:blur={() => handleInputBlur(item.id)}
-								type="text"
-								bind:value={item.itemDescription}
-							/>
-						</form>
-					{:else}
-						<div class={item.checked ? 'line-through' : ''}>{item.itemDescription}</div>
-					{/if}
-				</div>
-				<div
-					onclick="event.stopPropagation()"
-					class="checkbox flex items-center justify-end ml-2"
-					style="height: 42px;"
-				>
-					<div on:click={() => onItemCategoryClicked(item.id)} class="text-sm text-gray-600">
-						{item.category}
-					</div>
-				</div>
-			</div>
+					{/each}
+				</ul>
+			{/each}
+		{:else}
 			<div
-				on:click|stopPropagation={() => onItemInsertAfterClick(item.id)}
-				class="insert-after-button {index === items.length - 1 ? 'last-insert' : ''}"
+				on:click|stopPropagation={onInsertBeforeListClick}
+				class="insert-before-button"
+				style="height: 40px"
 			/>
-		{/each}
+			{#each items as item, index}
+				<div
+					use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
+					on:click|stopPropagation={() => onItemClick(item.id)}
+					on:swipe={() => onItemSwipe(item.id, event)}
+					class="flex items-center {highlighted[item.id] ? 'bg-blue-100' : ''}"
+					style="padding: 5px; border-radius: 7px;"
+				>
+					<div
+						onclick="event.stopPropagation()"
+						class="checkbox flex items-center mr-3"
+						style="height: 42px;"
+					>
+						<div class="flex">
+							<Checkbox
+								style="width: 20px; height: 20px;"
+								type="checkbox"
+								bind:checked={item.selected}
+								onclick="event.stopPropagation()"
+							/>
+						</div>
+					</div>
+					<div
+						class="left space-x-2 flex items-center flex-1"
+						style="height: 42px; position: relative"
+					>
+						{#if item.isEdited}
+							<form on:submit|preventDefault={() => handleInputSubmit(item.id)} style="width: 100%">
+								<Input
+									id="form-input"
+									autofocus
+									style="box-sizing: border-box; width: 100%"
+									on:blur={() => handleInputBlur(item.id)}
+									type="text"
+									bind:value={item.itemDescription}
+								/>
+							</form>
+						{:else}
+							<div class={item.checked ? 'line-through' : ''}>{item.itemDescription}</div>
+						{/if}
+					</div>
+					<div
+						onclick="event.stopPropagation()"
+						class="checkbox flex items-center justify-end ml-2"
+						style="height: 42px;"
+					>
+						<div on:click={() => onItemCategoryClicked(item.id)} class="text-sm text-gray-600">
+							{item.category.name}
+						</div>
+					</div>
+				</div>
+				<div
+					on:click|stopPropagation={() => onItemInsertAfterClick(item.id)}
+					class="insert-after-button {index === items.length - 1 ? 'last-insert' : ''}"
+				/>
+			{/each}
+		{/if}
 	</DetailsBody>
 </DetailsPage>
 {#if isAnyItemsChecked}

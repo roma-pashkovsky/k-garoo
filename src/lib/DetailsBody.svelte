@@ -32,7 +32,7 @@
 		{/each}
 	</div>
 	<div
-		class="absolute top-0 bottom-0 left-0 right-0 px-4 sm:px-6 pb-8 overflow-y-auto {noTopPadding
+		class="absolute top-0 bottom-0 left-0 right-0 px-4 sm:px-6 pb-20 overflow-y-auto {noTopPadding
 			? 'pt-0'
 			: 'pt-8'}"
 	>

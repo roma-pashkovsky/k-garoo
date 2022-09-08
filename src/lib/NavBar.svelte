@@ -57,6 +57,6 @@
 	</div>
 	<NavUl {hidden} divClass="w-full md:flex md:flex-1 md:items-center md:justify-end">
 		<NavLi href="/home/lists" active={section === 'lists'}>{$t('app.sections.lists')}</NavLi>
-		<NavLi href="/login" active={section === 'login'}>{$t('app.sections.login')}</NavLi>
+		<!--		<NavLi href="/login" active={section === 'login'}>{$t('app.sections.login')}</NavLi>-->
 	</NavUl>
 </Navbar>

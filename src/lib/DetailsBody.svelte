@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { press } from 'svelte-gestures';
+	import { press, swipe } from 'svelte-gestures';
 	import { createEventDispatcher } from 'svelte';
 	import { ToastService } from '../utils/toasts';
 	import AppToast from './AppToast.svelte';
@@ -16,14 +16,19 @@
 	function onBodyClick(): void {
 		dispatch('body-click');
 	}
+
+	function onBodySwipe(event: any): void {
+		if (event.detail.direction === 'left') {
+			dispatch('body-swipe-left');
+		} else if (event.detail.direction === 'right') {
+			dispatch('body-swipe-right');
+		}
+	}
 </script>
 
-<div
-	use:press={{ timeframe: 500, triggerBeforeFinished: true }}
-	on:press={onBodyLongPress}
-	on:click={onBodyClick}
-	class="flex-1 relative"
->
+<!--use:press={{ timeframe: 500, triggerBeforeFinished: true }}-->
+<!--on:press={onBodyLongPress}-->
+<div on:click={onBodyClick} class="flex-1 relative">
 	<div class="toast-wrapper">
 		{#each toasts as toast}
 			<div class="toast">
@@ -32,9 +37,12 @@
 		{/each}
 	</div>
 	<div
+		use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
+		on:swipe={onBodySwipe}
+		on:dblclick
 		class="absolute top-0 bottom-0 left-0 right-0 px-4 sm:px-6 pb-20 overflow-y-auto {noTopPadding
 			? 'pt-0'
-			: 'pt-8'}"
+			: 'pt-4'}"
 	>
 		<slot />
 	</div>

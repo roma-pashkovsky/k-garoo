@@ -12,10 +12,10 @@ export const getChecklistGroupedByCategory = (items: CheckListItem[]): GroupedBy
 	const distinctCategories = Object.keys(byCategoryObj);
 	distinctCategories.sort((a, b) => {
 		if (a === otherCategoryId) {
-			return 1;
+			return -1;
 		}
 		if (b === otherCategoryId) {
-			return -1;
+			return 1;
 		}
 		if (byCategoryObj[a].category.name < byCategoryObj[b].category.name) {
 			return -1;

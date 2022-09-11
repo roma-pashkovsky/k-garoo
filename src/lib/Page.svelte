@@ -1,4 +1,4 @@
-<div class="absolute top-0 bottom-0 left-0 right-0 flex flex-col">
+<div class="absolute top-16 bottom-0 left-0 right-0 flex flex-col">
 	<div class="px-2 sm:px-4 py-4">
 		<slot name="top-bar" />
 	</div>

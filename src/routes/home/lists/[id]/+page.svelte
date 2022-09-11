@@ -1,277 +1,386 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { Briefcase, DocumentDuplicate, DocumentRemove } from 'svelte-heros';
-	import { getState, setState } from '../../../../utils/local-storage-state';
-	import type { CheckList, CheckListItem, KGarooState } from '../../../../types';
-	import { page } from '$app/stores';
-	import EmptyPage from '../../../../lib/EmptyPage.svelte';
-	import { copyToClipboard } from '../../../../utils/copy-to-clipboard';
-	import { Alert, Button, Input } from 'flowbite-svelte';
-	import { swipe } from 'svelte-gestures';
-	import { locale, t, translate } from '../../../../utils/i18n.js';
-	import DetailsTopBar from '../../../../lib/DetailsTopBar.svelte';
-	import DetailsPage from '../../../../lib/DetailsPage.svelte';
-	import DetailsBody from '../../../../lib/DetailsBody.svelte';
-	import type { ToastManagerType } from '../../../../utils/toasts';
-	import { ToastService } from '../../../../utils/toasts';
+	import DetailsPage from '$lib/DetailsPage.svelte';
+	import DetailsTopBar from '$lib/DetailsTopBar.svelte';
+	import DetailsBody from '$lib/DetailsBody.svelte';
+	import BottomMenu from '$lib/BottomMenu.svelte';
+	import ChecklistItemEditor from '../../../../lib/ChecklistItemEditor.svelte';
+	import ChecklistItem from '../../../../lib/ChecklistItem.svelte';
+	import ChecklistBatchEditor from '../../../../lib/ChecklistBatchEditor.svelte';
+	import DotMenu from '../../../../lib/DotMenu.svelte';
+	import { Button, DropdownItem } from 'flowbite-svelte';
+	import { Briefcase, Link, Plus } from 'svelte-heros';
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { page } from '$app/stores';
+	import { getState, otherCategoryId } from '../../../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../../../utils/get-checklist-grouped-by-category';
+	import { t } from '../../../../utils/i18n';
+	import { ListBullet } from 'svelte-heros-v2';
+	import { press } from 'svelte-gestures';
+	import { goto } from '$app/navigation';
+	import { FuzzySearch } from '../../../../utils/fuzzy-search';
+	import type { CategoryOption, CheckListItemEditModel, Proposition } from '../../../../types';
+	import type { ChangeCategoryEvent } from '../../../../types/checklist-details';
+	import type { FuzzyOptions } from '../../../../utils/fuzzy-search';
 
-	const toastManager: ToastManagerType = ToastService.getInstance();
-	let state: KGarooState = getState();
-	const list = (state.listData || {})[$page.params.id] as CheckList;
+	let isByCategoryView = false;
+	let isCheckboxView = false;
+	let editedItem: CheckListItemEditModel;
+	let editedCategoryId: string;
+	let isAddToListMode: boolean;
+	let addToCategoryId: string;
+	let listId: string;
+	let listName: string;
+	let items: CheckListItemEditModel[] = [];
+	let categoryOptions: CategoryOption[] = [];
+	let propositions: Proposition[] = [];
+	let propositionsFuzzySearch: FuzzySearch<Proposition>;
+	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
+	$: byCategoryList = getChecklistGroupedByCategory(items);
+	$: isAnyItemSelected = items.some((it) => it.selected);
 
 	onMount(() => {
-		checkInstructions();
+		listId = $page.params.id;
+		const state = getState();
+		isByCategoryView = state.checklistSettings.isGroupByCategory;
+		listName = state.listData[listId].name;
+		items = state.listData[listId].items.map((it) => ({ ...it, selected: false, isEdited: false }));
+		categoryOptions = state.categoryOptions;
+		propositions = state.propositions;
+		updatePropositionsFuzzySearch();
 	});
 
-	let isEditListInstruction = false;
-	function checkInstructions(): void {
-		isEditListInstruction = !state?.appInstructions?.isEditListFromDetailsViewed;
-		if (isEditListInstruction) {
-			setState({
-				...state,
-				appInstructions: {
-					...state.appInstructions,
-					isEditListFromDetailsViewed: true
-				}
-			});
-			state = getState();
-		}
-	}
-
-	export let listName = list?.name;
-	export let isEditListName = false;
-
-	export function onEditListNameOpen(): void {
-		isEditListName = true;
-	}
-	export function onEditListNameSubmit(): void {
-		saveCurrentList();
-		isEditListName = false;
-	}
-	export let items: CheckListItem[] = list?.items || [];
-
-	export function onBackClicked(): void {
-		if (list) {
-			saveCurrentList();
-		}
+	function onBackClick(): void {
 		goto('/home/lists');
 	}
 
-	export function onItemClick(id: string): void {
-		items = items.map((source) => {
-			return {
-				...source,
-				checked: id === source.id ? !source.checked : source.checked
-			} as CheckListItem;
-		});
-		saveCurrentList();
-	}
-
-	export let isByCategoryView = state?.checklistSettings?.isGroupByCategory || false;
-	function onToggleByCategoryView() {
-		isByCategoryView = !isByCategoryView;
-		state = {
-			...state,
-			checklistSettings: {
-				...(state.checklistSettings || ({} as any)),
-				isGroupByCategory: isByCategoryView
-			}
-		};
-		setState(state);
-	}
-	$: byCategoryList = getChecklistGroupedByCategory(items);
-
-	function onRemoveClicked() {
-		if (confirm(translate($locale, 'lists.details.remove-warning'))) {
-			const oldState = { ...state };
-			delete oldState.listData[list.id];
-			oldState.listIds = oldState.listIds.filter((id) => id !== list.id);
-			setState({ ...oldState });
-			goto('/home/lists');
+	function onBodySwipeLeft(): void {
+		if (isCheckboxView) {
+			isCheckboxView = false;
+			items = items.map((it) => ({ ...it, selected: false }));
 		}
 	}
 
-	function onRemoveItemFromTheList(id: string): void {
-		items = items.filter((it) => it.id !== id);
-		saveCurrentList();
+	function onBodySwipeRight(): void {
+		isAddToListMode = false;
+		addToCategoryId = undefined;
+		editedItem = undefined;
+		editedCategoryId = undefined;
+		isCheckboxView = true;
 	}
 
-	async function onDuplicateClicked(): Promise<void> {
-		const listToDuplicate: CheckList = {
-			id: list.id,
-			name: listName,
-			items: list.items.map((s) => ({ ...s, checked: false })),
-			created_utc: new Date().getTime()
-		};
-		const stringified = JSON.stringify(listToDuplicate);
-		const encoded = encodeURIComponent(stringified);
-		const url = window.origin + '/decode/' + encoded;
-		await copyToClipboard(url);
-		toastManager.push({
-			text: ($t as any)('lists.details.link-created')
+	function onToggleCheckboxViewClicked(): void {
+		isAddToListMode = false;
+		addToCategoryId = undefined;
+		editedItem = undefined;
+		editedCategoryId = undefined;
+		isCheckboxView = !isCheckboxView;
+		if (!isCheckboxView) {
+			items = items.map((it) => ({ ...it, selected: false }));
+		}
+	}
+
+	function onToggleByCategoryViewClicked(): void {
+		isByCategoryView = !isByCategoryView;
+	}
+
+	function onGenerateListLinkClicked(): void {
+		console.log('generate clicked');
+	}
+
+	function onAddToListClicked(): void {
+		isCheckboxView = false;
+		if (isAddToListMode) {
+			isAddToListMode = false;
+			editedItem = undefined;
+			editedCategoryId = undefined;
+		} else {
+			editedItem = getNewListItem();
+			editedCategoryId = editedItem.category.id;
+			isAddToListMode = true;
+			addToCategoryId = undefined;
+		}
+	}
+
+	function onAddToCategoryClicked(cat: CategoryOption): void {
+		if (isCheckboxView) {
+			return;
+		}
+		if (addToCategoryId === cat.id) {
+			isAddToListMode = undefined;
+			addToCategoryId = undefined;
+			editedItem = undefined;
+		} else {
+			addToCategoryId = cat.id;
+			isAddToListMode = false;
+			editedItem = getNewListItem(cat);
+			editedCategoryId = editedItem.category.id;
+		}
+	}
+
+	function onItemClick(item: CheckListItemEditModel): void {
+		if (editedItem?.id === item.id) {
+			return;
+		}
+		item.checked = !item.checked;
+		updateItemInTheList(item);
+	}
+
+	function onItemCheckboxChange(item: CheckListItemEditModel): void {
+		if (isCheckboxView) {
+			item.selected = !item.selected;
+			updateItemInTheList(item);
+			console.log(items);
+		}
+	}
+
+	function onBodyClick(): void {
+		// close all edits
+		isAddToListMode = false;
+		addToCategoryId = undefined;
+		editedItem = undefined;
+		editedCategoryId = undefined;
+		if (isCheckboxView) {
+			items = items.map((it) => ({ ...it, selected: false }));
+		}
+	}
+
+	function onItemSwipe(item: CheckListItemEditModel, event: any): void {
+		const direction = event.detail.direction;
+		if (direction === 'left') {
+			if (!isCheckboxView) {
+				items = items.filter((it) => it.id !== item.id);
+				updatePropositionsFuzzySearch();
+			}
+		}
+	}
+
+	function onItemLongPress(item: CheckListItemEditModel): void {
+		if (isCheckboxView) {
+			return;
+		}
+		isAddToListMode = false;
+		addToCategoryId = undefined;
+		editedItem = { ...item };
+		editedCategoryId = editedItem.category.id;
+	}
+
+	function onBatchRemove(): void {
+		const m = ($t as any)('lists.create_new_list.remove-selected-warning');
+		if (confirm(m)) {
+			items = items.filter((it) => !it.selected);
+			updatePropositionsFuzzySearch();
+		}
+	}
+
+	function onBatchChangeCategory(e: ChangeCategoryEvent): void {
+		let categoryId = e.categoryId;
+		if (e.newCategory) {
+			categoryOptions = [e.newCategory, ...categoryOptions];
+			categoryId = e.newCategory.id;
+		}
+		let category = categoryOptions.find((c) => c.id === categoryId);
+		items = items.map((it) => {
+			if (it.selected) {
+				it.category = { ...category };
+			}
+			return it;
 		});
 	}
 
-	function saveCurrentList(): void {
-		const newState = {
-			...state,
-			listData: {
-				...state.listData,
-				[list.id]: {
-					...list,
-					name: listName,
-					items: [...items] as CheckListItem[]
-				} as CheckList
-			}
-		};
-		setState(newState);
+	function onAddFormSubmit(e?: any): void {
+		if (!editedItem?.itemDescription?.length) {
+			editedItem = undefined;
+			editedCategoryId = undefined;
+			isAddToListMode = false;
+			addToCategoryId = undefined;
+			return;
+		}
+		const categoryToAdd: CategoryOption | undefined = e?.detail?.addCategory;
+		if (categoryToAdd) {
+			categoryOptions = [categoryToAdd, ...categoryOptions];
+			editedCategoryId = categoryToAdd.id;
+		}
+		const targetCategory = categoryOptions.find((c) => c.id === editedCategoryId);
+		const updated = { ...editedItem, category: { ...targetCategory } };
+		if (addToCategoryId) {
+			items = [updated, ...items];
+			addToCategoryId = targetCategory.id;
+			editedItem = getNewListItem(targetCategory);
+			editedCategoryId = editedItem.category.id;
+		} else if (isAddToListMode) {
+			items = [updated, ...items];
+			editedItem = getNewListItem();
+			editedCategoryId = editedItem.category.id;
+		} else {
+			updateItemInTheList(updated);
+			editedItem = undefined;
+		}
+		updatePropositionsFuzzySearch();
 	}
 
-	function onListBodyDblClick(): void {
-		saveCurrentList();
-		goto(`/home/lists/${list?.id}/edit`);
+	function updateItemInTheList(item: CheckListItemEditModel) {
+		items = items.map((it) => {
+			if (it.id === item.id) {
+				return { ...item };
+			} else {
+				return it;
+			}
+		});
+	}
+
+	function getNewListItem(category?: CategoryOption): CheckListItemEditModel {
+		const targetCategory = category || {
+			id: otherCategoryId,
+			name: ($t as any)('lists.create_new_list.other-category')
+		};
+		return {
+			id: '' + new Date().getTime(),
+			itemDescription: '',
+			category: targetCategory,
+			checked: false,
+			selected: false,
+			isEdited: false
+		};
+	}
+
+	function updatePropositionsFuzzySearch(): void {
+		const itemDescriptionMap = items
+			.map((it) => it.itemDescription.toLowerCase())
+			.reduce((p, c) => ({ ...p, [c]: true }), {});
+		const filteredPropositions = propositions.filter((prop) => {
+			return !itemDescriptionMap[prop.itemDescription.toLowerCase()];
+		});
+		const options: FuzzyOptions<Proposition> = {
+			keys: ['itemDescription'],
+			shouldSort: true,
+			threshold: 0.4
+		};
+		propositionsFuzzySearch = new FuzzySearch<Proposition>(filteredPropositions, options);
 	}
 </script>
 
-<svelte:head>
-	<title>K-garoo - {list?.name}</title>
-</svelte:head>
-
 <DetailsPage>
-	<DetailsTopBar on:back-clicked={onBackClicked}>
-		<div slot="page-title">
-			{#if isEditListName}
-				<form on:submit|preventDefault={onEditListNameSubmit}>
-					<Input
-						id="list-name"
-						autofocus
-						type="text"
-						bind:value={listName}
-						on:blur={onEditListNameSubmit}
-					/>
-				</form>
-			{:else}
-				<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-base sm:text-2xl">
-					{listName}
-				</h3>
-			{/if}
-		</div>
-		<div slot="right-content" class="flex items-center right">
-			{#if !!list}
-				<div on:click={onDuplicateClicked}>
-					<Button
-						color="white"
-						outline="true"
-						class="!p-2 flex items-center justify-center"
-						style="width: 40px; height: 40px"
-					>
-						<DocumentDuplicate size="25" />
-					</Button>
-				</div>
-				<div on:click={onRemoveClicked}>
-					<Button
-						color="white"
-						class="!p-2 flex items-center justify-center ml-3"
-						style="width: 40px; height: 40px"
-					>
-						<DocumentRemove size="25" />
-					</Button>
-				</div>
-				<div class="ml-3" on:click={onToggleByCategoryView}>
-					<Button
-						class="!p-2 flex items-center justify-center"
-						color={isByCategoryView ? 'light' : 'white'}
-						style="width: 40px; height: 40px"
-					>
-						<Briefcase variation={isByCategoryView ? 'solid' : 'outline'} size="25" />
-					</Button>
-				</div>
-			{/if}
+	<DetailsTopBar on:back-clicked={onBackClick}>
+		<div slot="page-title">{listName}</div>
+		<div class="space-x-2 flex items-center" slot="right-content">
+			<Button
+				on:click={onToggleByCategoryViewClicked}
+				class="!p-2 hidden sm:inline-block"
+				color={isByCategoryView ? 'blue' : 'light'}
+			>
+				<Briefcase variation={isByCategoryView ? 'solid' : 'outline'} />
+			</Button>
+			<Button
+				class="!p-2"
+				color={isCheckboxView ? 'blue' : 'light'}
+				on:click={onToggleCheckboxViewClicked}
+			>
+				<ListBullet />
+			</Button>
+			<Button on:click={onAddToListClicked} class="!p-2" color={isAddToListMode ? 'blue' : 'light'}>
+				<Plus />
+			</Button>
+			<!--			Right menu-->
+			<DotMenu>
+				<DropdownItem class="block sm:hidden">
+					<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
+						<Button class="!p-2 mr-2" color={isByCategoryView ? 'blue' : 'light'}>
+							<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
+						</Button>
+						By category
+					</div>
+				</DropdownItem>
+				<DropdownItem>
+					<div on:click={onGenerateListLinkClicked} class="w-full flex items-center">
+						<Button class="!p-2 mr-2" color="light">
+							<Link size="15" />
+						</Button>
+						Get link to list
+					</div>
+				</DropdownItem>
+			</DotMenu>
+			<!--			/Right menu-->
 		</div>
 	</DetailsTopBar>
-	<DetailsBody on:body-long-press={onListBodyDblClick}>
-		<div>
-			{#if isEditListInstruction}
-				<div transition:fade class="absolute inset-1/2 w-8/12">
-					<div class="relative w-px-[120] -left-1/2">
-						<Alert>{$t('lists.details.edit-instruction')}</Alert>
-					</div>
-				</div>
-			{/if}
-		</div>
-		<div>
-			{#if !list}
-				<EmptyPage>The list was not found.</EmptyPage>
-			{/if}
-			{#if isByCategoryView}
-				{#each byCategoryList as categoryItem}
-					<div class="mb-6">
-						<div>
-							<h5 class="text-gray-600 text-sm">{categoryItem.category.name}</h5>
-						</div>
-						<div class="filler-block" />
-						<ul>
-							{#each categoryItem.items as item}
-								<li
-									use:swipe={{
-										timeframe: 300,
-										minSwipeDistance: 80,
-										touchAction: 'pan-left pan-y'
-									}}
-									on:swipe={() => onRemoveItemFromTheList(item.id)}
-									on:click|stopPropagation={() => onItemClick(item.id)}
-									class="checklist-item space-x-2 flex items-center flex-1 pl-4 {item.checked
-										? 'completed'
-										: ''}"
-								>
-									{item.itemDescription}
-								</li>
-								<div class="filler-block" />
-							{/each}
-						</ul>
-					</div>
-				{/each}
-			{:else}
-				{#each items as item}
-					<div
-						use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
-						on:swipe={() => onRemoveItemFromTheList(item.id)}
-						on:click|stopPropagation={() => onItemClick(item?.id)}
-						class="checklist-item flex items-center {item?.checked ? 'completed' : ''}"
-					>
-						<div class="left space-x-2 flex items-center flex-1">
-							{item?.itemDescription}
-						</div>
-						<div
-							onclick="event.stopPropagation()"
-							class="checkbox flex items-center justify-end ml-2"
-							style="height: 42px;"
+	<DetailsBody
+		on:body-swipe-left={onBodySwipeLeft}
+		on:body-swipe-right={onBodySwipeRight}
+		on:dblclick={onAddToListClicked}
+	>
+		<!--        List-->
+		{#if isByCategoryView}
+			<!--			By category view-->
+			{#each byCategoryList as catItem, catIndex}
+				<div onclick="event.stopPropagation()">
+					<h5 class="text-gray-600 text-sm flex items-center {catIndex === 0 ? '' : 'pt-6'}">
+						<span
+							class="p-2"
+							use:press={{ timeframe: 400, triggerBeforeFinished: true }}
+							on:press|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
 						>
-							<div class="text-sm text-gray-600">
-								{item?.category.name}
-							</div>
-						</div>
-					</div>
-					<div class="filler-block" />
-				{/each}
-			{/if}
-		</div>
+							{catItem.category.name}
+						</span>
+					</h5>
+				</div>
+
+				<div class="pl-4">
+					{#each catItem.items as item}
+						<ChecklistItem
+							{item}
+							{isCheckboxView}
+							on:swipe={(event) => onItemSwipe(item, event)}
+							on:mouseup={() => onItemClick(item)}
+							on:press={() => onItemLongPress(item)}
+							on:checkbox-change={() => onItemCheckboxChange(item)}
+							addClass={item.id === editedItem?.id ? 'bg-blue-100' : ''}
+						/>
+					{/each}
+				</div>
+			{/each}
+			<!--			/By category view-->
+		{:else}
+			<!--		Plain view-->
+			{#each items as item}
+				<ChecklistItem
+					{item}
+					{isCheckboxView}
+					on:swipe={(event) => onItemSwipe(item, event)}
+					on:mouseup={() => onItemClick(item)}
+					on:press={() => onItemLongPress(item)}
+					on:checkbox-change={() => onItemCheckboxChange(item)}
+					addClass={item.id === editedItem?.id ? 'bg-blue-100' : ''}
+				/>
+			{/each}
+			<!--		/Plain view-->
+		{/if}
+		<!--        /List-->
 	</DetailsBody>
 </DetailsPage>
-
-<style>
-	.checklist-item {
-		height: 25px;
-	}
-	.completed {
-		position: relative;
-		text-decoration: line-through;
-	}
-
-	.filler-block {
-		height: 20px;
-	}
-</style>
+<!--        Bottom input-->
+{#if !!editedItem}
+	<BottomMenu on:swipe-left={onBodyClick}>
+		<ChecklistItemEditor
+			{editedItem}
+			{isByCategoryView}
+			{categoryOptions}
+			{propositionsFuzzySearch}
+			on:form-submit={(e) => onAddFormSubmit(e)}
+			on:dismiss={onBodyClick}
+			bind:editedCategoryId
+		/>
+	</BottomMenu>
+{/if}
+<!--		/Bottom input-->
+<!--		Batch editing input-->
+{#if isAnyItemSelected}
+	<BottomMenu on:swipe-left={onBodyClick}>
+		<ChecklistBatchEditor
+			{isByCategoryView}
+			{categoryOptions}
+			on:batch-remove={onBatchRemove}
+			on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
+			on:dismiss={onBodyClick}
+		/>
+	</BottomMenu>
+{/if}
+<!--		/Batch editing input-->

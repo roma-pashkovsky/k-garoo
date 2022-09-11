@@ -1,6 +1,26 @@
+<script lang="ts">
+	import { swipe } from 'svelte-gestures';
+	import { createEventDispatcher } from 'svelte';
+
+	export let hidden: boolean;
+	const dispatch = createEventDispatcher();
+
+	function onSwipe(event) {
+		if (event.detail.direction === 'left') {
+			dispatch('swipe-left');
+		}
+		if (event.detail.direction === 'right') {
+			dispatch('swipe-right');
+		}
+	}
+</script>
+
 <div
-	class="fixed bottom-0 left-0 right-0 bg-white p-4 items-center z-20"
-	style="box-shadow: 0px -2px 12px -1px rgba(0,0,0,0.41);"
+	use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
+	on:swipe={onSwipe}
+	class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 items-center z-20 {hidden
+		? 'hidden'
+		: ''}"
 >
 	<slot />
 </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Check, DocumentRemove, DotsHorizontal } from 'svelte-heros';
+	import { page } from '$app/stores';
+	import { Briefcase, Check, DocumentRemove, DotsHorizontal } from 'svelte-heros';
 	import { navigateBack } from '../../utils/navigate-back';
 	import { swipe } from 'svelte-gestures';
 	import {
@@ -29,8 +30,9 @@
 	import { ToastService } from '../../utils/toasts';
 	import RightDrawer from '../RightDrawer.svelte';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
+	import ChecklistEditorItemInput from './ChecklistEditorItemInput.svelte';
 
-	const state: KGarooState = getState();
+	let state: KGarooState = getState();
 	export let isHidePropositions = true;
 	export let listName: string = translate($locale, 'lists.create_new_list.header');
 	const otherCategoryName = translate($locale, 'lists.create_new_list.other-category');
@@ -45,6 +47,10 @@
 		reInitListFuzzySearch();
 		listHash = getListHash();
 		isShowPropositionsInstructions = !state.appInstructions.isAddFromPropositionsViewed;
+		if ($page.url.searchParams.has('editItemId')) {
+			const editId = $page.url.searchParams.get('editItemId');
+			items = items.map((it) => ({ ...it, isEdited: it.id === editId }));
+		}
 	});
 
 	afterUpdate(() => {
@@ -79,15 +85,40 @@
 	let isByCategoryView = state?.checklistSettings?.isGroupByCategory;
 	$: listByCategory = getChecklistGroupedByCategory(items);
 
+	function onToggleByCategoryView(): void {
+		isByCategoryView = !isByCategoryView;
+		state = {
+			...state,
+			checklistSettings: {
+				...(state.checklistSettings || ({} as any)),
+				isGroupByCategory: isByCategoryView
+			}
+		};
+		setState(state);
+	}
+
 	function reInitListFuzzySearch(): void {
 		const options = {
 			includeScore: true,
 			keys: ['itemDescription'],
 			shouldSort: true,
 			minMatchCharLength: 2,
-			threshold: 0.4
+			threshold: 0.3
 		};
 		listFuzzySearch = new (window as any).Fuse(items, options);
+	}
+
+	$: filteredPropositionsFuzzySearch = getPropositionsFuzzySearch(filteredPropositions);
+
+	function getPropositionsFuzzySearch(props: Proposition[]): void {
+		const options = {
+			includeScore: true,
+			keys: ['itemDescription'],
+			shouldSort: true,
+			minMatchCharLength: 2,
+			threshold: 0.6
+		};
+		return new (window as any).Fuse(props, options);
 	}
 
 	function getListHash(): string {
@@ -124,10 +155,10 @@
 		}
 	];
 
+	$: itemsMap = items.reduce((p, c) => ({ ...p, [c.itemDescription.toLowerCase()]: true }), {});
+
 	$: filteredPropositions = propositions.filter((prop) => {
-		return !items.some(
-			(item) => item.itemDescription === prop.itemDescription && item.category === prop.category
-		);
+		return !itemsMap[prop.itemDescription.toLowerCase()];
 	});
 
 	$: isAnyItemsChecked = items.some((it) => it.selected);
@@ -160,7 +191,6 @@
 		} else {
 			targetCategory = categoryOptions.find((c) => c.id === changeCategoryTo);
 		}
-		console.log(targetCategory);
 		items = items.map((it) => ({
 			...it,
 			category: it.selected ? { ...targetCategory } : it.category,
@@ -283,23 +313,15 @@
 	}
 
 	export function handleInputSubmit(id: string): void {
-		const index = items.findIndex((item) => item.id === id);
-		if (index === items.length - 1) {
-			const newId = '' + new Date().getTime();
-			items.push({
-				id: newId,
-				itemDescription: '',
-				category: { id: otherCategoryId, name: otherCategoryName },
-				checked: false,
-				selected: false,
-				isEdited: true
-			});
-			items = items.map((s) => ({ ...s, isEdited: s.id === newId }));
-		} else {
-			items = items.map((s) => ({ ...s, isEdited: false }));
-		}
 		const item = items.find((item) => item.id === id);
-		checkIfItemDuplicate(item);
+		if (!item.itemDescription?.length) {
+			if (items.length > 1) {
+				items = items
+					.filter((it) => !!it.itemDescription?.length)
+					.map((it) => ({ ...it, isEdited: false }));
+			}
+			return;
+		}
 
 		// try to match category
 		if (item?.itemDescription?.length > 1 && item?.category.name === otherCategoryName) {
@@ -309,6 +331,20 @@
 				items = [...items];
 			}
 		}
+		const targetCategory = item.category;
+		const index = items.findIndex((item) => item.id === id);
+		const newId = '' + new Date().getTime();
+		const newItem = {
+			id: newId,
+			itemDescription: '',
+			category: targetCategory,
+			checked: false,
+			selected: false,
+			isEdited: true
+		};
+		items.splice(index + 1, 0, newItem);
+		items = items.map((s) => ({ ...s, isEdited: s.id === newId }));
+		checkIfItemDuplicate(item);
 	}
 
 	export function handleInputBlur(id: string): void {
@@ -324,6 +360,26 @@
 				items = [...items];
 			}
 		}
+	}
+
+	export function handleInputClear(id: string): void {
+		const item = items.find((item) => item.id === id);
+		if (item?.itemDescription.length) {
+			item.itemDescription = '';
+			items = [...items];
+		} else {
+			items = items
+				.filter((it) => !!it?.itemDescription?.length)
+				.map((it) => ({ ...it, isEdited: false }));
+		}
+	}
+
+	export function handleInputPropositionClicked(id: string, prop: Proposition): void {
+		const item = items.find((item) => item.id === id);
+		item.itemDescription = prop.itemDescription;
+		item.category = { ...prop.category };
+		items = [...items];
+		handleInputSubmit(id);
 	}
 
 	export function onCloseAllEdits(): void {
@@ -454,35 +510,35 @@
 	<title>K-garoo - Add checklist</title>
 </svelte:head>
 
-<RightDrawer on:backdrop-click={onShowPropositionsCloseClicked} bind:hidden={isHidePropositions}>
-	<div class="font-medium flex justify-center">
-		{$t('lists.create_new_list.click-to-add')}
-	</div>
-	{#if isShowPropositionsInstructions}
-		<Alert class="mt-4">
-			{$t('lists.create_new_list.propositions-instructions')}
-		</Alert>
-	{/if}
+<!--<RightDrawer on:backdrop-click={onShowPropositionsCloseClicked} bind:hidden={isHidePropositions}>-->
+<!--	<div class="font-medium flex justify-center">-->
+<!--		{$t('lists.create_new_list.click-to-add')}-->
+<!--	</div>-->
+<!--	{#if isShowPropositionsInstructions}-->
+<!--		<Alert class="mt-4">-->
+<!--			{$t('lists.create_new_list.propositions-instructions')}-->
+<!--		</Alert>-->
+<!--	{/if}-->
 
-	{#if !filteredPropositions?.length}
-		<div class="flex justify-center items-center text-gray-600 p-6">
-			{$t('lists.create_new_list.no-recent-suggestions')}
-		</div>
-	{/if}
-	{#each filteredPropositions as prop}
-		<div
-			on:click|stopPropagation={() => onAddPropositionClicked(prop)}
-			class="px-2 py-3 flex justify-between"
-		>
-			<div>
-				{prop.itemDescription}
-			</div>
-			<div class="text-sm text-gray-600">
-				{prop.category}
-			</div>
-		</div>
-	{/each}
-</RightDrawer>
+<!--	{#if !filteredPropositions?.length}-->
+<!--		<div class="flex justify-center items-center text-gray-600 p-6">-->
+<!--			{$t('lists.create_new_list.no-recent-suggestions')}-->
+<!--		</div>-->
+<!--	{/if}-->
+<!--	{#each filteredPropositions as prop}-->
+<!--		<div-->
+<!--			on:click|stopPropagation={() => onAddPropositionClicked(prop)}-->
+<!--			class="px-2 py-3 flex justify-between"-->
+<!--		>-->
+<!--			<div>-->
+<!--				{prop.itemDescription}-->
+<!--			</div>-->
+<!--			<div class="text-sm text-gray-600">-->
+<!--				{prop.category}-->
+<!--			</div>-->
+<!--		</div>-->
+<!--	{/each}-->
+<!--</RightDrawer>-->
 <DetailsPage>
 	<DetailsTopBar on:back-clicked={onBackClicked}>
 		<div slot="page-title">
@@ -504,21 +560,29 @@
 			{/if}
 		</div>
 		<div slot="right-content" class="flex items-center right" onclick="event.stopPropagation()">
+			<!--			<Button-->
+			<!--				color="light"-->
+			<!--				on:click={onShowPropositionsClicked}-->
+			<!--				style="width: 42px; height: 42px;"-->
+			<!--				class="!p-2 flex items-center justify-center"-->
+			<!--			>-->
+			<!--				<DotsHorizontal class="w-25 h-25" />-->
+			<!--			</Button>-->
 			<Button
-				color="light"
-				on:click={onShowPropositionsClicked}
-				style="width: 42px; height: 42px;"
-				class="!p-2 flex items-center justify-center"
+				class="!p-2 flex items-center justify-center ml-3"
+				color={isByCategoryView ? 'light' : 'white'}
+				style="width: 40px; height: 40px"
+				on:click={onToggleByCategoryView}
 			>
-				<DotsHorizontal class="w-25 h-25" />
+				<Briefcase variation={isByCategoryView ? 'solid' : 'outline'} size="25" />
 			</Button>
 			<Button
-				on:click={onSaveClicked}
-				style="width: 42px; height: 42px;"
+				class="!p-2 flex items-center justify-center ml-3"
 				color="blue"
-				class="!p-2 ml-4 flex items-center justify-center"
+				style="width: 40px; height: 40px"
+				on:click={onSaveClicked}
 			>
-				<Check class="w-25 h-25" color="white" />
+				<Check size="25" />
 			</Button>
 		</div>
 	</DetailsTopBar>
@@ -530,7 +594,7 @@
 		{#if isByCategoryView}
 			{#each listByCategory as catItem}
 				<div>
-					<h5 class="text-gray-600 text-sm mt-2">{catItem.category.name}</h5>
+					<h5 class="text-gray-600 text-sm mt-4">{catItem.category.name}</h5>
 				</div>
 				<ul>
 					<div
@@ -565,19 +629,29 @@
 								style="height: 42px; position: relative"
 							>
 								{#if item.isEdited}
-									<form
-										on:submit|preventDefault={() => handleInputSubmit(item.id)}
-										style="width: 100%"
-									>
-										<Input
-											id="form-input"
-											autofocus
-											style="box-sizing: border-box; width: 100%"
-											on:blur={() => handleInputBlur(item.id)}
-											type="text"
-											bind:value={item.itemDescription}
-										/>
-									</form>
+									<ChecklistEditorItemInput
+										{item}
+										{items}
+										propositionsFuzzySearch={filteredPropositionsFuzzySearch}
+										on:input-submit={() => handleInputSubmit(item.id)}
+										on:input-blur={() => handleInputBlur(item.id)}
+										on:input-clear={() => handleInputClear(item.id)}
+										on:proposition-click={(event) =>
+											handleInputPropositionClicked(item.id, event.detail)}
+									/>
+									<!--									<form-->
+									<!--										on:submit|preventDefault={() => handleInputSubmit(item.id)}-->
+									<!--										style="width: 100%"-->
+									<!--									>-->
+									<!--										<Input-->
+									<!--											id="form-input"-->
+									<!--											autofocus-->
+									<!--											style="box-sizing: border-box; width: 100%"-->
+									<!--											on:blur={() => handleInputBlur(item.id)}-->
+									<!--											type="text"-->
+									<!--											bind:value={item.itemDescription}-->
+									<!--										/>-->
+									<!--									</form>-->
 								{:else}
 									<div class={item.checked ? 'line-through' : ''}>{item.itemDescription}</div>
 								{/if}
@@ -623,16 +697,28 @@
 						style="height: 42px; position: relative"
 					>
 						{#if item.isEdited}
-							<form on:submit|preventDefault={() => handleInputSubmit(item.id)} style="width: 100%">
-								<Input
-									id="form-input"
-									autofocus
-									style="box-sizing: border-box; width: 100%"
-									on:blur={() => handleInputBlur(item.id)}
-									type="text"
-									bind:value={item.itemDescription}
-								/>
-							</form>
+							<ChecklistEditorItemInput
+								class="w-full"
+								{item}
+								{items}
+								propositionsFuzzySearch={filteredPropositionsFuzzySearch}
+								on:input-submit={() => handleInputSubmit(item.id)}
+								on:input-blur={() => handleInputBlur(item.id)}
+								on:input-clear={() => handleInputClear(item.id)}
+								on:proposition-click={(event) =>
+									handleInputPropositionClicked(item.id, event.detail)}
+							/>
+
+							<!--							<form on:submit|preventDefault={() => handleInputSubmit(item.id)} style="width: 100%">-->
+							<!--								<Input-->
+							<!--									id="form-input"-->
+							<!--									autofocus-->
+							<!--									style="box-sizing: border-box; width: 100%"-->
+							<!--									on:blur={() => handleInputBlur(item.id)}-->
+							<!--									type="text"-->
+							<!--									bind:value={item.itemDescription}-->
+							<!--								/>-->
+							<!--							</form>-->
 						{:else}
 							<div class={item.checked ? 'line-through' : ''}>{item.itemDescription}</div>
 						{/if}

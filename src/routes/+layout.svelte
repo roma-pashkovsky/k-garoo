@@ -14,7 +14,7 @@
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 
 	onMount(() => {
-		const appVersion = 2;
+		const appVersion = 3;
 		const state = getState();
 		const l = state?.appSettings?.lang || getLocaleFromBrowser();
 		locale.set(l);
@@ -51,29 +51,11 @@
 		}
 		return defaultLocale;
 	}
-
-	let isReloading = false;
-
-	function onLocaleChange() {
-		const state = getState();
-		setState({ ...state, appSettings: { ...state.appSettings, lang: $locale } });
-		isReloading = true;
-		setTimeout(() => {
-			isReloading = false;
-		}, 300);
-	}
 </script>
 
 <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col">
-	<NavBar on:locale-change={onLocaleChange} />
 	<div class="flex-1 relative">
-		{#if isReloading}
-			<div class="flex h-full w-full justify-center items-center">
-				<Spinner />
-			</div>
-		{:else}
-			<slot />
-		{/if}
+		<slot />
 	</div>
 </div>
 

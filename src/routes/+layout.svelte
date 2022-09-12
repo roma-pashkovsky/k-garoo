@@ -14,7 +14,7 @@
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 
 	onMount(() => {
-		const appVersion = 3;
+		const appVersion = 4;
 		const state = getState();
 		const l = state?.appSettings?.lang || getLocaleFromBrowser();
 		locale.set(l);

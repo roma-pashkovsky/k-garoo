@@ -124,19 +124,17 @@
 			<ChevronLeft />
 		</Button>
 		<Button id="poptrigger" class="!p-0 flex-1">
-			<form class="w-full p-0" on:submit|preventDefault={onAddFormSubmit}>
+			<form on:submit|preventDefault={onAddFormSubmit} class="w-full !p-0">
 				<input
 					class="single-line w-full form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none focus:bg-blue-100 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-2.5 text-sm"
 					id="form-input"
 					autocomplete="off"
 					autofocus
-					style="box-sizing: border-box; resize: none;"
-					inputmode="text"
 					bind:value={editedItem.itemDescription}
 					bind:this={inputEl}
-					on:submit={onAddFormSubmit}
 					on:input={onInputChange}
 				/>
+				<button type="submit" class="hidden" />
 			</form>
 		</Button>
 		{#if isByCategoryView}
@@ -157,10 +155,10 @@
 			<ArrowRight />
 		</button>
 	</ButtonGroup>
-	<div class="flex h-8">
+	<div class="flex h-8 pl-10">
 		{#each propositions as proposition, index}
 			<div
-				class="py-2 px-2 align-middle space-x-2 text-gray-700 text-sm whitespace-nowrap text-ellipsis overflow-hidden"
+				class="py-2 ml-1 align-middle text-gray-700 text-sm whitespace-nowrap text-ellipsis overflow-hidden"
 				transition:fade
 				on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
 				onmousedown="event.stopPropagation()"
@@ -168,7 +166,7 @@
 				onclick="event.stopPropagation()"
 			>
 				{#if index !== 0}
-					<span class="inline-block mr-2">|</span>
+					<span class="inline-block mx-1">|</span>
 				{/if}
 				{proposition.itemDescription}
 			</div>

@@ -1,35 +1,45 @@
 <script lang="ts">
-	import type { CategoryOption, CheckListItem, Proposition } from '../types';
+	import type { CategoryOption, CheckListItem, Proposition } from '../../types';
 	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import { ArrowRight } from 'svelte-heros';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { customCategoryId } from '../utils/local-storage-state';
+	import { customCategoryId, otherCategoryId } from '../../utils/local-storage-state';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
 	import { ChevronLeft } from 'svelte-heros-v2';
-	import { FuzzySearch } from '../utils/fuzzy-search';
+	import { FuzzySearch } from '../../utils/fuzzy-search';
 	import { swipe } from 'svelte-gestures';
 	import { fade } from 'svelte/transition';
+	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
+	import { getUID } from '../../utils/get-uid';
+	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
+	import { debouncer } from '../../utils/debouncer';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
 	export let propositionsFuzzySearch: FuzzySearch<Proposition>;
+	export let store: ChecklistDetailsStore;
+	export let categoryAutodetector: CategoryAutodetector;
 
 	const dispatch = createEventDispatcher();
 	let inputEl: HTMLInputElement;
 	let customCategoryInput: string;
 	let prevEditedItemId: string;
 	let propositions: Proposition[] = [];
+	const debounce = debouncer(300);
+	let shouldAutodetectCategory = true;
 
 	$: {
 		if (editedItem?.id !== prevEditedItemId) {
+			shouldAutodetectCategory = editedCategoryId === otherCategoryId;
 			focus();
 		}
 		prevEditedItemId = editedItem?.id;
 	}
 
 	onMount(() => {
+		shouldAutodetectCategory = editedCategoryId === otherCategoryId;
 		focus();
 	});
 
@@ -43,7 +53,7 @@
 		let addCategory: CategoryOption;
 		if (editedCategoryId === customCategoryId) {
 			addCategory = {
-				id: '' + new Date().getTime(),
+				id: getUID(),
 				name: customCategoryInput
 			};
 		}
@@ -53,14 +63,22 @@
 	function focus() {
 		if (inputEl) {
 			inputEl.focus();
-			setTimeout(() => {
-				inputEl.focus();
-			}, 100);
 		}
+		setTimeout(() => {
+			if (inputEl) {
+				inputEl.focus();
+			}
+		}, 200);
 	}
 
 	function onInputChange() {
 		propositions = getFilteredPropositions(editedItem.itemDescription);
+		if (shouldAutodetectCategory) {
+			debounce(() => {
+				const detected = categoryAutodetector.detect(editedItem.itemDescription);
+				editedCategoryId = detected.id;
+			});
+		}
 	}
 
 	function getFilteredPropositions(editedItemDesc: string): Proposition[] {
@@ -83,6 +101,9 @@
 		editedCategoryId = prop.category.id;
 		propositions = [];
 		focus();
+		// update proposition last used utc
+		prop.lastUsedUTC = new Date().getTime();
+		store.updateProposition(prop);
 	}
 
 	function onFormSwipe(event) {
@@ -104,12 +125,13 @@
 		</Button>
 		<Button id="poptrigger" class="!p-0 flex-1">
 			<form class="w-full p-0" on:submit|preventDefault={onAddFormSubmit}>
-				<textarea
-					class="w-full form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-2.5 text-sm"
+				<input
+					class="single-line w-full form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none focus:bg-blue-100 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-2.5 text-sm"
 					id="form-input"
 					autocomplete="off"
 					autofocus
-					style="box-sizing: border-box; height: 40px; resize: none"
+					style="box-sizing: border-box; resize: none;"
+					inputmode="text"
 					bind:value={editedItem.itemDescription}
 					bind:this={inputEl}
 					on:submit={onAddFormSubmit}
@@ -140,7 +162,7 @@
 			<div
 				class="py-2 px-2 align-middle space-x-2 text-gray-700 text-sm whitespace-nowrap text-ellipsis overflow-hidden"
 				transition:fade
-				on:click|stopPropagation={() => onPropositionClick(proposition)}
+				on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
 				onmousedown="event.stopPropagation()"
 				onmouseup="event.stopPropagation()"
 				onclick="event.stopPropagation()"
@@ -153,3 +175,6 @@
 		{/each}
 	</div>
 </form>
+
+<style>
+</style>

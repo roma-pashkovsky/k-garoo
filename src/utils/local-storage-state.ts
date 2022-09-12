@@ -1,8 +1,8 @@
 import { browser } from '$app/environment';
 import type { CheckList, KGarooState } from '../types';
+import { customCategoryId, otherCategoryId } from './autodetect-data';
 
-export const customCategoryId = 'custom';
-export const otherCategoryId = 'other';
+export { customCategoryId, otherCategoryId };
 
 export const getInitialState = (): KGarooState => {
 	return {
@@ -11,16 +11,7 @@ export const getInitialState = (): KGarooState => {
 		checklistSettings: {
 			isGroupByCategory: false
 		},
-		categoryOptions: [
-			{
-				id: otherCategoryId,
-				name: 'Other'
-			},
-			{
-				id: customCategoryId,
-				name: 'Add category'
-			}
-		],
+		categoryOptions: [],
 		propositions: [],
 		appSettings: {
 			lang: undefined

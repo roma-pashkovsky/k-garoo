@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { swipe, press } from 'svelte-gestures';
+	import { press, swipe } from 'svelte-gestures';
 	import { Checkbox } from 'flowbite-svelte';
-	import type { CheckListItemEditModel } from '../types/index';
+	import type { CheckListItemEditModel } from '../../types/index';
 	import { createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
 
@@ -32,6 +32,7 @@
 		class="p-2 my-2 rounded {addClass}"
 		onclick="event.stopPropagation()"
 		ondblclick="event.stopPropagation()"
+		onmousedown=""
 	>
 		{#if isCheckboxView}
 			<div onclick="event.stopPropagation()" onmouseup="event.stopPropagation()" class="relative">

@@ -30,6 +30,7 @@ export type Proposition = {
 	id: string;
 	itemDescription: string;
 	category: CategoryOption;
+	lastUsedUTC: number;
 };
 
 export type ChecklistSettings = {

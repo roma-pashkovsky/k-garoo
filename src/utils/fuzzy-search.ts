@@ -12,7 +12,7 @@ export class FuzzySearch<T> {
 		this._fuze = new (window as any).Fuse(items, options);
 	}
 
-	public search(t: string): { item: T }[] {
+	public search(t: string): { item: T; score?: number }[] {
 		return this._fuze.search(t) as { item: T; score?: number }[];
 	}
 }

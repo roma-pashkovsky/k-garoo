@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Card, Button, Spinner } from 'flowbite-svelte';
+	import { Card, Button, Spinner, DropdownItem } from 'flowbite-svelte';
 	import { DocumentRemove, Plus } from 'svelte-heros';
 	import { goto } from '$app/navigation';
 	import { getState, setState } from '../../../utils/local-storage-state';
@@ -9,6 +9,7 @@
 	import { swipe } from 'svelte-gestures';
 	import Page from '../../../lib/Page.svelte';
 	import NavBar from '../../../lib/NavBar.svelte';
+	import DotMenu from '../../../lib/DotMenu.svelte';
 
 	const state: KGarooState = getState();
 	let ids = state.listIds || [];
@@ -49,13 +50,16 @@
 <svelte:head>
 	<title>K-garoo - {$t('app.my_lists')}</title>
 </svelte:head>
-<NavBar on:locale-change={onLocaleChange} />
+
 {#if isReloading}
 	<div class="flex h-full w-full justify-center items-center">
 		<Spinner />
 	</div>
 {:else}
 	<Page>
+		<div slot="nav-bar">
+			<NavBar on:locale-change={onLocaleChange} />
+		</div>
 		<div slot="top-bar" class="flex justify-end">
 			<Button on:click={onAddButtonClicked} class="!p-2" o><Plus class="w-8 h-8" /></Button>
 		</div>
@@ -78,39 +82,40 @@
 							on:swipe={() => onListRemove(card)}
 							on:click={() => onCardClicked(card.id)}
 						>
-							<Card class="!p-1 hover:bg-gray-50 cursor-pointer w-70 sm:w-80">
-								<figure
-									class="flex flex-col justify-center items-center p-6 text-center border-b border-gray-200  dark:bg-gray-800 dark:border-gray-700"
-								>
-									<div class="list-details">
-										<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
-											{card.name}
-										</h5>
-										<div class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
-											<ul>
-												{#if card?.items?.length}
-													<div>
-														<li class="mb-1 {card.items[0]?.checked ? 'checked' : ''}">
-															{card.items[0].itemDescription}
-														</li>
-													</div>
-												{/if}
-												{#if card?.items?.length > 1}
-													<li class={card.items[1]?.checked ? 'checked' : ''}>
-														{card.items[1].itemDescription}
-													</li>
-												{/if}
-											</ul>
-										</div>
-									</div>
-								</figure>
-								<figure class="flex flex-col justify-center items-center py-2 px-8 text-center">
-									<div onclick="event.stopPropagation()" class="list-actions p-1 ml-3">
-										<Button on:click={() => onListRemove(card)} class="!p-2" color="light">
-											<DocumentRemove />
-										</Button>
-									</div>
-								</figure>
+							<Card
+								class="!pl-6 !pt-6 !pb-6 !pr-10 hover:bg-gray-50 cursor-pointer w-70 sm:w-80 relative"
+							>
+								<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
+									<DotMenu>
+										<DropdownItem>
+											<div class="flex items-center" on:click={() => onListRemove(card)}>
+												<Button class="!p-2 mr-2" color="light">
+													<DocumentRemove size="15" />
+												</Button>
+												{$t('lists.remove-list')}
+											</div>
+										</DropdownItem>
+									</DotMenu>
+								</div>
+								<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
+									{card.name}
+								</h5>
+								<div class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
+									<ul>
+										{#if card?.items?.length}
+											<div>
+												<li class="mb-1 {card.items[0]?.checked ? 'checked' : ''}">
+													{card.items[0].itemDescription}
+												</li>
+											</div>
+										{/if}
+										{#if card?.items?.length > 1}
+											<li class={card.items[1]?.checked ? 'checked' : ''}>
+												{card.items[1].itemDescription}
+											</li>
+										{/if}
+									</ul>
+								</div>
 							</Card>
 						</div>
 					{/each}

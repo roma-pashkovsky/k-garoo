@@ -6,11 +6,11 @@
 	import { defaultLocale, locale } from '../utils/i18n';
 	import translations from '../utils/i18n-translations';
 	import { ToastService } from '../utils/toasts';
-	import NavBar from '../lib/NavBar.svelte';
-	import { Spinner } from 'flowbite-svelte';
 	import AppToast from '../lib/AppToast.svelte';
+	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
 
 	const toastStore = ToastService.getInstance().toasts;
+	let isInitialized = false;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 
 	onMount(() => {
@@ -40,6 +40,7 @@
 				lang: l
 			}
 		});
+		isInitialized = true;
 	});
 	function getLocaleFromBrowser(): string {
 		const browserLanguages = navigator.languages;
@@ -53,19 +54,23 @@
 	}
 </script>
 
-<div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col">
-	<div class="flex-1 relative">
-		<slot />
-	</div>
-</div>
-
-<div class="toast-wrapper">
-	{#each toasts as toast}
-		<div class="toast">
-			<AppToast class="toast" {toast} />
+{#if isInitialized}
+	<div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col">
+		<div class="flex-1 relative">
+			<slot />
 		</div>
-	{/each}
-</div>
+	</div>
+
+	<div class="toast-wrapper">
+		{#each toasts as toast}
+			<div class="toast">
+				<AppToast class="toast" {toast} />
+			</div>
+		{/each}
+	</div>
+{:else}
+	<FullPageSpinner />
+{/if}
 
 <style>
 	.toast-wrapper {

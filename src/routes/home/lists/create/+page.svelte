@@ -1,5 +1,6 @@
 <script>
-	import ChecklistEditor from '../../../../lib/list-editor/ChecklistEditor.svelte';
+	import ChecklistDetails from '$lib/checklist-details/ChecklistDetails.svelte';
+	import { locale } from '../../../../utils/i18n.ts';
 </script>
 
-<ChecklistEditor />
+<ChecklistDetails locale={$locale} />

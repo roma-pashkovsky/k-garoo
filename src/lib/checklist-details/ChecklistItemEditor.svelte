@@ -13,6 +13,7 @@
 	import { getUID } from '../../utils/get-uid';
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
 	import { debouncer } from '../../utils/debouncer';
+	import { Keycodes } from '../../utils/keycodes';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
@@ -27,16 +28,20 @@
 	let customCategoryInput: string;
 	let prevEditedItemId: string;
 	let propositions: Proposition[] = [];
+	let propositionsHighlightIndex = 0;
 	const debounce = debouncer(300);
 	let shouldAutodetectCategory = true;
 
 	$: {
 		if (editedItem?.id !== prevEditedItemId) {
 			shouldAutodetectCategory = editedCategoryId === otherCategoryId;
+			propositions = [];
 			focus();
 		}
 		prevEditedItemId = editedItem?.id;
 	}
+
+	$: displayPropositions = propositions.slice(1);
 
 	onMount(() => {
 		shouldAutodetectCategory = editedCategoryId === otherCategoryId;
@@ -72,13 +77,35 @@
 	}
 
 	function onInputChange() {
-		propositions = getFilteredPropositions(editedItem.itemDescription);
+		propositions = [
+			{ ...editedItem } as Proposition,
+			...getFilteredPropositions(editedItem.itemDescription)
+		];
+		propositionsHighlightIndex = 0;
 		if (shouldAutodetectCategory) {
 			debounce(() => {
 				const detected = categoryAutodetector.detect(editedItem.itemDescription);
 				editedCategoryId = detected.id;
 			});
 		}
+	}
+
+	function onDescriptionInputKeyDown({ keyCode }: KeyboardEvent): void {
+		if (keyCode !== Keycodes.ARROW_UP && keyCode !== Keycodes.ARROW_DOWN) {
+			return onInputChange();
+		}
+		if (!propositions?.length) {
+			return;
+		}
+		if (keyCode === Keycodes.ARROW_UP) {
+			propositionsHighlightIndex =
+				(propositionsHighlightIndex - 1 + propositions.length) % propositions.length;
+		} else {
+			propositionsHighlightIndex = (propositionsHighlightIndex + 1) % propositions.length;
+		}
+		const prop = propositions[propositionsHighlightIndex];
+		editedItem.itemDescription = prop.itemDescription;
+		editedCategoryId = prop.category.id;
 	}
 
 	function getFilteredPropositions(editedItemDesc: string): Proposition[] {
@@ -132,7 +159,7 @@
 					autofocus
 					bind:value={editedItem.itemDescription}
 					bind:this={inputEl}
-					on:input={onInputChange}
+					on:keyup={onDescriptionInputKeyDown}
 				/>
 				<button type="submit" class="hidden" />
 			</form>
@@ -156,7 +183,7 @@
 		</button>
 	</ButtonGroup>
 	<div class="flex h-8 pl-10">
-		{#each propositions as proposition, index}
+		{#each displayPropositions as proposition, index}
 			<div
 				class="py-2 ml-1 align-middle text-gray-700 text-sm whitespace-nowrap text-ellipsis overflow-hidden"
 				transition:fade

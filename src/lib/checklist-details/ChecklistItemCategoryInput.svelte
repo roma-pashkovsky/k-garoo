@@ -68,7 +68,7 @@
 
 <style>
 	.input-wrapper:not(.w-full) {
-		max-width: 118px;
+		max-width: 140px;
 	}
 
 	.input-wrapper:not(.w-full).custom-open {

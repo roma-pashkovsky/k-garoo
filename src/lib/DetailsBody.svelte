@@ -29,13 +29,6 @@
 <!--use:press={{ timeframe: 500, triggerBeforeFinished: true }}-->
 <!--on:press={onBodyLongPress}-->
 <div on:click={onBodyClick} class="flex-1 relative">
-	<div class="toast-wrapper">
-		{#each toasts as toast}
-			<div class="toast">
-				<AppToast class="toast" {toast} />
-			</div>
-		{/each}
-	</div>
 	<div
 		use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
 		on:swipe={onBodySwipe}

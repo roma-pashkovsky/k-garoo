@@ -8,40 +8,36 @@
 	import { ToastService } from '../utils/toasts';
 	import AppToast from '../lib/AppToast.svelte';
 	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
+	import { AppReloader } from '../stores/app/app-reloader';
+	import { Button, Modal } from 'flowbite-svelte';
+	import LocaleSelector from '../lib/LocaleSelector.svelte';
+	import { t } from '../utils/i18n.js';
+	import { appSettingsStore } from '../stores/app/app-settings';
+	import type { Writable } from 'svelte/store';
+	import type { AppSettings } from '../types';
 
 	const toastStore = ToastService.getInstance().toasts;
 	let isInitialized = false;
+	const appVersion = 4;
+	const isAppReloading = AppReloader.isReloading;
+	let isSetLocalePopupOpen = false;
+	const appSettings: Writable<AppSettings> = appSettingsStore;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
+	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 
-	onMount(() => {
-		const appVersion = 4;
-		const state = getState();
-		const l = state?.appSettings?.lang || getLocaleFromBrowser();
-		locale.set(l);
-		if (state.appVersion !== appVersion) {
-			if (
-				!Object.keys(state).length ||
-				confirm(
-					'K-garoo was updated. Your lists should be cleaned for the app to work correctly. Continue?'
-				)
-			) {
-				setState({ ...getInitialState(), appVersion });
-				goto('/home/lists');
-				setTimeout(() => {
-					window.location.reload();
-				}, 200);
-				return;
-			}
-		}
-		setState({
-			...state,
-			checklistSettings: {
-				...(state?.checklistSettings || ({} as any)),
-				lang: l
-			}
-		});
+	onMount(async () => {
+		await checkForUpdatedApp();
+		await setAppSettings();
+		await checkForLocale();
 		isInitialized = true;
+		isAppReloading.subscribe((v) => console.log(v));
 	});
+
+	async function setAppSettings(): Promise<void> {
+		const store = getState();
+		appSettings.set(store.appSettings);
+	}
+
 	function getLocaleFromBrowser(): string {
 		const browserLanguages = navigator.languages;
 		for (let i = 0; i < browserLanguages.length; i++) {
@@ -52,27 +48,108 @@
 		}
 		return defaultLocale;
 	}
+
+	async function checkForLocale(): Promise<void> {
+		const state = getState();
+		const isLocaleSet = !!state.appSettings.isLocaleSet;
+		if (isLocaleSet) {
+			const l = $appSettings?.lang || getLocaleFromBrowser();
+			locale.set(l);
+			setState({
+				...state,
+				appSettings: {
+					...(state?.appSettings || ({} as any)),
+					lang: l
+				}
+			});
+			appSettingsStore.set({ ...(state?.appSettings || ({} as any)), lang: l });
+		} else {
+			isSetLocalePopupOpen = true;
+		}
+	}
+
+	async function onSelectLocaleFromPopup(): Promise<void> {
+		const state = getState();
+		isSetLocalePopupOpen = false;
+		setState({
+			...state,
+			appSettings: {
+				...(state?.appSettings || ({} as any)),
+				isLocaleSet: true
+			}
+		});
+	}
+
+	async function checkForUpdatedApp(): Promise<void> {
+		const state = getState();
+		if (state?.appVersion !== appVersion) {
+			if (
+				!Object.keys(state).length ||
+				confirm(
+					'K-garoo was updated. Your lists should be cleaned for the app to work correctly. Continue?'
+				)
+			) {
+				setState({ ...getInitialState(), appVersion });
+				goto('/home/lists');
+				await new AppReloader().reload();
+			}
+		}
+	}
 </script>
 
-{#if isInitialized}
-	<div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col">
-		<div class="flex-1 relative">
-			<slot />
-		</div>
-	</div>
+<div class="fixed top-0 bottom-0 left-0 right-0 root {$appSettings?.theme}">
+	<div class=" fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
+		<Modal bind:open={isSetLocalePopupOpen} size="xs" on:hide={onSelectLocaleFromPopup}>
+			<form on:submit|preventDefault={() => (isSetLocalePopupOpen = false)}>
+				<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0 mb-4">
+					{$t('app.initial-lang.header')}
+				</h3>
+				<LocaleSelector />
+				<p class="text-sm text-gray-600 py-3">
+					{$t('app.initial-lang.disclaimer')}
+				</p>
+				<div class="flex justify-end">
+					<Button type="submit" class="w-50">{$t('app.ok.long')}</Button>
+				</div>
+			</form>
+		</Modal>
 
-	<div class="toast-wrapper">
-		{#each toasts as toast}
-			<div class="toast">
-				<AppToast class="toast" {toast} />
+		{#if !isInitialized || $isAppReloading}
+			<FullPageSpinner />
+		{:else}
+			<div class="top-toast-wrapper">
+				{#each topToasts as toast}
+					<div class="toast">
+						<AppToast class="toast" {toast} />
+					</div>
+				{/each}
 			</div>
-		{/each}
+
+			<slot />
+
+			<div class="toast-wrapper">
+				{#each toasts as toast}
+					<div class="toast">
+						<AppToast class="toast" {toast} />
+					</div>
+				{/each}
+			</div>
+		{/if}
 	</div>
-{:else}
-	<FullPageSpinner />
-{/if}
+</div>
 
 <style>
+	.top-toast-wrapper {
+		position: fixed;
+		top: 5rem;
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		z-index: 30;
+	}
 	.toast-wrapper {
 		position: fixed;
 		bottom: 0.5rem;
@@ -82,6 +159,7 @@
 		justify-content: center;
 		align-items: center;
 		flex-direction: column;
+		z-index: 30;
 	}
 
 	.toast:not(:last-child) {

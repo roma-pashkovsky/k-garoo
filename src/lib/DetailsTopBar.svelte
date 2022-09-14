@@ -11,7 +11,7 @@
 	}
 </script>
 
-<div class="sticky flex justify-between items-center bg-white z-30 px-2 sm:px-4 pt-4">
+<div class="sticky flex justify-between items-center bg-white dark:bg-black z-30 px-2 sm:px-4 pt-4">
 	<div class="flex items-center">
 		<Button color="white" class="!p-2">
 			<ArrowLeft on:click={onBackClicked} class="w-25 h-25" />

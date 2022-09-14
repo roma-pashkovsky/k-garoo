@@ -13,7 +13,8 @@
 	import { getUID } from '../../utils/get-uid';
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
 	import { debouncer } from '../../utils/debouncer';
-	import { Keycodes } from '../../utils/keycodes';
+	import { isEnter, Keycodes } from '../../utils/keycodes';
+	import AppDivInput from '../AppDivInput.svelte';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
@@ -29,8 +30,9 @@
 	let prevEditedItemId: string;
 	let propositions: Proposition[] = [];
 	let propositionsHighlightIndex = 0;
-	const debounce = debouncer(300);
+	let selectedPropositionTS: number;
 	let shouldAutodetectCategory = true;
+	const debounce = debouncer(300);
 
 	$: {
 		if (editedItem?.id !== prevEditedItemId) {
@@ -42,11 +44,70 @@
 	}
 
 	$: displayPropositions = propositions.slice(1);
+	$: resetIdForInput = editedItem?.id + selectedPropositionTS;
 
 	onMount(() => {
 		shouldAutodetectCategory = editedCategoryId === otherCategoryId;
 		focus();
 	});
+
+	function focus() {
+		if (inputEl) {
+			inputEl.focus();
+		}
+		setTimeout(() => {
+			if (inputEl) {
+				inputEl.focus();
+			}
+		}, 200);
+	}
+
+	function onDescriptionInputKeyUp(ev: KeyboardEvent): void {
+		if (isEnter(ev)) {
+			return onAddFormSubmit();
+		}
+		const { keyCode } = ev;
+		if (keyCode === Keycodes.ARROW_UP || keyCode === Keycodes.ARROW_DOWN) {
+			return onPropositionHighlightChange(keyCode);
+		}
+		onInputChange();
+	}
+
+	function onDescriptionInputKeyDown(ev: KeyboardEvent) {
+		if (isEnter(ev)) {
+			onAddFormSubmit();
+		}
+	}
+
+	function onInputChange() {
+		propositions = [
+			{ ...editedItem } as Proposition,
+			...getFilteredPropositions(editedItem.itemDescription)
+		];
+		propositionsHighlightIndex = 0;
+		if (shouldAutodetectCategory) {
+			debounce(() => {
+				const detected = categoryAutodetector.detect(editedItem.itemDescription);
+				editedCategoryId = detected.id;
+			});
+		}
+	}
+
+	function onPropositionHighlightChange(keyCode: number): void {
+		if (!propositions?.length) {
+			return;
+		}
+		if (keyCode === Keycodes.ARROW_UP) {
+			propositionsHighlightIndex =
+				(propositionsHighlightIndex - 1 + propositions.length) % propositions.length;
+		} else {
+			propositionsHighlightIndex = (propositionsHighlightIndex + 1) % propositions.length;
+		}
+		const prop = propositions[propositionsHighlightIndex];
+		selectedPropositionTS = new Date().getTime();
+		editedItem.itemDescription = prop.itemDescription;
+		editedCategoryId = prop.category.id;
+	}
 
 	function onAddFormSubmit(): void {
 		if (!editedItem.itemDescription?.length) {
@@ -65,51 +126,8 @@
 		dispatch('form-submit', { addCategory });
 	}
 
-	function focus() {
-		if (inputEl) {
-			inputEl.focus();
-		}
-		setTimeout(() => {
-			if (inputEl) {
-				inputEl.focus();
-			}
-		}, 200);
-	}
-
-	function onInputChange() {
-		propositions = [
-			{ ...editedItem } as Proposition,
-			...getFilteredPropositions(editedItem.itemDescription)
-		];
-		propositionsHighlightIndex = 0;
-		if (shouldAutodetectCategory) {
-			debounce(() => {
-				const detected = categoryAutodetector.detect(editedItem.itemDescription);
-				editedCategoryId = detected.id;
-			});
-		}
-	}
-
-	function onDescriptionInputKeyDown({ keyCode }: KeyboardEvent): void {
-		if (keyCode !== Keycodes.ARROW_UP && keyCode !== Keycodes.ARROW_DOWN) {
-			return onInputChange();
-		}
-		if (!propositions?.length) {
-			return;
-		}
-		if (keyCode === Keycodes.ARROW_UP) {
-			propositionsHighlightIndex =
-				(propositionsHighlightIndex - 1 + propositions.length) % propositions.length;
-		} else {
-			propositionsHighlightIndex = (propositionsHighlightIndex + 1) % propositions.length;
-		}
-		const prop = propositions[propositionsHighlightIndex];
-		editedItem.itemDescription = prop.itemDescription;
-		editedCategoryId = prop.category.id;
-	}
-
 	function getFilteredPropositions(editedItemDesc: string): Proposition[] {
-		if (!editedItemDesc) {
+		if (!editedItemDesc?.length) {
 			return [];
 		}
 		if (!propositionsFuzzySearch) {
@@ -126,6 +144,7 @@
 	function onPropositionClick(prop: Proposition) {
 		editedItem.itemDescription = prop.itemDescription;
 		editedCategoryId = prop.category.id;
+		selectedPropositionTS = new Date().getTime();
 		propositions = [];
 		focus();
 		// update proposition last used utc
@@ -151,7 +170,14 @@
 			<ChevronLeft />
 		</Button>
 		<Button id="poptrigger" class="!p-0 flex-1">
-			<form on:submit|preventDefault={onAddFormSubmit} class="w-full !p-0">
+			<form on:submit|preventDefault={onAddFormSubmit} class="w-full h-full !p-0">
+				<!--			<AppDivInput-->
+				<!--				id={resetIdForInput}-->
+				<!--				bind:value={editedItem.itemDescription}-->
+				<!--				bind:div={inputEl}-->
+				<!--				on:keyup={onDescriptionInputKeyUp}-->
+				<!--				on:input={onDescriptionInputKeyDown}-->
+				<!--			/>-->
 				<input
 					class="single-line w-full form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none focus:bg-blue-100 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-2.5 text-sm"
 					id="form-input"
@@ -159,7 +185,7 @@
 					autofocus
 					bind:value={editedItem.itemDescription}
 					bind:this={inputEl}
-					on:keyup={onDescriptionInputKeyDown}
+					on:keyup={onDescriptionInputKeyUp}
 				/>
 				<button type="submit" class="hidden" />
 			</form>

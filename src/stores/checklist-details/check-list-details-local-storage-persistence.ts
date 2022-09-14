@@ -35,6 +35,14 @@ export class CheckListDetailsLocalStoragePersistence {
 		return Promise.resolve(state.appSettings);
 	}
 
+	public getListVersion(listId: string): Promise<number | undefined> {
+		const state = getState();
+		if (state.listData[listId]) {
+			return Promise.resolve(state.listData[listId].updated_utc || 0);
+		}
+		return Promise.resolve(undefined);
+	}
+
 	public async createList(id: string, name: string, items: CheckListItem[]): Promise<void> {
 		await this.updatePropositionsWithItems(items);
 		const state = getState();
@@ -56,7 +64,7 @@ export class CheckListDetailsLocalStoragePersistence {
 				...state,
 				listData: {
 					...state.listData,
-					[id]: list
+					[id]: { ...list, updated_utc: new Date().getTime() }
 				}
 			});
 		}
@@ -79,7 +87,7 @@ export class CheckListDetailsLocalStoragePersistence {
 				...state,
 				listData: {
 					...state.listData,
-					[id]: list
+					[id]: { ...list, updated_utc: new Date().getTime() }
 				}
 			});
 		}
@@ -95,7 +103,7 @@ export class CheckListDetailsLocalStoragePersistence {
 			...state,
 			listData: {
 				...state.listData,
-				[id]: list
+				[id]: { ...list, updated_utc: new Date().getTime() }
 			}
 		});
 	}
@@ -121,6 +129,24 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
+	public async updateList({ id, items, name }: CheckList): Promise<void> {
+		const state = getState();
+		const oldListData = state.listData;
+		const newListData = {
+			...oldListData,
+			[id]: {
+				id,
+				items,
+				name,
+				updated_utc: new Date().getTime()
+			} as CheckList
+		};
+		setState({
+			...state,
+			listData: newListData
+		});
+	}
+
 	public async updateProposition(prop: Proposition): Promise<void> {
 		const state = getState();
 		const propositions = state.propositions;
@@ -143,7 +169,8 @@ export class CheckListDetailsLocalStoragePersistence {
 				id,
 				items,
 				name,
-				created_utc: new Date().getTime()
+				created_utc: new Date().getTime(),
+				updated_utc: new Date().getTime()
 			} as CheckList
 		};
 		setState({
@@ -156,10 +183,10 @@ export class CheckListDetailsLocalStoragePersistence {
 		const utc = new Date().getTime();
 		const oldPropositions = await this.getPropositions();
 		const propsMap: { [desc: string]: Proposition } = oldPropositions.reduce((p, c) => {
-			return { ...p, [c.itemDescription.toLowerCase()]: c };
+			return { ...p, [c.itemDescription.toLowerCase().trim()]: c };
 		}, {});
 		items.forEach((item) => {
-			propsMap[item.itemDescription.toLowerCase()] = {
+			propsMap[item.itemDescription.toLowerCase().trim()] = {
 				id: item.id,
 				itemDescription: item.itemDescription,
 				category: item.category,

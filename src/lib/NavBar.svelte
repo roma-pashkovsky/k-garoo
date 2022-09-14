@@ -1,24 +1,7 @@
 <script lang="ts">
-	import { Navbar, NavBrand, NavHamburger, NavLi, NavUl, Select } from 'flowbite-svelte';
-	import { locale, t } from '../utils/i18n.js';
-	import { createEventDispatcher } from 'svelte';
+	import { Navbar, NavBrand, NavHamburger, NavLi, NavUl } from 'flowbite-svelte';
+	import { t } from '../utils/i18n.js';
 	import { page } from '$app/stores';
-
-	const dispatch = createEventDispatcher();
-	const localeOptions = [
-		{
-			value: 'en',
-			name: 'English'
-		},
-		{
-			value: 'ua',
-			name: 'Українська'
-		}
-	];
-
-	function onLocaleChange(): void {
-		dispatch('locale-change');
-	}
 
 	$: section = getSectionFromPath($page.url.pathname);
 
@@ -38,6 +21,7 @@
 	let:hidden
 	let:toggle
 	rounded={true}
+	fluid={false}
 >
 	<NavBrand href="/">
 		<img src="/logo-blue.svg" class="mr-3 h-6 sm:h-9" alt="K-garoo logo" />
@@ -45,18 +29,17 @@
 			K-garoo
 		</span>
 	</NavBrand>
-	<div class="md:order-2 flex items-center flex-wrap md:ml-6">
-		<Select
-			style="width: 117px;"
-			placeholder={$t('app.lang-placeholder')}
-			items={localeOptions}
-			bind:value={$locale}
-			on:change={onLocaleChange}
-		/>
+	<div class="md:hidden flex items-center flex-wrap">
 		<NavHamburger on:click={toggle} />
 	</div>
-	<NavUl {hidden} divClass="w-full md:flex md:flex-1 md:items-center md:justify-end">
+	<NavUl
+		{hidden}
+		divClass="w-full md:flex md:flex-1 md:items-center md:justify-end"
+		ulClass="flex flex-col p-4 sm:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
+	>
 		<NavLi href="/home/lists" active={section === 'lists'}>{$t('app.sections.lists')}</NavLi>
-		<!--		<NavLi href="/login" active={section === 'login'}>{$t('app.sections.login')}</NavLi>-->
+		<NavLi href="/home/settings" active={section === 'settings'}
+			>{$t('app.sections.settings')}</NavLi
+		>
 	</NavUl>
 </Navbar>

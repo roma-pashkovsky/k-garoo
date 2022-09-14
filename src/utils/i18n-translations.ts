@@ -9,8 +9,12 @@ export default {
 		'app.logo': 'Easy checklists',
 		'app.my_lists': 'My lists',
 		'app.sections.lists': 'Lists',
+		'app.sections.settings': 'Settings',
 		'app.sections.login': 'Login',
 		'app.lang-placeholder': 'Language',
+		'app.initial-lang.header': 'Select your language',
+		'app.initial-lang.disclaimer': 'You can always change it in "Settings"',
+		'app.ok.long': 'Okay',
 		'lists.no_lists': 'No lists.',
 		'lists.no_lists_cta_1': "Let's",
 		'lists.no_lists_cta_link': 'add one.',
@@ -31,14 +35,29 @@ export default {
 		// list details
 		'lists.details.link-created': 'Link copied to clipboard',
 		'lists.details.edit-instruction': 'Press and hold to edit the list',
-		'lists.details.remove-warning': 'Will remove list. Are you sure?'
+		'lists.details.remove-warning': 'Will remove list. Are you sure?',
+		'lists.details.by-category': 'By category',
+		'lists.details.link-to-list': 'Get link to list',
+		'lists.details.duplicate-item-badge': 'Duplicate item',
+		'lists.details.added-toast': 'Added item',
+		// decode list
+		'lists.decode.page-title': 'Display list',
+		// settings
+		'settings.header.language': 'Language',
+		'settings.header.theme': 'Theme',
+		'settings.header.theme-dark': 'Dark',
+		'settings.header.theme-light': 'Light'
 	},
 	ua: {
 		'app.logo': 'Списки',
 		'app.my_lists': 'Мої списки',
 		'app.sections.lists': 'Списки',
+		'app.sections.settings': 'Налаштування',
 		'app.sections.login': 'Увійти',
 		'app.lang-placeholder': 'Мова',
+		'app.initial-lang.header': 'Оберіть мову',
+		'app.initial-lang.disclaimer': 'Її можна змінити в розділі "Налаштування" в будь-який момент.',
+		'app.ok.long': 'Гаразд',
 		'lists.no_lists': 'Поки що тут немає списків.',
 		'lists.no_lists_cta_1': 'Нумо',
 		'lists.no_lists_cta_link': 'створимо список.',
@@ -58,6 +77,17 @@ export default {
 		// list details
 		'lists.details.link-created': 'Посилання скопійовано',
 		'lists.details.edit-instruction': 'Натисніть і утримуйте, щоб відредагувати список',
-		'lists.details.remove-warning': 'Видаляємо список. Впевнені?'
+		'lists.details.remove-warning': 'Видаляємо список. Впевнені?',
+		'lists.details.by-category': 'За категоріями',
+		'lists.details.link-to-list': 'Посилання',
+		'lists.details.duplicate-item-badge': 'Пункт дублюється',
+		'lists.details.added-toast': 'Додано',
+		// decode list
+		'lists.decode.page-title': 'Показати список',
+		// settings
+		'settings.header.language': 'Мова',
+		'settings.header.theme': 'Тема',
+		'settings.header.theme-dark': 'Темна',
+		'settings.header.theme-light': 'Світла'
 	}
 } as Translations;

@@ -1,6 +1,7 @@
 export type CheckList = {
 	id: string;
 	created_utc: number;
+	updated_utc: number;
 	name: string;
 	items: CheckListItem[];
 };
@@ -19,6 +20,7 @@ export type GroupedByCategoryItem = {
 export type CheckListItemEditModel = CheckListItem & {
 	selected: boolean;
 	isEdited: boolean;
+	isDuplicate?: boolean;
 };
 
 export type CategoryOption = {
@@ -39,6 +41,8 @@ export type ChecklistSettings = {
 
 export type AppSettings = {
 	lang: string | undefined;
+	isLocaleSet: boolean;
+	theme: 'dark' | 'light';
 };
 
 export type AppInstructions = {

@@ -9,7 +9,7 @@
 	import DotMenu from '../DotMenu.svelte';
 	import { Button, DropdownItem } from 'flowbite-svelte';
 	import { Briefcase, Link, Plus } from 'svelte-heros';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 	import { t } from '../../utils/i18n';
@@ -25,11 +25,16 @@
 	import FullPageSpinner from '../FullPageSpinner.svelte';
 	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
+	import { StringCompressor } from '../../utils/string-compressor';
+	import { copyToClipboard } from '../../utils/copy-to-clipboard';
+	import { ToastService } from '../../utils/toasts';
+	import type { ToastManagerType } from '../../utils/toasts';
 
 	export let listId: string | undefined;
 	export let locale: 'en' | 'ua';
 	let store: ChecklistDetailsStore;
 	let categoryAutodetector: CategoryAutodetector;
+	let toastManager: ToastManagerType = ToastService.getInstance();
 	let listName: string = ($t as any)('lists.create_new_list.header');
 	let items: CheckListItemEditModel[] = [];
 	let categoryOptions: CategoryOption[] = [];
@@ -60,12 +65,17 @@
 			items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
 		}
 		updatePropositionsFuzzySearch();
+		checkListForDuplicates();
 		isLoaded = true;
 		if (!listId) {
 			setTimeout(() => {
 				onAddToListClicked();
 			});
 		}
+	});
+
+	onDestroy(() => {
+		toastManager.clear();
 	});
 
 	function onListTitleSave(): void {
@@ -108,8 +118,15 @@
 		store.updateByCategoryView(isByCategoryView);
 	}
 
-	function onGenerateListLinkClicked(): void {
-		console.log('generate clicked');
+	async function onGenerateListLinkClicked(): Promise<void> {
+		const list = await store.getList(listId);
+		const compressed = new StringCompressor().compressToEncodedURIComponent(JSON.stringify(list));
+		const url = window.origin + '/decode/' + compressed;
+		await copyToClipboard(url);
+		toastManager.push({
+			text: ($t as any)('lists.details.link-created'),
+			closePrevious: false
+		});
 	}
 
 	function onAddToListClicked(): void {
@@ -170,6 +187,7 @@
 				items = items.filter((it) => it.id !== item.id);
 				store.removeListItems(listId, [item.id]);
 				updatePropositionsFuzzySearch();
+				checkListForDuplicates();
 			}
 		}
 	}
@@ -191,6 +209,7 @@
 			items = items.filter((it) => !it.selected);
 			updatePropositionsFuzzySearch();
 			store.removeListItems(listId, removeIds);
+			checkListForDuplicates();
 		}
 	}
 
@@ -245,6 +264,25 @@
 		} else {
 			store.upsertListItems(listId, [updated]);
 		}
+		checkListForDuplicates();
+		if (items.find((it) => it.id === updated.id).isDuplicate) {
+			toastManager.push({
+				text: ($t as any)('lists.details.duplicate-item-badge'),
+				duration: 2000,
+				closePrevious: true,
+				type: 'details-top',
+				color: 'warning'
+			});
+		} else {
+			toastManager.push({
+				text: ($t as any)('lists.details.added-toast'),
+				duration: 2000,
+				closePrevious: true,
+				type: 'details-top',
+				color: 'success'
+			});
+		}
+
 		updatePropositionsFuzzySearch();
 	}
 
@@ -303,6 +341,24 @@
 		editedItem = undefined;
 		editedCategoryId = undefined;
 	}
+
+	function checkListForDuplicates(): void {
+		let duplicateMap = {};
+		items.forEach((item) => {
+			const desc = item.itemDescription.toLowerCase().trim();
+			if (!duplicateMap[desc]) {
+				duplicateMap[desc] = [item];
+			} else {
+				duplicateMap[desc].push(item);
+			}
+		});
+		Object.keys(duplicateMap).forEach((key) => {
+			const group = duplicateMap[key];
+			const isDuplicate = group.length > 1;
+			group.forEach((item) => (item.isDuplicate = isDuplicate));
+		});
+		items = [...items];
+	}
 </script>
 
 {#if isLoaded}
@@ -340,7 +396,9 @@
 							<Button class="!p-2 mr-2" color={isByCategoryView ? 'blue' : 'light'}>
 								<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
 							</Button>
-							By category
+							<div class="whitespace-nowrap">
+								{$t('lists.details.by-category')}
+							</div>
 						</div>
 					</DropdownItem>
 					<DropdownItem>
@@ -348,7 +406,7 @@
 							<Button class="!p-2 mr-2" color="light">
 								<Link size="15" />
 							</Button>
-							Get link to list
+							{$t('lists.details.link-to-list')}
 						</div>
 					</DropdownItem>
 				</DotMenu>
@@ -382,10 +440,10 @@
 								{item}
 								{isCheckboxView}
 								on:swipe={(event) => onItemSwipe(item, event)}
-								on:mouseup={() => onItemClick(item)}
-								on:press={() => onItemLongPress(item)}
+								on:item-click={() => onItemClick(item)}
+								on:item-long-press={() => onItemLongPress(item)}
 								on:checkbox-change={() => onItemCheckboxChange(item)}
-								addClass={item.id === editedItem?.id ? 'bg-blue-100' : ''}
+								addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
 							/>
 						{/each}
 					</div>
@@ -398,10 +456,10 @@
 						{item}
 						{isCheckboxView}
 						on:swipe={(event) => onItemSwipe(item, event)}
-						on:mouseup={() => onItemClick(item)}
-						on:press={() => onItemLongPress(item)}
+						on:item-click={() => onItemClick(item)}
+						on:item-long-press={() => onItemLongPress(item)}
 						on:checkbox-change={() => onItemCheckboxChange(item)}
-						addClass={item.id === editedItem?.id ? 'bg-blue-100' : ''}
+						addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
 					/>
 				{/each}
 				<!--		/Plain view-->

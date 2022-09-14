@@ -14,7 +14,9 @@ export const getInitialState = (): KGarooState => {
 		categoryOptions: [],
 		propositions: [],
 		appSettings: {
-			lang: undefined
+			lang: undefined,
+			isLocaleSet: false,
+			theme: 'light'
 		},
 		appInstructions: {
 			isAddFromPropositionsViewed: false,

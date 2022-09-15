@@ -7,13 +7,13 @@
 	import ChecklistItem from './ChecklistItem.svelte';
 	import ChecklistBatchEditor from './ChecklistBatchEditor.svelte';
 	import DotMenu from '../DotMenu.svelte';
+	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
 	import { Button, DropdownItem } from 'flowbite-svelte';
-	import { Briefcase, Link, Plus } from 'svelte-heros';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 	import { t } from '../../utils/i18n';
-	import { ListBullet } from 'svelte-heros-v2';
+	import { ListBullet, Briefcase, Link, Plus } from 'svelte-heros-v2';
 	import { press } from 'svelte-gestures';
 	import { goto } from '$app/navigation';
 	import type { FuzzyOptions } from '../../utils/fuzzy-search';
@@ -48,6 +48,8 @@
 	let isAddToListMode: boolean;
 	let addToCategoryId: string;
 	let propositionsFuzzySearch: FuzzySearch<Proposition>;
+	let isFirstTimeUse = true;
+	let isFirstTimeAdded = false;
 	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(items);
 	$: isAnyItemSelected = items.some((it) => it.selected);
@@ -67,7 +69,7 @@
 		updatePropositionsFuzzySearch();
 		checkListForDuplicates();
 		isLoaded = true;
-		if (!listId) {
+		if (!listId && !isFirstTimeUse) {
 			setTimeout(() => {
 				onAddToListClicked();
 			});
@@ -265,22 +267,25 @@
 			store.upsertListItems(listId, [updated]);
 		}
 		checkListForDuplicates();
-		if (items.find((it) => it.id === updated.id).isDuplicate) {
-			toastManager.push({
-				text: ($t as any)('lists.details.duplicate-item-badge'),
-				duration: 2000,
-				closePrevious: true,
-				type: 'details-top',
-				color: 'warning'
-			});
-		} else {
-			toastManager.push({
-				text: ($t as any)('lists.details.added-toast'),
-				duration: 2000,
-				closePrevious: true,
-				type: 'details-top',
-				color: 'success'
-			});
+		isFirstTimeAdded = isFirstTimeUse;
+		if (!isFirstTimeAdded) {
+			if (items.find((it) => it.id === updated.id).isDuplicate) {
+				toastManager.push({
+					text: ($t as any)('lists.details.duplicate-item-badge'),
+					duration: 2000,
+					closePrevious: true,
+					type: 'details-top',
+					color: 'warning'
+				});
+			} else {
+				toastManager.push({
+					text: ($t as any)('lists.details.added-toast'),
+					duration: 2000,
+					closePrevious: true,
+					type: 'details-top',
+					color: 'success'
+				});
+			}
 		}
 
 		updatePropositionsFuzzySearch();
@@ -500,3 +505,6 @@
 {:else}
 	<FullPageSpinner />
 {/if}
+
+<ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />
+<ChecklistDetailsDemoBody currentStep={2} isShown={isFirstTimeAdded} />

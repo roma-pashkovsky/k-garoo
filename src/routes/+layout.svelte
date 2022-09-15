@@ -99,21 +99,6 @@
 
 <div class="fixed top-0 bottom-0 left-0 right-0 root {$appSettings?.theme}">
 	<div class=" fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
-		<Modal bind:open={isSetLocalePopupOpen} size="xs" on:hide={onSelectLocaleFromPopup}>
-			<form on:submit|preventDefault={() => (isSetLocalePopupOpen = false)}>
-				<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0 mb-4">
-					{$t('app.initial-lang.header')}
-				</h3>
-				<LocaleSelector />
-				<p class="text-sm text-gray-600 py-3">
-					{$t('app.initial-lang.disclaimer')}
-				</p>
-				<div class="flex justify-end">
-					<Button type="submit" class="w-50">{$t('app.ok.long')}</Button>
-				</div>
-			</form>
-		</Modal>
-
 		{#if !isInitialized || $isAppReloading}
 			<FullPageSpinner />
 		{:else}
@@ -137,6 +122,21 @@
 		{/if}
 	</div>
 </div>
+
+<Modal bind:open={isSetLocalePopupOpen} size="xs" on:hide={onSelectLocaleFromPopup}>
+	<form on:submit|preventDefault={() => (isSetLocalePopupOpen = false)}>
+		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0 mb-4">
+			{$t('app.initial-lang.header')}
+		</h3>
+		<LocaleSelector />
+		<p class="text-sm text-gray-600 py-3">
+			{$t('app.initial-lang.disclaimer')}
+		</p>
+		<div class="flex justify-end">
+			<Button type="submit" class="w-50">{$t('app.ok.long')}</Button>
+		</div>
+	</form>
+</Modal>
 
 <style>
 	.top-toast-wrapper {

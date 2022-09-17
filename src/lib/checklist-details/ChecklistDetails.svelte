@@ -29,6 +29,7 @@
 	import { copyToClipboard } from '../../utils/copy-to-clipboard';
 	import { ToastService } from '../../utils/toasts';
 	import type { ToastManagerType } from '../../utils/toasts';
+	import { InformationCircle } from 'svelte-heros';
 
 	export let listId: string | undefined;
 	export let locale: 'en' | 'ua';
@@ -50,6 +51,10 @@
 	let propositionsFuzzySearch: FuzzySearch<Proposition>;
 	let isFirstTimeUse = true;
 	let isFirstTimeAdded = false;
+	// support undo for delete
+	let previousItems: CheckListItemEditModel[];
+	// animations for remove
+	let itemsToBeDeleted: { [id: string]: true } = {};
 	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(items);
 	$: isAnyItemSelected = items.some((it) => it.selected);
@@ -58,6 +63,7 @@
 		store = new ChecklistDetailsStore(locale);
 		const checklistSettings = await store.getChecklistSettings();
 		isByCategoryView = checklistSettings.isGroupByCategory;
+		isFirstTimeUse = !checklistSettings.hasSeenDemo;
 		categoryOptions = await store.getCategoryOptions();
 		propositions = await store.getPropositions();
 		categoryAutodetector = new CategoryAutodetector(propositions, locale);
@@ -78,6 +84,9 @@
 
 	onDestroy(() => {
 		toastManager.clear();
+		if (listId) {
+			store.setHasSeenDemo();
+		}
 	});
 
 	function onListTitleSave(): void {
@@ -129,6 +138,11 @@
 			text: ($t as any)('lists.details.link-created'),
 			closePrevious: false
 		});
+	}
+
+	function onShowMeAround() {
+		closeAllEdits();
+		setTimeout(() => (isFirstTimeUse = true));
 	}
 
 	function onAddToListClicked(): void {
@@ -186,12 +200,38 @@
 		const direction = event.detail.direction;
 		if (direction === 'left') {
 			if (!isCheckboxView) {
-				items = items.filter((it) => it.id !== item.id);
-				store.removeListItems(listId, [item.id]);
-				updatePropositionsFuzzySearch();
-				checkListForDuplicates();
+				doRemoveItems([item.id]);
 			}
 		}
+	}
+
+	function doRemoveItems(itemIds: string[]): void {
+		console.log(itemIds);
+		itemsToBeDeleted = itemIds.reduce((p, c) => ({ ...p, [c]: true }), {}) as {
+			[id: string]: true;
+		};
+		setTimeout(() => {
+			previousItems = [...items];
+			items = items.filter((it) => !itemsToBeDeleted[it.id]);
+			console.log(items);
+			store.removeListItems(listId, itemIds);
+			updatePropositionsFuzzySearch();
+			checkListForDuplicates();
+			toastManager.push({
+				text: ($t as any)('lists.details.removed-toast'),
+				closePrevious: true,
+				color: 'success',
+				type: 'details-top',
+				duration: 3000,
+				onCancel: () => {
+					items = [...previousItems];
+					store.setListItems(listId, items);
+					updatePropositionsFuzzySearch();
+					checkListForDuplicates();
+				}
+			});
+			itemsToBeDeleted = {};
+		}, 400);
 	}
 
 	function onItemLongPress(item: CheckListItemEditModel): void {
@@ -208,10 +248,7 @@
 		const m = ($t as any)('lists.create_new_list.remove-selected-warning');
 		if (confirm(m)) {
 			const removeIds = items.filter((it) => it.selected).map((it) => it.id);
-			items = items.filter((it) => !it.selected);
-			updatePropositionsFuzzySearch();
-			store.removeListItems(listId, removeIds);
-			checkListForDuplicates();
+			doRemoveItems(removeIds);
 		}
 	}
 
@@ -267,28 +304,29 @@
 			store.upsertListItems(listId, [updated]);
 		}
 		checkListForDuplicates();
-		isFirstTimeAdded = isFirstTimeUse;
-		if (!isFirstTimeAdded) {
-			if (items.find((it) => it.id === updated.id).isDuplicate) {
-				toastManager.push({
-					text: ($t as any)('lists.details.duplicate-item-badge'),
-					duration: 2000,
-					closePrevious: true,
-					type: 'details-top',
-					color: 'warning'
-				});
-			} else {
-				toastManager.push({
-					text: ($t as any)('lists.details.added-toast'),
-					duration: 2000,
-					closePrevious: true,
-					type: 'details-top',
-					color: 'success'
-				});
-			}
+		if (items.find((it) => it.id === updated.id).isDuplicate) {
+			toastManager.push({
+				text: ($t as any)('lists.details.duplicate-item-badge'),
+				duration: 2000,
+				closePrevious: true,
+				type: 'details-top',
+				color: 'warning'
+			});
+		} else {
+			toastManager.push({
+				text: ($t as any)('lists.details.added-toast'),
+				duration: 2000,
+				closePrevious: true,
+				type: 'details-top',
+				color: 'success'
+			});
 		}
 
 		updatePropositionsFuzzySearch();
+	}
+
+	function onEditorFormDestroyed() {
+		isFirstTimeAdded = isFirstTimeUse && items.length > 0;
 	}
 
 	function createNewList(): void {
@@ -414,6 +452,14 @@
 							{$t('lists.details.link-to-list')}
 						</div>
 					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onShowMeAround} class="w-full flex items-center">
+							<Button class="!p-2 mr-2" color="light">
+								<InformationCircle size="15" />
+							</Button>
+							{$t('lists.details.show-me-around')}
+						</div>
+					</DropdownItem>
 				</DotMenu>
 				<!--			/Right menu-->
 			</div>
@@ -440,10 +486,11 @@
 					</div>
 
 					<div class="pl-4">
-						{#each catItem.items as item}
+						{#each catItem.items as item (item.id)}
 							<ChecklistItem
 								{item}
 								{isCheckboxView}
+								toBeDeleted={itemsToBeDeleted[item.id]}
 								on:swipe={(event) => onItemSwipe(item, event)}
 								on:item-click={() => onItemClick(item)}
 								on:item-long-press={() => onItemLongPress(item)}
@@ -456,10 +503,11 @@
 				<!--			/By category view-->
 			{:else}
 				<!--		Plain view-->
-				{#each items as item}
+				{#each items as item (item.id)}
 					<ChecklistItem
 						{item}
 						{isCheckboxView}
+						toBeDeleted={itemsToBeDeleted[item.id]}
 						on:swipe={(event) => onItemSwipe(item, event)}
 						on:item-click={() => onItemClick(item)}
 						on:item-long-press={() => onItemLongPress(item)}
@@ -482,8 +530,10 @@
 				{propositionsFuzzySearch}
 				{store}
 				{categoryAutodetector}
+				{isFirstTimeUse}
 				on:form-submit={(e) => onAddFormSubmit(e)}
 				on:dismiss={onBodyClick}
+				on:destroy={onEditorFormDestroyed}
 				bind:editedCategoryId
 			/>
 		</BottomMenu>
@@ -507,4 +557,8 @@
 {/if}
 
 <ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />
-<ChecklistDetailsDemoBody currentStep={2} isShown={isFirstTimeAdded} />
+<ChecklistDetailsDemoBody
+	currentStep={2}
+	isShown={isFirstTimeAdded}
+	on:complete={() => (isFirstTimeUse = false)}
+/>

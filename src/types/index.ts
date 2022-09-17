@@ -37,6 +37,7 @@ export type Proposition = {
 
 export type ChecklistSettings = {
 	isGroupByCategory: boolean;
+	hasSeenDemo: boolean;
 };
 
 export type AppSettings = {

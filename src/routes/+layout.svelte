@@ -30,7 +30,6 @@
 		await setAppSettings();
 		await checkForLocale();
 		isInitialized = true;
-		isAppReloading.subscribe((v) => console.log(v));
 	});
 
 	async function setAppSettings(): Promise<void> {

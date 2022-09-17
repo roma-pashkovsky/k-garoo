@@ -7,18 +7,13 @@ const DEAFULT_DURATION = 3000;
 
 export type ToastManagerType = {
 	toasts: Writable<Toast[]>;
-	push: ({
-		text,
-		color,
-		type,
-		duration,
-		closePrevious
-	}: {
+	push: (ev: {
 		text: string;
 		color?: ToastColor;
 		type?: ToastType;
 		duration?: number;
-		closePrevious: boolean;
+		closePrevious?: boolean;
+		onCancel?: () => void;
 	}) => void;
 	clear: () => void;
 };
@@ -32,21 +27,25 @@ class ToastManager {
 		color = 'default',
 		type = 'page-bottom',
 		duration = DEAFULT_DURATION,
-		closePrevious = false
+		closePrevious = false,
+		onCancel
 	}: {
 		text: string;
 		color: ToastColor;
 		type: ToastType;
 		duration: number;
 		closePrevious?: boolean;
+		onCancel?: () => void;
 	}): void {
 		if (closePrevious) {
-			this.toasts.set([{ text, color, type, showUntilUTC: new Date().getTime() + duration }]);
+			this.toasts.set([
+				{ text, color, type, showUntilUTC: new Date().getTime() + duration, onCancel }
+			]);
 		} else {
 			this.toasts.update((prev) => {
 				const updated: Toast[] = [
 					...prev,
-					{ text, color, type, showUntilUTC: new Date().getTime() + duration }
+					{ text, color, type, showUntilUTC: new Date().getTime() + duration, onCancel }
 				];
 				return updated;
 			});
@@ -95,4 +94,5 @@ export interface Toast {
 	type: ToastType;
 	showUntilUTC: number;
 	closePrevious?: boolean;
+	onCancel?: () => void;
 }

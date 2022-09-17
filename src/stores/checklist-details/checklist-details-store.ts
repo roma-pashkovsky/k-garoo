@@ -22,14 +22,14 @@ export class ChecklistDetailsStore {
 
 	public async getCategoryOptions(): Promise<CategoryOption[]> {
 		return this.persistence.getCategoryOptions().then((options) => {
-			const manager = new CategoryOptionManager(options, this.locale);
+			const manager = new CategoryOptionManager(options || [], this.locale);
 			return manager.getCategoryOptions();
 		});
 	}
 
 	public async getPropositions(): Promise<Proposition[]> {
 		return this.persistence.getPropositions().then((props) => {
-			const manager = new PropositionsManager(props, this.locale);
+			const manager = new PropositionsManager(props || [], this.locale);
 			return manager.getPropositions();
 		});
 	}
@@ -62,12 +62,20 @@ export class ChecklistDetailsStore {
 		return this.persistence.removeListItems(id, itemIds);
 	}
 
+	public async setListItems(id: string, editItems: CheckListItemEditModel[]): Promise<void> {
+		return this.persistence.setListItems(id, this.editModelsToChecklistItems(editItems));
+	}
+
 	public async addCategoryOption(option: CategoryOption): Promise<void> {
 		return this.persistence.addCategoryOption(option);
 	}
 
 	public async updateByCategoryView(isByCategory: boolean): Promise<void> {
 		return this.persistence.updateByCategoryView(isByCategory);
+	}
+
+	public setHasSeenDemo(): Promise<void> {
+		return this.persistence.setHasSeenDemo();
 	}
 
 	public async updateProposition(prop: Proposition): Promise<void> {

@@ -1,0 +1,65 @@
+<script lang="ts">
+	import DefaultPaneWrap from '../DefaultPaneWrap.svelte';
+	import { Button } from 'flowbite-svelte';
+	import Gif from '../Gif.svelte';
+	import { t } from '../../utils/i18n.js';
+	import { click_outside } from '../../utils/click-outside';
+	import { createEventDispatcher } from 'svelte';
+
+	let isShown = true;
+
+	let step = 1;
+	let maxSteps = 2;
+	let leftSwipeSrc = '/img/swipe-left-4.gif';
+	let rightSwipeSrc = '/img/swipe-right-2.gif';
+	const dispatch = createEventDispatcher();
+
+	function onNext(): void {
+		step++;
+		isShown = step <= maxSteps;
+		dispatch('next-click');
+	}
+</script>
+
+{#if isShown}
+	<div
+		use:click_outside
+		on:click_outside={onNext}
+		class="absolute bottom-20 left-1/2 -translate-x-1/2 w-max"
+	>
+		{#if step === 1}
+			<DefaultPaneWrap paddingClass="p-2">
+				<div
+					class="flex items-center"
+					onmousedown="event.stopPropagation(); event.preventDefault();"
+				>
+					<Gif src={leftSwipeSrc} height="38px" />
+					<div class="ml-3 text-sm whitespace-nowrap">{$t('lists.details.demo.exit-editor')}</div>
+					<Button
+						class="!p-2 ml-3 whitespace-nowrap text-blue-600"
+						color="default"
+						on:click={onNext}>{$t('lists.details.demo.got-it')}</Button
+					>
+				</div>
+			</DefaultPaneWrap>
+		{/if}
+		{#if step === 2}
+			<DefaultPaneWrap paddingClass="p-2">
+				<div
+					class="flex items-center"
+					onmousedown="event.stopPropagation(); event.preventDefault();"
+				>
+					<Gif src={rightSwipeSrc} height="38px" />
+					<div class="ml-3 text-sm whitespace-nowrap tracking-tighter">
+						{$t('lists.details.demo.submit-editor')}
+					</div>
+					<Button
+						class="!p-2 ml-3 whitespace-nowrap text-blue-600"
+						color="default"
+						on:click={onNext}>{$t('lists.details.demo.got-it')}</Button
+					>
+				</div>
+			</DefaultPaneWrap>
+		{/if}
+	</div>
+{/if}

@@ -93,6 +93,19 @@ export class CheckListDetailsLocalStoragePersistence {
 		}
 	}
 
+	public async setListItems(id: string, items: CheckListItem[]): Promise<void> {
+		const state = getState();
+		const list = state.listData[id];
+		list.items = [...items];
+		setState({
+			...state,
+			listData: {
+				...state.listData,
+				[id]: { ...list, updated_utc: new Date().getTime() }
+			}
+		});
+	}
+
 	public async removeListItems(id: string, itemIds: string[]): Promise<void> {
 		const state = getState();
 		const list = state.listData[id];
@@ -125,6 +138,17 @@ export class CheckListDetailsLocalStoragePersistence {
 			checklistSettings: {
 				...state.checklistSettings,
 				isGroupByCategory: isByCategory
+			}
+		});
+	}
+
+	public async setHasSeenDemo(): Promise<void> {
+		const state = getState();
+		setState({
+			...state,
+			checklistSettings: {
+				...state.checklistSettings,
+				hasSeenDemo: true
 			}
 		});
 	}

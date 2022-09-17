@@ -12,7 +12,7 @@ export class CategoryOptionManager {
 			};
 		});
 		this.sortReservedCategories(reserved);
-		return [...this.categoryOptions, ...reserved];
+		return [...(this.categoryOptions || []), ...reserved];
 	}
 
 	public sortReservedCategories(reserved: CategoryOption[]): void {

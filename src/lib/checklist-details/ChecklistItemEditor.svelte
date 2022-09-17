@@ -2,7 +2,7 @@
 	import type { CategoryOption, CheckListItem, Proposition } from '../../types';
 	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import { ArrowRight } from 'svelte-heros';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { customCategoryId, otherCategoryId } from '../../utils/local-storage-state';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
 	import { ChevronLeft } from 'svelte-heros-v2';
@@ -14,7 +14,7 @@
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
 	import { debouncer } from '../../utils/debouncer';
 	import { isEnter, Keycodes } from '../../utils/keycodes';
-	import AppDivInput from '../AppDivInput.svelte';
+	import ChecklistEditorDemo from '../checklist-details-demo/ChecklistEditorDemo.svelte';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
@@ -23,6 +23,7 @@
 	export let propositionsFuzzySearch: FuzzySearch<Proposition>;
 	export let store: ChecklistDetailsStore;
 	export let categoryAutodetector: CategoryAutodetector;
+	export let isFirstTimeUse: boolean;
 
 	const dispatch = createEventDispatcher();
 	let inputEl: HTMLInputElement;
@@ -49,6 +50,10 @@
 	onMount(() => {
 		shouldAutodetectCategory = editedCategoryId === otherCategoryId;
 		focus();
+	});
+
+	onDestroy(() => {
+		dispatch('destroy');
 	});
 
 	function focus() {
@@ -164,7 +169,11 @@
 	on:submit|preventDefault={onAddFormSubmit}
 	use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
 	on:swipe={onFormSwipe}
+	class="relative"
 >
+	{#if isFirstTimeUse}
+		<ChecklistEditorDemo on:next-click={focus} />
+	{/if}
 	<ButtonGroup class="relative !w-full">
 		<Button class="!py-2 !px-1" on:click={() => dispatch('dismiss')}>
 			<ChevronLeft />

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Toast as ToastType } from '../utils/toasts';
 	import { Toast } from 'flowbite-svelte';
+	import { t } from '../utils/i18n.js';
 
 	export let toast: ToastType;
 </script>
@@ -37,5 +38,9 @@
 			<span class="sr-only">Check icon</span>
 		</svelte:fragment>
 		{toast.text}
+		{#if !!toast.onCancel}<button
+				class="text-sm font-medium text-blue-600 p-1.5 hover:bg-blue-100 rounded-lg dark:text-blue-500 dark:hover:bg-gray-700"
+				on:click={toast.onCancel}>{$t('app.undo')}</button
+			>{/if}
 	</Toast>
 {/if}

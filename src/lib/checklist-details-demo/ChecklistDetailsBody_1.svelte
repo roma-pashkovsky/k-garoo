@@ -2,6 +2,7 @@
 	import { Button, Toast } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { t } from '../../utils/i18n.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -18,8 +19,10 @@
 	<div class="flex justify-center">
 		<img src="/img/double-click-2.gif" width="80" />
 	</div>
-	Double-click to start adding items
+	{$t('lists.details.demo.add')}
 	<div class="flex space-x-2 justify-end mt-3">
-		<Button color="default" on:click={onForward}>Got it!</Button>
+		<Button color="default" on:click={onForward} class="text-blue-600"
+			>{$t('lists.details.demo.got-it')}</Button
+		>
 	</div>
 </div>

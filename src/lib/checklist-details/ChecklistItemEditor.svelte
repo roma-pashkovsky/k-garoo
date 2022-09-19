@@ -220,7 +220,7 @@
 	<div class="flex h-8 pl-10">
 		{#each displayPropositions as proposition, index}
 			<div
-				class="py-2 ml-1 align-middle text-gray-700 text-sm whitespace-nowrap text-ellipsis overflow-hidden"
+				class="py-2 ml-1 align-middle text-gray-800 dark:text-gray-400 text-sm whitespace-nowrap text-ellipsis overflow-hidden"
 				transition:fade
 				on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
 				onmousedown="event.stopPropagation()"

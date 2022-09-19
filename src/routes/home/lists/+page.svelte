@@ -22,7 +22,8 @@
 	const toastManager = ToastService.getInstance();
 	$: cards = ids.map((id) => data[id]) as CheckList[];
 
-	function onListRemove(list: CheckList): void {
+	function onListRemove(listId: string): void {
+		const list = data[listId];
 		if (confirm(translate($locale, 'lists.remove-warning', { list: list.name }))) {
 			ids = ids.filter((id) => id !== list.id);
 			delete data[list.id];
@@ -57,7 +58,7 @@
 </svelte:head>
 
 <div class="absolute top-2 right-2 z-10 p-2">
-	<Button on:click={onAddButtonClicked} class="!p-2 shadow-md" o><Plus class="w-8 h-8" /></Button>
+	<Button on:click={onAddButtonClicked} class="!p-2 shadow-md"><Plus class="w-8 h-8" /></Button>
 </div>
 <Page>
 	<div class="flex items-start justify-center" style="padding-top: 4rem">
@@ -72,19 +73,19 @@
 			</EmptyPage>
 		{/if}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-			{#each cards as card}
+			{#each cards as card, index}
 				<div
 					use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
-					on:swipe={() => onListRemove(card)}
+					on:swipe={() => onListRemove(card.id)}
 					on:click={() => onCardClicked(card.id)}
 				>
 					<Card
 						class="!pl-6 !pt-6 !pb-6 !pr-10 hover:bg-gray-50 cursor-pointer w-56 sm:w-80 relative"
 					>
 						<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
-							<DotMenu>
+							<DotMenu id={'item' + index}>
 								<DropdownItem>
-									<div class="flex items-center" on:click={() => onListRemove(card)}>
+									<div class="flex items-center" on:click={() => onListRemove(card.id)}>
 										<Button class="!p-2 mr-2" color="light">
 											<DocumentRemove size="15" />
 										</Button>

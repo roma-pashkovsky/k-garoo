@@ -545,7 +545,11 @@
 				<!--			By category view-->
 				{#each byCategoryList as catItem, catIndex}
 					<div onclick="event.stopPropagation()">
-						<h5 class="text-gray-600 text-sm flex items-center {catIndex === 0 ? '' : 'pt-6'}">
+						<h5
+							class="text-gray-600 dark:text-gray-400 text-sm flex items-center {catIndex === 0
+								? ''
+								: 'pt-6'}"
+						>
 							<span
 								class="p-2"
 								use:press={{ timeframe: 400, triggerBeforeFinished: true }}

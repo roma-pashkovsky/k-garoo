@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Dropdown, ToolbarButton } from 'flowbite-svelte';
+	export let widthClass = 'w-44';
 </script>
 
 <ToolbarButton
@@ -20,6 +21,6 @@
 		/></svg
 	>
 </ToolbarButton>
-<Dropdown class="w-44" triggeredBy=".dots-menu">
+<Dropdown class={widthClass} triggeredBy=".dots-menu">
 	<slot />
 </Dropdown>

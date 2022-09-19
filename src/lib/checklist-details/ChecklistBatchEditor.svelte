@@ -6,17 +6,27 @@
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import type { CategoryOption } from '../../types';
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
-	import { ChevronLeft } from 'svelte-heros-v2';
+	import { ChevronLeft, DocumentDuplicate } from 'svelte-heros-v2';
 	import { swipe } from 'svelte-gestures';
+	import { throttler } from '../../utils/throttler';
 
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
 	let changeCategoryId: string;
 	let customCategoryInput: string;
 	const dispatch = createEventDispatcher();
+	const throttle = throttler(300);
 
 	function onRemoveClicked(): void {
 		dispatch('batch-remove');
+	}
+
+	function onSaveAsNewList(): void {
+		dispatch('batch-save-new-list');
+	}
+
+	function onChangeCategoryThrottled(): void {
+		throttle(() => onChangeCategory());
 	}
 
 	function onChangeCategory(): void {
@@ -54,13 +64,16 @@
 </script>
 
 <div onclick="event.stopPropagation()">
-	<form on:submit|preventDefault={onChangeCategory}>
+	<form on:submit|preventDefault={onChangeCategoryThrottled}>
 		<ButtonGroup class="!w-full">
 			<Button class="!py-2 !px-1" on:click={() => dispatch('dismiss')}>
 				<ChevronLeft />
 			</Button>
 			<Button on:click={onRemoveClicked} class="!pt-2 !pb-2">
 				<DocumentRemove />
+			</Button>
+			<Button on:click={onSaveAsNewList} class="!pt-2 !pb-2">
+				<DocumentDuplicate />
 			</Button>
 			{#if isByCategoryView}
 				<Button class="!p-0 flex-1">
@@ -78,7 +91,7 @@
 						/>
 					</div>
 				</Button>
-				<Button type="submit" on:click={onChangeCategory} color="blue" class="!py-2 !px-1"
+				<Button type="submit" on:click={onChangeCategoryThrottled} color="blue" class="!py-2 !px-1"
 					><ArrowRight />
 				</Button>
 			{/if}

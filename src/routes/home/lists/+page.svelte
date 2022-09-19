@@ -11,10 +11,15 @@
 	import NavBar from '../../../lib/NavBar.svelte';
 	import DotMenu from '../../../lib/DotMenu.svelte';
 	import AppDivInput from '../../../lib/AppDivInput.svelte';
+	import { getDecodeLinkToList } from '../../../utils/get-decode-link-to-list';
+	import { copyToClipboard } from '../../../utils/copy-to-clipboard';
+	import { ToastService } from '../../../utils/toasts';
+	import { Link } from 'svelte-heros-v2';
 
 	const state: KGarooState = getState();
 	let ids = state.listIds || [];
 	const data = state.listData || {};
+	const toastManager = ToastService.getInstance();
 	$: cards = ids.map((id) => data[id]) as CheckList[];
 
 	function onListRemove(list: CheckList): void {
@@ -27,6 +32,15 @@
 				listData: data
 			});
 		}
+	}
+
+	async function onListGetLink(list: CheckList): Promise<void> {
+		const url = getDecodeLinkToList(list);
+		await copyToClipboard(url);
+		toastManager.push({
+			text: ($t as any)('lists.details.link-created'),
+			closePrevious: false
+		});
 	}
 
 	export function onCardClicked(id: string): void {
@@ -43,7 +57,7 @@
 </svelte:head>
 
 <div class="absolute top-2 right-2 z-10 p-2">
-	<Button on:click={onAddButtonClicked} class="!p-2" o><Plus class="w-8 h-8" /></Button>
+	<Button on:click={onAddButtonClicked} class="!p-2 shadow-md" o><Plus class="w-8 h-8" /></Button>
 </div>
 <Page>
 	<div class="flex items-start justify-center" style="padding-top: 4rem">
@@ -75,6 +89,14 @@
 											<DocumentRemove size="15" />
 										</Button>
 										{$t('lists.remove-list')}
+									</div>
+								</DropdownItem>
+								<DropdownItem>
+									<div class="flex items-center" on:click={() => onListGetLink(card)}>
+										<Button class="!p-2 mr-2" color="light">
+											<Link size="15" />
+										</Button>
+										{$t('lists.details.link-to-list')}
 									</div>
 								</DropdownItem>
 							</DotMenu>

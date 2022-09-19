@@ -7,7 +7,7 @@
 	import { t } from '../../utils/i18n.js';
 
 	const dispatch = createEventDispatcher();
-	let useCategoriesGif = '/img/use-categories.gif';
+	let useCategoriesGif = '/img/view-by-category.gif';
 
 	function onForward(): void {
 		dispatch('forward');

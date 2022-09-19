@@ -3,9 +3,10 @@
 	import { Select } from 'flowbite-svelte';
 	import { t } from '../utils/i18n';
 	import { getState, setState } from '../utils/local-storage-state';
+	import { derived } from 'svelte/store';
 
-	let theme = $appSettingsStore.theme;
-	const themeOptions = [
+	let theme = $appSettingsStore?.theme;
+	const themeOptions = derived(appSettingsStore, () => [
 		{
 			name: ($t as any)('settings.header.theme-light'),
 			value: 'light'
@@ -14,7 +15,7 @@
 			name: ($t as any)('settings.header.theme-dark'),
 			value: 'dark'
 		}
-	];
+	]);
 
 	function onChange(): void {
 		const state = getState();
@@ -37,7 +38,7 @@
 <Select
 	style="width: 117px;"
 	placeholder={$t('settings.header.theme')}
-	items={themeOptions}
+	items={$themeOptions}
 	bind:value={theme}
 	on:change={onChange}
 />

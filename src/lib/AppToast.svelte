@@ -2,6 +2,7 @@
 	import type { Toast as ToastType } from '../utils/toasts';
 	import { Toast } from 'flowbite-svelte';
 	import { t } from '../utils/i18n.js';
+	import { fly } from 'svelte/transition';
 
 	export let toast: ToastType;
 </script>
@@ -11,7 +12,7 @@
 {/if}
 
 {#if toast?.color === 'warning'}
-	<Toast simple={true} color="yellow">
+	<Toast transition={fly} params={{ x: 200 }} simple={true} color="yellow">
 		<svelte:fragment slot="icon">
 			<div>!</div>
 			<span class="sr-only">Warning icon</span>
@@ -21,7 +22,7 @@
 {/if}
 
 {#if toast?.color === 'success'}
-	<Toast simple={true} color="green">
+	<Toast transition={fly} params={{ x: 200 }} simple={true} color="green">
 		<svelte:fragment slot="icon">
 			<svg
 				aria-hidden="true"

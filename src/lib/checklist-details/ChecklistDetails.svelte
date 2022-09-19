@@ -8,12 +8,13 @@
 	import ChecklistBatchEditor from './ChecklistBatchEditor.svelte';
 	import DotMenu from '../DotMenu.svelte';
 	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
+	import { EyeOff } from 'svelte-heros';
 	import { Button, DropdownItem } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 	import { t } from '../../utils/i18n';
-	import { ListBullet, Briefcase, Link, Plus } from 'svelte-heros-v2';
+	import { ListBullet, Briefcase, Link, Plus, Eye, InformationCircle } from 'svelte-heros-v2';
 	import { press } from 'svelte-gestures';
 	import { goto } from '$app/navigation';
 	import type { FuzzyOptions } from '../../utils/fuzzy-search';
@@ -29,7 +30,8 @@
 	import { copyToClipboard } from '../../utils/copy-to-clipboard';
 	import { ToastService } from '../../utils/toasts';
 	import type { ToastManagerType } from '../../utils/toasts';
-	import { InformationCircle } from 'svelte-heros';
+	import { getDecodeLinkToList } from '../../utils/get-decode-link-to-list';
+	import { p } from '../../utils/pluralize';
 
 	export let listId: string | undefined;
 	export let locale: 'en' | 'ua';
@@ -51,12 +53,14 @@
 	let propositionsFuzzySearch: FuzzySearch<Proposition>;
 	let isFirstTimeUse = true;
 	let isFirstTimeAdded = false;
+	let isHideCrossedOut = false;
 	// support undo for delete
 	let previousItems: CheckListItemEditModel[];
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
+	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
-	$: byCategoryList = getChecklistGroupedByCategory(items);
+	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: isAnyItemSelected = items.some((it) => it.selected);
 
 	onMount(async () => {
@@ -131,8 +135,7 @@
 
 	async function onGenerateListLinkClicked(): Promise<void> {
 		const list = await store.getList(listId);
-		const compressed = new StringCompressor().compressToEncodedURIComponent(JSON.stringify(list));
-		const url = window.origin + '/decode/' + compressed;
+		const url = getDecodeLinkToList(list);
 		await copyToClipboard(url);
 		toastManager.push({
 			text: ($t as any)('lists.details.link-created'),
@@ -149,6 +152,19 @@
 		isCheckboxView = false;
 		deselectAllCheckboxes();
 		if (isAddToListMode) {
+			closeAllEdits();
+		} else {
+			editedItem = getNewListItem();
+			editedCategoryId = editedItem.category.id;
+			isAddToListMode = true;
+			addToCategoryId = undefined;
+		}
+	}
+
+	function onListBodyDoubleClick(): void {
+		if (isAddToListMode || isCheckboxView || addToCategoryId || !!editedItem) {
+			isCheckboxView = false;
+			deselectAllCheckboxes();
 			closeAllEdits();
 		} else {
 			editedItem = getNewListItem();
@@ -206,7 +222,6 @@
 	}
 
 	function doRemoveItems(itemIds: string[]): void {
-		console.log(itemIds);
 		itemsToBeDeleted = itemIds.reduce((p, c) => ({ ...p, [c]: true }), {}) as {
 			[id: string]: true;
 		};
@@ -253,6 +268,7 @@
 	}
 
 	function onBatchChangeCategory(e: ChangeCategoryEvent): void {
+		previousItems = items.map((it) => ({ ...it, category: { ...it.category } }));
 		let categoryId = e.categoryId;
 		if (e.newCategory) {
 			categoryOptions = [e.newCategory, ...categoryOptions];
@@ -260,13 +276,40 @@
 			store.addCategoryOption(e.newCategory);
 		}
 		let category = categoryOptions.find((c) => c.id === categoryId);
+		let count = 0;
 		items = items.map((it) => {
 			if (it.selected) {
+				count++;
 				it.category = { ...category };
 			}
 			return it;
 		});
 		store.upsertListItems(listId, items);
+		deselectAllCheckboxes();
+		toastManager.push({
+			text: ($t as any)('lists.details.changed-category-toast'),
+			closePrevious: true,
+			color: 'success',
+			type: 'details-top',
+			duration: 3000,
+			onCancel: () => {
+				items = [...previousItems];
+				store.setListItems(listId, items);
+			}
+		});
+	}
+
+	async function onBatchSaveAsNewList(): Promise<void> {
+		if (confirm(($t as any)('lists.details.save-as-new-list-warning'))) {
+			const listId = getUID();
+			const newItems = items.filter((it) => it.selected);
+			const newName = listName + ' > ' + ($p as any)('item', newItems.length);
+			await store.createList(listId, newName, newItems);
+			goto(`/list-details/${listId}`);
+			setTimeout(() => {
+				location.reload();
+			});
+		}
 	}
 
 	function onAddFormSubmit(e?: any): void {
@@ -408,7 +451,14 @@
 	<DetailsPage>
 		<DetailsTopBar on:back-clicked={onBackClick}>
 			<div slot="page-title">
-				<TitleWithEdit bind:title={listName} on:title-submit={onListTitleSave} />
+				<div class="flex items-center">
+					<TitleWithEdit bind:title={listName} on:title-submit={onListTitleSave} />
+					<div>
+						{#if isHideCrossedOut}
+							<EyeOff on:click={() => (isHideCrossedOut = false)} class="ml-3" size="15" />
+						{/if}
+					</div>
+				</div>
 			</div>
 			<div class="space-x-2 flex items-center" slot="right-content">
 				<Button
@@ -433,7 +483,7 @@
 					<Plus />
 				</Button>
 				<!--			Right menu-->
-				<DotMenu>
+				<DotMenu widthClass="w-56">
 					<DropdownItem class="block sm:hidden">
 						<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
 							<Button class="!p-2 mr-2" color={isByCategoryView ? 'blue' : 'light'}>
@@ -441,6 +491,27 @@
 							</Button>
 							<div class="whitespace-nowrap">
 								{$t('lists.details.by-category')}
+							</div>
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div
+							on:click={() => (isHideCrossedOut = !isHideCrossedOut)}
+							class="w-full flex items-center"
+						>
+							<Button class="!p-2 mr-2" color={isHideCrossedOut ? 'blue' : 'light'}>
+								{#if isHideCrossedOut}
+									<EyeOff size="15" />
+								{:else}
+									<Eye size="15" />
+								{/if}
+							</Button>
+							<div class="whitespace-nowrap">
+								{#if isHideCrossedOut}
+									{$t('lists.details.show-crossed-out')}
+								{:else}
+									{$t('lists.details.hide-crossed-out')}
+								{/if}
 							</div>
 						</div>
 					</DropdownItem>
@@ -467,7 +538,7 @@
 		<DetailsBody
 			on:body-swipe-left={onBodySwipeLeft}
 			on:body-swipe-right={onBodySwipeRight}
-			on:dblclick={onAddToListClicked}
+			on:dblclick={onListBodyDoubleClick}
 		>
 			<!--        List-->
 			{#if isByCategoryView}
@@ -503,7 +574,7 @@
 				<!--			/By category view-->
 			{:else}
 				<!--		Plain view-->
-				{#each items as item (item.id)}
+				{#each displayItems as item (item.id)}
 					<ChecklistItem
 						{item}
 						{isCheckboxView}
@@ -547,6 +618,7 @@
 				{categoryOptions}
 				on:batch-remove={onBatchRemove}
 				on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
+				on:batch-save-new-list={onBatchSaveAsNewList}
 				on:dismiss={onBodyClick}
 			/>
 		</BottomMenu>

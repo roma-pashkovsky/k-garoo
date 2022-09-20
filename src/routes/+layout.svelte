@@ -98,6 +98,11 @@
 	}
 </script>
 
+<!--Load tailwind colors-->
+<div
+	class="bg-slate-100 bg-zinc-100 bg-red-100 bg-lime-100 bg-orange-100 bg-emerald-100 bg-teal-100 bg-cyan-100 bg-indigo-100 bg-rose-100 bg-fuchsia-100"
+/>
+
 <div class="fixed top-0 bottom-0 left-0 right-0 root {$appSettings?.theme}">
 	<div class=" fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
 		{#if !isInitialized || $isAppReloading}

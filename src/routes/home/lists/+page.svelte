@@ -80,7 +80,7 @@
 					on:click={() => onCardClicked(card.id)}
 				>
 					<Card
-						class="!pl-6 !pt-6 !pb-6 !pr-10 hover:bg-gray-50 cursor-pointer w-56 sm:w-80 relative"
+						class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-56 sm:w-80 relative"
 					>
 						<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
 							<DotMenu id={'item' + index}>

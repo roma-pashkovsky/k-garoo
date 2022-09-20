@@ -16,11 +16,11 @@
 </script>
 
 <Navbar
-	navClass="bg-white px-2 sm:px-4 py-2.5 dark:bg-gray-800 w-full z-20 top-0 left-0 border-b border-gray-200 dark:border-gray-600"
+	navClass="bg-white px-2 sm:px-4 py-2.5 dark:bg-gray-800 w-full z-20 top-0 left-0 border-b !border-gray-200 dark:!border-gray-600 shadow-sm"
 	navDivClass="!w-full flex flex-wrap justify-between !max-w-full container"
 	let:hidden
 	let:toggle
-	rounded={true}
+	rounded={false}
 	fluid={false}
 >
 	<NavBrand href="/">

@@ -10,6 +10,7 @@
 	export let isCheckboxView: boolean;
 	export let addClass: string;
 	export let toBeDeleted: boolean;
+	export let isLightBg: boolean;
 	const dispatch = createEventDispatcher();
 
 	let containerDiv: HTMLDivElement;
@@ -41,7 +42,10 @@
 	}
 </script>
 
-<div bind:this={containerDiv} class="flex items-center overflow-hidden">
+<div
+	bind:this={containerDiv}
+	class=" flex items-center overflow-hidden {isLightBg ? 'dark:text-black' : 'dark:text-white'}"
+>
 	<div>
 		{#if isCheckboxView}
 			<div

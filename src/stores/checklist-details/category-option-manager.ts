@@ -8,6 +8,7 @@ export class CategoryOptionManager {
 		const reserved = Object.keys(reservedCategories).map((catKey) => {
 			return {
 				id: catKey,
+				color: reservedCategories[catKey].color,
 				name: reservedCategories[catKey][this.locale]
 			};
 		});

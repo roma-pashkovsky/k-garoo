@@ -7,6 +7,9 @@ export const getChecklistGroupedByCategory = (items: CheckListItem[]): GroupedBy
 		if (!byCategoryObj[item.category.id]) {
 			byCategoryObj[item.category.id] = { category: item.category, items: [] };
 		}
+		if (!byCategoryObj[item.category.id].category.color) {
+			byCategoryObj[item.category.id].category.color = item.category.color;
+		}
 		byCategoryObj[item.category.id].items.push(item);
 	});
 	const distinctCategories = Object.keys(byCategoryObj);

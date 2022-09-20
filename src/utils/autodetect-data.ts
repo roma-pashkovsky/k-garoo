@@ -1,34 +1,52 @@
 export const customCategoryId = 'custom';
 export const otherCategoryId = 'other';
 
-export const reservedCategories: { [categoryId: string]: { id: string; ua: string; en: string } } =
-	{
-		[otherCategoryId]: {
-			id: otherCategoryId,
-			ua: 'Інше',
-			en: 'Other'
-		},
-		[customCategoryId]: {
-			id: customCategoryId,
-			ua: 'Нова категорія...',
-			en: 'Add category...'
-		},
-		['fruit']: {
-			id: 'fruit',
-			ua: 'Фрукти',
-			en: 'Fruits'
-		},
-		['veggies']: {
-			id: 'veggies',
-			ua: 'Овочі',
-			en: 'Veggies'
-		},
-		['household chemicals']: {
-			id: 'household chemicals',
-			ua: 'Побутова хімія',
-			en: 'Household chemicals'
-		}
-	};
+export const reservedCategories: {
+	[categoryId: string]: { id: string; ua: string; en: string; color: string | undefined };
+} = {
+	[otherCategoryId]: {
+		id: otherCategoryId,
+		ua: 'Інше',
+		en: 'Other',
+		color: 'gray-100'
+	},
+	[customCategoryId]: {
+		id: customCategoryId,
+		ua: 'Нова категорія...',
+		en: 'Add category...',
+		color: undefined
+	},
+	['fruit']: {
+		id: 'fruit',
+		ua: 'Фрукти',
+		en: 'Fruits',
+		color: 'yellow-100'
+	},
+	['veggies']: {
+		id: 'veggies',
+		ua: 'Овочі',
+		en: 'Veggies',
+		color: 'green-100'
+	},
+	['household chemicals']: {
+		id: 'household chemicals',
+		ua: 'Побутова хімія',
+		en: 'Household chemicals',
+		color: 'purple-100'
+	},
+	['milk']: {
+		id: 'milk',
+		ua: 'Молочка',
+		en: 'Milk',
+		color: 'blue-100'
+	},
+	['cereals']: {
+		id: 'cereals',
+		ua: 'Крупи',
+		en: 'Cereals',
+		color: 'amber-100'
+	}
+};
 
 export const wordMap: {
 	[word: string]: {
@@ -148,7 +166,22 @@ export const wordMap: {
 		ua: 'лайм',
 		en: 'lime',
 		categoryId: 'fruit'
-	}
+	},
 
 	// Household chemicals
+	['soap']: {
+		ua: 'мило',
+		en: 'soap',
+		categoryId: 'household chemicals'
+	},
+	['washing liquid']: {
+		ua: 'рідина для миття посуду',
+		en: 'washing liquid',
+		categoryId: 'household chemicals'
+	},
+	['laundry powder']: {
+		ua: 'пральний порошок',
+		en: 'laundry powder',
+		categoryId: 'household chemicals'
+	}
 };

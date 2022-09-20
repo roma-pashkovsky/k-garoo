@@ -6,8 +6,7 @@
 
 <div {id}>
 	<ToolbarButton
-		class="dots-menu text-gray-900 bg-white dark:text-white dark:bg-gray-800 inline-flex items-center justify-center"
-		style="height: 42px; width: 30px"
+		class="w-9 h-9 dots-menu text-gray-900 bg-white dark:text-white dark:bg-gray-800 inline-flex items-center justify-center"
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

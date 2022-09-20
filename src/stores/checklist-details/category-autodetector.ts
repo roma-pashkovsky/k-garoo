@@ -25,6 +25,7 @@ export class CategoryAutodetector {
 			if (reserved) {
 				return {
 					id: reserved.id,
+					color: reserved.color,
 					name: reserved[this.locale]
 				};
 			} else {
@@ -34,6 +35,7 @@ export class CategoryAutodetector {
 			const result = reservedCategories[otherCategoryId];
 			return {
 				id: result.id,
+				color: result.color,
 				name: result[this.locale]
 			};
 		}

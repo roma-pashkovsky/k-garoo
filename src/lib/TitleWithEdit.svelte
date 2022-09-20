@@ -6,6 +6,7 @@
 
 	export let title: string;
 	let isEditListName = false;
+	let isFocused: boolean;
 	const dispatch = createEventDispatcher();
 
 	function onEditListNameOpen(): void {
@@ -21,7 +22,7 @@
 {#if isEditListName}
 	<form on:submit|preventDefault={onEditListNameSubmit}>
 		<ButtonGroup>
-			<Button class="!p-0 flex-1">
+			<Button class="!p-0 flex-1 h-9">
 				<AppTextInput
 					id="list-name"
 					autofocus
@@ -29,9 +30,10 @@
 					type="text"
 					bind:value={title}
 					on:blur={onEditListNameSubmit}
+					on:focus={() => (isFocused = true)}
 				/>
 			</Button>
-			<Button class="!p-2" color="blue" type="submit">
+			<Button class="!p-1.5 h-9 w-8" color="blue" type="submit">
 				<ArrowRight />
 			</Button>
 		</ButtonGroup>

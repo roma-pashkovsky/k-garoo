@@ -65,14 +65,14 @@
 
 <div onclick="event.stopPropagation()">
 	<form on:submit|preventDefault={onChangeCategoryThrottled}>
-		<ButtonGroup class="!w-full">
-			<Button class="!py-2 !px-1" on:click={() => dispatch('dismiss')}>
+		<ButtonGroup class="!w-full h-9">
+			<Button class="!py-1.5 !px-1" on:click={() => dispatch('dismiss')}>
 				<ChevronLeft />
 			</Button>
-			<Button on:click={onRemoveClicked} class="!pt-2 !pb-2">
+			<Button on:click={onRemoveClicked} class="!p-1.5 h-9 w-9">
 				<DocumentRemove />
 			</Button>
-			<Button on:click={onSaveAsNewList} class="!pt-2 !pb-2">
+			<Button on:click={onSaveAsNewList} class="!p-1.5 h-9 w-9">
 				<DocumentDuplicate />
 			</Button>
 			{#if isByCategoryView}
@@ -91,7 +91,11 @@
 						/>
 					</div>
 				</Button>
-				<Button type="submit" on:click={onChangeCategoryThrottled} color="blue" class="!py-2 !px-1"
+				<Button
+					type="submit"
+					on:click={onChangeCategoryThrottled}
+					color="blue"
+					class="!py-1.5 !px-1"
 					><ArrowRight />
 				</Button>
 			{/if}

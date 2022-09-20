@@ -32,6 +32,7 @@
 	import type { ToastManagerType } from '../../utils/toasts';
 	import { getDecodeLinkToList } from '../../utils/get-decode-link-to-list';
 	import { p } from '../../utils/pluralize';
+	import { pickColorForACategory } from '../../utils/category-colors';
 
 	export let listId: string | undefined;
 	export let locale: 'en' | 'ua';
@@ -271,6 +272,7 @@
 		previousItems = items.map((it) => ({ ...it, category: { ...it.category } }));
 		let categoryId = e.categoryId;
 		if (e.newCategory) {
+			e.newCategory.color = pickColorForACategory(items, categoryOptions);
 			categoryOptions = [e.newCategory, ...categoryOptions];
 			categoryId = e.newCategory.id;
 			store.addCategoryOption(e.newCategory);
@@ -322,6 +324,8 @@
 		}
 		const categoryToAdd: CategoryOption | undefined = e?.detail?.addCategory;
 		if (categoryToAdd) {
+			categoryToAdd.color = pickColorForACategory(items, categoryOptions);
+			console.log(categoryToAdd);
 			categoryOptions = [categoryToAdd, ...categoryOptions];
 			editedCategoryId = categoryToAdd.id;
 			store.addCategoryOption(categoryToAdd);
@@ -390,6 +394,7 @@
 	function getNewListItem(category?: CategoryOption): CheckListItemEditModel {
 		const targetCategory = category || {
 			id: otherCategoryId,
+			color: 'bg-grey-100',
 			name: ($t as any)('lists.create_new_list.other-category')
 		};
 		return {
@@ -463,30 +468,30 @@
 			<div class="space-x-2 flex items-center" slot="right-content">
 				<Button
 					on:click={onToggleByCategoryViewClicked}
-					class="!p-2 hidden sm:inline-block"
+					class="!p-1.5 hidden sm:inline-block w-9 h-9"
 					color={isByCategoryView ? 'blue' : 'light'}
 				>
-					<Briefcase variation={isByCategoryView ? 'solid' : 'outline'} />
+					<Briefcase size="23" variation={isByCategoryView ? 'solid' : 'outline'} />
 				</Button>
 				<Button
-					class="!p-2"
+					class="!p-1.5 w-9 h-9"
 					color={isCheckboxView ? 'blue' : 'light'}
 					on:click={onToggleCheckboxViewClicked}
 				>
-					<ListBullet />
+					<ListBullet size="23" />
 				</Button>
 				<Button
 					on:click={onAddToListClicked}
-					class="!p-2"
+					class="!p-1.5 w-9 h-9"
 					color={isAddToListMode ? 'blue' : 'light'}
 				>
-					<Plus />
+					<Plus size="23" />
 				</Button>
 				<!--			Right menu-->
 				<DotMenu widthClass="w-56">
 					<DropdownItem class="block sm:hidden">
 						<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
-							<Button class="!p-2 mr-2" color={isByCategoryView ? 'blue' : 'light'}>
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
 								<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
 							</Button>
 							<div class="whitespace-nowrap">
@@ -499,7 +504,7 @@
 							on:click={() => (isHideCrossedOut = !isHideCrossedOut)}
 							class="w-full flex items-center"
 						>
-							<Button class="!p-2 mr-2" color={isHideCrossedOut ? 'blue' : 'light'}>
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isHideCrossedOut ? 'blue' : 'light'}>
 								{#if isHideCrossedOut}
 									<EyeOff size="15" />
 								{:else}
@@ -517,7 +522,7 @@
 					</DropdownItem>
 					<DropdownItem>
 						<div on:click={onGenerateListLinkClicked} class="w-full flex items-center">
-							<Button class="!p-2 mr-2" color="light">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
 								<Link size="15" />
 							</Button>
 							{$t('lists.details.link-to-list')}
@@ -525,7 +530,7 @@
 					</DropdownItem>
 					<DropdownItem>
 						<div on:click={onShowMeAround} class="w-full flex items-center">
-							<Button class="!p-2 mr-2" color="light">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
 								<InformationCircle size="15" />
 							</Button>
 							{$t('lists.details.show-me-around')}
@@ -544,35 +549,41 @@
 			{#if isByCategoryView}
 				<!--			By category view-->
 				{#each byCategoryList as catItem, catIndex}
-					<div onclick="event.stopPropagation()">
-						<h5
-							class="text-gray-600 dark:text-gray-400 text-sm flex items-center {catIndex === 0
-								? ''
-								: 'pt-6'}"
-						>
-							<span
-								class="p-2"
-								use:press={{ timeframe: 400, triggerBeforeFinished: true }}
-								on:press|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
-							>
-								{catItem.category.name}
-							</span>
-						</h5>
-					</div>
+					<div
+						class="rounded-md {catItem.category.color
+							? 'bg-' +
+							  catItem.category.color +
+							  ' ' +
+							  'dark:bg-black dark:border dark:border-' +
+							  catItem.category.color
+							: 'border border-slate-100'} {catIndex === 0 ? '' : 'mt-6'}"
+					>
+						<div onclick="event.stopPropagation()">
+							<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
+								<span
+									class="p-2"
+									use:press={{ timeframe: 400, triggerBeforeFinished: true }}
+									on:press|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
+								>
+									{catItem.category.name}
+								</span>
+							</h5>
+						</div>
 
-					<div class="pl-4">
-						{#each catItem.items as item (item.id)}
-							<ChecklistItem
-								{item}
-								{isCheckboxView}
-								toBeDeleted={itemsToBeDeleted[item.id]}
-								on:swipe={(event) => onItemSwipe(item, event)}
-								on:item-click={() => onItemClick(item)}
-								on:item-long-press={() => onItemLongPress(item)}
-								on:checkbox-change={() => onItemCheckboxChange(item)}
-								addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
-							/>
-						{/each}
+						<div class="pl-4">
+							{#each catItem.items as item (item.id)}
+								<ChecklistItem
+									{item}
+									{isCheckboxView}
+									toBeDeleted={itemsToBeDeleted[item.id]}
+									on:swipe={(event) => onItemSwipe(item, event)}
+									on:item-click={() => onItemClick(item)}
+									on:item-long-press={() => onItemLongPress(item)}
+									on:checkbox-change={() => onItemCheckboxChange(item)}
+									addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
+								/>
+							{/each}
+						</div>
 					</div>
 				{/each}
 				<!--			/By category view-->

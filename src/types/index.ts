@@ -26,6 +26,7 @@ export type CheckListItemEditModel = CheckListItem & {
 export type CategoryOption = {
 	id: string;
 	name: string;
+	color: string | undefined;
 };
 
 export type Proposition = {

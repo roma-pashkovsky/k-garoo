@@ -15,6 +15,7 @@
 	import { debouncer } from '../../utils/debouncer';
 	import { isEnter, Keycodes } from '../../utils/keycodes';
 	import ChecklistEditorDemo from '../checklist-details-demo/ChecklistEditorDemo.svelte';
+	import { t } from '../../utils/i18n.js';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
@@ -169,72 +170,77 @@
 	on:submit|preventDefault={onAddFormSubmit}
 	use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
 	on:swipe={onFormSwipe}
-	class="relative"
+	class="relative flex items-start w-full"
 >
 	{#if isFirstTimeUse}
 		<ChecklistEditorDemo on:next-click={focus} />
 	{/if}
-	<ButtonGroup class="relative !w-full">
-		<Button class="!py-2 !px-1" on:click={() => dispatch('dismiss')}>
-			<ChevronLeft />
-		</Button>
-		<Button id="poptrigger" class="!p-0 flex-1">
-			<form on:submit|preventDefault={onAddFormSubmit} class="w-full h-full !p-0">
-				<!--			<AppDivInput-->
-				<!--				id={resetIdForInput}-->
-				<!--				bind:value={editedItem.itemDescription}-->
-				<!--				bind:div={inputEl}-->
-				<!--				on:keyup={onDescriptionInputKeyUp}-->
-				<!--				on:input={onDescriptionInputKeyDown}-->
-				<!--			/>-->
+	<div class="left flex-1 relative">
+		<div class="top flex h-9">
+			<form on:submit|preventDefault={onAddFormSubmit} class="flex-1 h-full !p-0">
 				<input
-					class="single-line w-full form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none focus:bg-blue-100 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-2.5 text-sm"
+					class="single-line w-full h-full !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
 					id="form-input"
 					autocomplete="off"
 					autofocus
+					placeholder={$t('lists.details.add-item-placeholder')}
 					bind:value={editedItem.itemDescription}
 					bind:this={inputEl}
 					on:keyup={onDescriptionInputKeyUp}
 				/>
 				<button type="submit" class="hidden" />
 			</form>
-		</Button>
-		{#if isByCategoryView}
-			<Button class="!p-0" color="light">
-				<ChecklistItemCategoryInput
-					bind:categoryId={editedCategoryId}
-					bind:categoryOptions
-					bind:customCategoryInput
-				/>
-			</Button>
-		{/if}
-		<button
-			type="submit"
-			on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
-			class="!py-2 !px-1 text-center font-medium focus:ring-2 focus:z-10 focus:outline-none inline-flex items-center justify-center px-4 py-2 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 first:rounded-l-lg last:rounded-r-lg !p-2"
-			color="blue"
-		>
-			<ArrowRight />
-		</button>
-	</ButtonGroup>
-	<div class="flex h-8 pl-10">
-		{#each displayPropositions as proposition, index}
-			<div
-				class="py-2 ml-1 align-middle text-gray-800 dark:text-gray-400 text-sm whitespace-nowrap text-ellipsis overflow-hidden"
-				transition:fade
-				on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
-				onmousedown="event.stopPropagation()"
-				onmouseup="event.stopPropagation()"
-				onclick="event.stopPropagation()"
-			>
-				{#if index !== 0}
-					<span class="inline-block mx-1">|</span>
-				{/if}
-				{proposition.itemDescription}
+			{#if isByCategoryView}
+				<div class=" flex-0">
+					<ChecklistItemCategoryInput
+						bind:categoryId={editedCategoryId}
+						bind:categoryOptions
+						bind:customCategoryInput
+					/>
+				</div>
+			{/if}
+		</div>
+		<div class="bottom relative max-w-full">
+			<div class="flex h-9 justify-center items-center">
+				{#each displayPropositions as proposition, index}
+					{#if index > 0}
+						<div class="mx-2 h-9 leading-8 text-gray-500 dark:text-gray-400">
+							<span class="align-middle">|</span>
+						</div>
+					{/if}
+					<div
+						class="prop-item h-9 text-gray-500 dark:text-gray-400 text-sm relative {index !== 0
+							? 'ml-1'
+							: ''}"
+						transition:fade
+						on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
+						onmousedown="event.stopPropagation()"
+						onmouseup="event.stopPropagation()"
+						onclick="event.stopPropagation()"
+					>
+						<div
+							class="absolute top-1 left-0 right-0 bottom-0 text-ellipsis overflow-x-hidden whitespace-nowrap leading-8 text-center"
+						>
+							<span class="align-middle text-sm">{proposition.itemDescription}</span>
+						</div>
+					</div>
+				{/each}
 			</div>
-		{/each}
+		</div>
 	</div>
+
+	<button
+		type="submit"
+		on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
+		class="!p-1.5 w-8 h-12 ml-2 rounded bg-blue-600 text-white"
+		color="blue"
+	>
+		<ArrowRight size="18" />
+	</button>
 </form>
 
 <style>
+	.prop-item {
+		flex: 1;
+	}
 </style>

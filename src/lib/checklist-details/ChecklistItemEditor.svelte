@@ -126,6 +126,7 @@
 		if (editedCategoryId === customCategoryId) {
 			addCategory = {
 				id: getUID(),
+				color: undefined,
 				name: customCategoryInput
 			};
 		}
@@ -201,16 +202,21 @@
 			{/if}
 		</div>
 		<div class="bottom relative max-w-full">
-			<div class="flex h-9 justify-center items-center">
+			<div class="flex h-9 items-center">
 				{#each displayPropositions as proposition, index}
 					{#if index > 0}
 						<div class="mx-2 h-9 leading-8 text-gray-500 dark:text-gray-400">
-							<span class="align-middle">|</span>
+							<span class="align-middle text-sm">|</span>
 						</div>
 					{/if}
 					<div
-						class="prop-item h-9 text-gray-500 dark:text-gray-400 text-sm relative {index !== 0
+						class="prop-item text-ellipsis overflow-x-hidden whitespace-nowrap leading-8 h-9 text-gray-500 dark:text-gray-400 text-sm relative {index !==
+						0
 							? 'ml-1'
+							: ''} {displayPropositions.length === 1
+							? 'single'
+							: displayPropositions.length === 2
+							? 'two-fold'
 							: ''}"
 						transition:fade
 						on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
@@ -218,11 +224,7 @@
 						onmouseup="event.stopPropagation()"
 						onclick="event.stopPropagation()"
 					>
-						<div
-							class="absolute top-1 left-0 right-0 bottom-0 text-ellipsis overflow-x-hidden whitespace-nowrap leading-8 text-center"
-						>
-							<span class="align-middle text-sm">{proposition.itemDescription}</span>
-						</div>
+						<span class="align-middle text-sm">{proposition.itemDescription}</span>
 					</div>
 				{/each}
 			</div>
@@ -232,7 +234,7 @@
 	<button
 		type="submit"
 		on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
-		class="!p-1.5 w-8 h-12 ml-2 rounded bg-blue-600 text-white"
+		class="!p-1.5 w-8 h-14 ml-2 rounded bg-blue-600 text-white"
 		color="blue"
 	>
 		<ArrowRight size="18" />
@@ -241,6 +243,12 @@
 
 <style>
 	.prop-item {
-		flex: 1;
+		max-width: 25%;
+	}
+	.prop-item.single {
+		max-width: 80%;
+	}
+	.prop-item.two-fold {
+		max-width: 40%;
 	}
 </style>

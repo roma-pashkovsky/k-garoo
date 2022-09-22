@@ -183,5 +183,27 @@ export const wordMap: {
 		ua: 'пральний порошок',
 		en: 'laundry powder',
 		categoryId: 'household chemicals'
+	},
+	['toothpaste']: {
+		ua: 'зубна паста',
+		en: 'toothpaste',
+		categoryId: 'household chemicals'
+	},
+
+	// Milk
+	['milk']: {
+		ua: 'молоко',
+		en: 'milk',
+		categoryId: 'milk'
+	},
+	['yoghurt']: {
+		ua: 'йогурт',
+		en: 'yoghurt',
+		categoryId: 'milk'
+	},
+	['cream']: {
+		ua: 'вершки',
+		en: 'cream',
+		categoryId: 'milk'
 	}
 };

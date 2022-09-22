@@ -33,7 +33,7 @@
 </script>
 
 <div
-	class="!p-0 !inline-block bg-gray-100 dark:bg-gray-800 rounded flex items-center input-wrapper w-max {isCustomCategoryOpen
+	class="!p-0 inline-block dark:bg-gray-800 items-center input-wrapper {isCustomCategoryOpen
 		? 'custom-open'
 		: ''} {fullWidth ? 'w-full' : ''}"
 >
@@ -54,16 +54,14 @@
 			<X on:click={onCloseCustomCategoryInput} />
 		</Iconinput>
 	{:else}
-		<div>
-			<Select
-				defaultClass="!py-0 !border-none !bg-transparent block w-full h-9 text-gray-900 bg-gray-50 border-gray-300 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-sm"
-				class="focus:outline-none !bg-transparent"
-				items={selectCategoryOptions}
-				placeholder={$t('lists.create_new_list.set-category-to')}
-				bind:value={categoryId}
-				on:change={onCategorySelectChange}
-			/>
-		</div>
+		<Select
+			defaultClass="!py-0 !border-none !bg-transparent block w-full h-9 text-gray-900 bg-gray-50 border-gray-300 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white text-sm"
+			class="focus:outline-none focus:!shadow-none focus:!border-none focus:!ring-0 !bg-transparent"
+			items={selectCategoryOptions}
+			placeholder={$t('lists.create_new_list.set-category-to')}
+			bind:value={categoryId}
+			on:change={onCategorySelectChange}
+		/>
 	{/if}
 </div>
 

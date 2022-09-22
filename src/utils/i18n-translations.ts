@@ -49,6 +49,9 @@ export default {
 		'lists.details.duplicate-item-badge': 'Duplicate item',
 		'lists.details.add-item-placeholder': 'Add item',
 		'lists.details.added-toast': 'Added item',
+		// batch edit
+		'lists.details.batch-remove-button': 'Remove',
+		'lists.details.move-to-new-list': 'Add to new list',
 		'lists.details.removed-toast': 'Removed',
 		'lists.details.changed-category-toast': 'Changed category',
 		'lists.details.demo.add': 'Double click to start adding items',
@@ -109,6 +112,9 @@ export default {
 		'lists.details.duplicate-item-badge': 'Пункт дублюється',
 		'lists.details.added-toast': 'Додано',
 		'lists.details.add-item-placeholder': 'Додати пункт',
+		// batch edit
+		'lists.details.batch-remove-button': 'Видалити',
+		'lists.details.move-to-new-list': 'У новий список',
 		'lists.details.removed-toast': 'Видалено',
 		'lists.details.changed-category-toast': 'Категорію змінено',
 		'lists.details.demo.add': 'Клацніть двічі, щоб додати пункт',

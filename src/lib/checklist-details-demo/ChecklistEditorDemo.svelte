@@ -25,7 +25,7 @@
 	<div
 		use:click_outside
 		on:click_outside={onNext}
-		class="absolute bottom-20 left-1/2 -translate-x-1/2 w-max"
+		class="absolute bottom-24 left-1/2 -translate-x-1/2 w-max"
 	>
 		{#if step === 1}
 			<DefaultPaneWrap paddingClass="p-2">

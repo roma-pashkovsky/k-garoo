@@ -9,6 +9,7 @@
 	import { ChevronLeft, DocumentDuplicate } from 'svelte-heros-v2';
 	import { swipe } from 'svelte-gestures';
 	import { throttler } from '../../utils/throttler';
+	import { t } from '../../utils/i18n.js';
 
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
@@ -63,42 +64,45 @@
 	}
 </script>
 
-<div onclick="event.stopPropagation()">
-	<form on:submit|preventDefault={onChangeCategoryThrottled}>
-		<ButtonGroup class="!w-full h-9">
-			<Button class="!py-1.5 !px-1" on:click={() => dispatch('dismiss')}>
-				<ChevronLeft />
-			</Button>
-			<Button on:click={onRemoveClicked} class="!p-1.5 h-9 w-9">
-				<DocumentRemove />
-			</Button>
-			<Button on:click={onSaveAsNewList} class="!p-1.5 h-9 w-9">
-				<DocumentDuplicate />
-			</Button>
-			{#if isByCategoryView}
-				<Button class="!p-0 flex-1">
-					<div
-						class="w-full"
-						use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
-						on:swipe={onCategorySwipe}
-					>
-						<ChecklistItemCategoryInput
-							class="flex-1"
-							{categoryOptions}
-							fullWidth={true}
-							bind:categoryId={changeCategoryId}
-							bind:customCategoryInput
-						/>
-					</div>
-				</Button>
-				<Button
-					type="submit"
-					on:click={onChangeCategoryThrottled}
-					color="blue"
-					class="!py-1.5 !px-1"
-					><ArrowRight />
-				</Button>
-			{/if}
-		</ButtonGroup>
-	</form>
+<div
+	class="grid grid-cols-2 sm:grid-cols-3 grid-rows-2 sm:grid-rows-1"
+	onclick="event.stopPropagation()"
+>
+	<button
+		on:click={onRemoveClicked}
+		class="mr-2 !p-1.5 text-sm flex-1 sm:flex-auto  flex flex-col items-center mb-2 rounded"
+	>
+		<DocumentRemove />
+		<span class="whitespace-nowrap">{$t('lists.details.batch-remove-button')}</span>
+	</button>
+	<button
+		on:click={onSaveAsNewList}
+		class="sm:mr-2 action !p-1.5 text-sm flex-1 sm:flex-auto flex flex-col items-center mb-2 rounded"
+	>
+		<DocumentDuplicate />
+		<span class="whitespace-nowrap">{$t('lists.details.move-to-new-list')}</span>
+	</button>
+	{#if isByCategoryView}
+		<form
+			on:submit|preventDefault={onChangeCategoryThrottled}
+			class="col-span-2 sm:col-span-1 flex items-center justify-center mb-2 rounded px-2"
+			style="height: 56px;"
+			use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
+			on:swipe={onCategorySwipe}
+		>
+			<div style="min-width: 200px;">
+				<ChecklistItemCategoryInput
+					{categoryOptions}
+					fullWidth={true}
+					bind:categoryId={changeCategoryId}
+					bind:customCategoryInput
+				/>
+			</div>
+
+			<Button type="submit" color="blue" class="!py-1.5 !px-1"><ArrowRight /></Button>
+		</form>
+	{/if}
 </div>
+
+<style>
+</style>

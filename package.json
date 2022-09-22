@@ -41,6 +41,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"hammerjs": "^2.0.8",
 		"svelte-gestures": "^1.4.1"
 	}
 }

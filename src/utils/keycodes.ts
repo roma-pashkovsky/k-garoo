@@ -9,6 +9,7 @@ export const isEnter = (event: KeyboardEvent): boolean => {
 		event.keyCode === Keycodes.ENTER ||
 		event.key === 'Enter' ||
 		event.code === 'Enter' ||
+		event.which === 13 ||
 		(event as any as InputEvent).inputType === 'insertParagraph'
 	);
 };

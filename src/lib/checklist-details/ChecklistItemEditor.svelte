@@ -34,6 +34,7 @@
 	let propositionsHighlightIndex = 0;
 	let selectedPropositionTS: number;
 	let shouldAutodetectCategory = true;
+	let submittedOnEnterPressed = false;
 	const debounce = debouncer(300);
 
 	$: {
@@ -68,21 +69,36 @@
 		}, 200);
 	}
 
+	function getLines(text: string): string[] {
+		if (text?.length) {
+			return text.split(/[\n\r]/);
+		} else {
+			return [];
+		}
+	}
+
+	function getLineCount(text: string): number {
+		return (text.match(/[\n\r]/g) || []).length + 1;
+	}
+
+	function onInput(event): void {
+		const val = editedItem.itemDescription;
+		if (getLineCount(val) > 1) {
+			event.preventDefault();
+			editedItem.itemDescription = getLines(val)[0];
+			onAddFormSubmit();
+		}
+	}
+
 	function onDescriptionInputKeyUp(ev: KeyboardEvent): void {
-		if (isEnter(ev)) {
-			return onAddFormSubmit();
+		if (isEnter(ev) || submittedOnEnterPressed) {
+			return;
 		}
 		const { keyCode } = ev;
 		if (keyCode === Keycodes.ARROW_UP || keyCode === Keycodes.ARROW_DOWN) {
 			return onPropositionHighlightChange(keyCode);
 		}
 		onInputChange();
-	}
-
-	function onDescriptionInputKeyDown(ev: KeyboardEvent) {
-		if (isEnter(ev)) {
-			onAddFormSubmit();
-		}
 	}
 
 	function onInputChange() {
@@ -166,11 +182,12 @@
 	}
 </script>
 
+<!--use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}-->
+<!--on:swipe={onFormSwipe}-->
 <form
 	onclick="event.stopPropagation()"
 	on:submit|preventDefault={onAddFormSubmit}
-	use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
-	on:swipe={onFormSwipe}
+	on:swiped-right={onAddFormSubmit}
 	class="relative flex items-start w-full"
 >
 	{#if isFirstTimeUse}
@@ -179,15 +196,18 @@
 	<div class="left flex-1 relative">
 		<div class="top flex h-9">
 			<form on:submit|preventDefault={onAddFormSubmit} class="flex-1 h-full !p-0">
-				<input
-					class="single-line w-full h-full !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
+				<textarea
+					class="resize-none focus:ring-0 single-line w-full h-full !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
 					id="form-input"
 					autocomplete="off"
 					autofocus
 					placeholder={$t('lists.details.add-item-placeholder')}
+					rows="1"
+					wrap="off"
 					bind:value={editedItem.itemDescription}
 					bind:this={inputEl}
 					on:keyup={onDescriptionInputKeyUp}
+					on:input={onInput}
 				/>
 				<button type="submit" class="hidden" />
 			</form>

@@ -10,6 +10,7 @@
 	export let customCategoryInput: string;
 	export let categoryOptions: CategoryOption[];
 	export let fullWidth: boolean;
+	export let addWrapClass: string;
 	let prevCategoryId = categoryId;
 
 	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
@@ -33,7 +34,7 @@
 </script>
 
 <div
-	class="!p-0 inline-block dark:bg-gray-800 items-center input-wrapper {isCustomCategoryOpen
+	class="!p-0 inline-block dark:bg-gray-800 items-center input-wrapper {addWrapClass}  {isCustomCategoryOpen
 		? 'custom-open'
 		: ''} {fullWidth ? 'w-full' : ''}"
 >
@@ -55,7 +56,7 @@
 		</Iconinput>
 	{:else}
 		<Select
-			defaultClass="!py-0 !border-none !bg-transparent block w-full h-9 text-gray-900 bg-gray-50 border-gray-300 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white text-sm"
+			defaultClass="!py-0 !border-none !bg-transparent block w-full h-9 text-gray-900  focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white text-sm"
 			class="focus:outline-none focus:!shadow-none focus:!border-none focus:!ring-0 !bg-transparent"
 			items={selectCategoryOptions}
 			placeholder={$t('lists.create_new_list.set-category-to')}

@@ -74,6 +74,10 @@ export class ChecklistDetailsStore {
 		return this.persistence.updateByCategoryView(isByCategory);
 	}
 
+	public async updateColorsForCategoriesView(isColors: boolean): Promise<void> {
+		return this.persistence.updateIsColorsByCategories(isColors);
+	}
+
 	public setHasSeenDemo(): Promise<void> {
 		return this.persistence.setHasSeenDemo();
 	}

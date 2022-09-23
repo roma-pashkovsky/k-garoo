@@ -142,6 +142,17 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
+	public async updateIsColorsByCategories(isColors: boolean): Promise<void> {
+		const state = getState();
+		setState({
+			...state,
+			checklistSettings: {
+				...state.checklistSettings,
+				isColorsForCategories: isColors
+			}
+		});
+	}
+
 	public async setHasSeenDemo(): Promise<void> {
 		const state = getState();
 		setState({

@@ -54,11 +54,12 @@
 				ondblclick="event.stopPropagation()"
 			>
 				<div
-					class="mask absolute top-0 left-0 right-0 bottom-0 z-10"
+					class="mask absolute top-0 left-0 right-0 bottom-0"
 					on:mousedown={checkboxChanged}
+					style="z-index: 1"
 				/>
 				<div
-					class="item checkbox-wrapper flex items-center p-2 my-2 rounded {addClass} border border-blue-300"
+					class="item checkbox-wrapper flex items-center px-2 my-2 rounded {addClass} border border-blue-200"
 				>
 					<div class="mr-1 overflow-hidden h-6 w-6 flex items-center" in:slide>
 						<Checkbox class="mr-2" checked={item.selected} />
@@ -89,3 +90,9 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	.item {
+		min-height: 36px;
+	}
+</style>

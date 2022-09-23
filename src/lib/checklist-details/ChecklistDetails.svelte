@@ -14,25 +14,31 @@
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 	import { t } from '../../utils/i18n';
-	import { ListBullet, Briefcase, Link, Plus, Eye, InformationCircle } from 'svelte-heros-v2';
+	import { Briefcase, Eye, InformationCircle, Link, ListBullet, Plus } from 'svelte-heros-v2';
 	import { press } from 'svelte-gestures';
 	import { goto } from '$app/navigation';
 	import type { FuzzyOptions } from '../../utils/fuzzy-search';
 	import { FuzzySearch } from '../../utils/fuzzy-search';
-	import type { CategoryOption, CheckListItemEditModel, Proposition } from '../../types';
+	import type {
+		CategoryOption,
+		CheckListItemEditModel,
+		GroupedByCategoryItem,
+		Proposition
+	} from '../../types';
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
 	import { getUID } from '../../utils/get-uid';
 	import TitleWithEdit from '../TitleWithEdit.svelte';
 	import FullPageSpinner from '../FullPageSpinner.svelte';
 	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
-	import { StringCompressor } from '../../utils/string-compressor';
 	import { copyToClipboard } from '../../utils/copy-to-clipboard';
-	import { ToastService } from '../../utils/toasts';
 	import type { ToastManagerType } from '../../utils/toasts';
+	import { ToastService } from '../../utils/toasts';
 	import { getDecodeLinkToList } from '../../utils/get-decode-link-to-list';
 	import { p } from '../../utils/pluralize';
-	import { pickColorForACategory } from '../../utils/category-colors';
+	import { darkEquivalents, pickColorForACategory } from '../../utils/category-colors';
+	import ColorSelector from '../ColorSelector.svelte';
+	import Palette from '../Palette.svelte';
 
 	export let listId: string | undefined;
 	export let locale: 'en' | 'ua';
@@ -47,6 +53,7 @@
 	let isLoaded: boolean;
 	let isByCategoryView = false;
 	let isCheckboxView = false;
+	let isColorsForCategories = false;
 	let editedItem: CheckListItemEditModel;
 	let editedCategoryId: string;
 	let isAddToListMode: boolean;
@@ -59,6 +66,7 @@
 	let previousItems: CheckListItemEditModel[];
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
+	const darkBG = darkEquivalents;
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
@@ -68,6 +76,7 @@
 		store = new ChecklistDetailsStore(locale);
 		const checklistSettings = await store.getChecklistSettings();
 		isByCategoryView = checklistSettings.isGroupByCategory;
+		isColorsForCategories = checklistSettings.isColorsForCategories;
 		isFirstTimeUse = !checklistSettings.hasSeenDemo;
 		categoryOptions = await store.getCategoryOptions();
 		propositions = await store.getPropositions();
@@ -134,6 +143,11 @@
 		store.updateByCategoryView(isByCategoryView);
 	}
 
+	function onToggleColorsForCategories(): void {
+		isColorsForCategories = !isColorsForCategories;
+		store.updateColorsForCategoriesView(isColorsForCategories);
+	}
+
 	async function onGenerateListLinkClicked(): Promise<void> {
 		const list = await store.getList(listId);
 		const url = getDecodeLinkToList(list);
@@ -187,6 +201,19 @@
 			editedItem = getNewListItem(cat);
 			editedCategoryId = editedItem.category.id;
 		}
+	}
+
+	function onCategoryColorSelect(color: string, group: GroupedByCategoryItem): void {
+		console.log('selected: ', color, ' ', group);
+		group.items.forEach((item) => (item.category.color = color));
+		const itemMap = group.items.reduce((p, c) => ({ ...p, [c.id]: c }), {});
+		items = items.map((it) => {
+			if (itemMap[it.id]) {
+				return { ...itemMap[it.id], category: { ...itemMap[it.id].category } };
+			}
+			return it;
+		});
+		store.upsertListItems(listId, group.items);
 	}
 
 	function onItemClick(item: CheckListItemEditModel): void {
@@ -467,13 +494,6 @@
 			</div>
 			<div class="space-x-2 flex items-center" slot="right-content">
 				<Button
-					on:click={onToggleByCategoryViewClicked}
-					class="!p-1.5 hidden sm:inline-block w-9 h-9"
-					color={isByCategoryView ? 'blue' : 'light'}
-				>
-					<Briefcase size="23" variation={isByCategoryView ? 'solid' : 'outline'} />
-				</Button>
-				<Button
 					class="!p-1.5 w-9 h-9"
 					color={isCheckboxView ? 'blue' : 'light'}
 					on:click={onToggleCheckboxViewClicked}
@@ -489,16 +509,6 @@
 				</Button>
 				<!--			Right menu-->
 				<DotMenu widthClass="w-56">
-					<DropdownItem class="block sm:hidden">
-						<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
-							<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
-								<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
-							</Button>
-							<div class="whitespace-nowrap">
-								{$t('lists.details.by-category')}
-							</div>
-						</div>
-					</DropdownItem>
 					<DropdownItem>
 						<div
 							on:click={() => (isHideCrossedOut = !isHideCrossedOut)}
@@ -518,6 +528,29 @@
 									{$t('lists.details.hide-crossed-out')}
 								{/if}
 							</div>
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
+								<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
+							</Button>
+							<div class="whitespace-nowrap">
+								{$t('lists.details.by-category')}
+							</div>
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onToggleColorsForCategories} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isColorsForCategories ? 'blue' : 'light'}>
+								<div class="block dark:hidden">
+									<Palette color={isColorsForCategories ? 'white' : 'black'} />
+								</div>
+								<div class="hidden dark:block">
+									<Palette color="white" />
+								</div>
+							</Button>
+							<div class="whitespace-nowrap">{$t('lists.details.colors-for-categories')}</div>
 						</div>
 					</DropdownItem>
 					<DropdownItem>
@@ -550,14 +583,16 @@
 				<!--			By category view-->
 				{#each byCategoryList as catItem, catIndex}
 					<div
-						class="rounded-md {catItem.category.color
-							? 'bg-' +
-							  catItem.category.color +
-							  ' ' +
-							  'dark:bg-black dark:border dark:border-' +
-							  catItem.category.color
-							: 'border border-slate-100'} {catIndex === 0 ? '' : 'mt-6'}"
+						class="relative rounded-md  bg-{isColorsForCategories && catItem.category.color
+							? catItem.category.color
+							: 'transparent'} dark:!bg-transparent {catIndex === 0 ? '' : 'mt-6'}"
 					>
+						<div
+							class="absolute top-0 bottom-0 left-0 right-0 hidden dark:block rounded-md -z-10 bg-{isColorsForCategories &&
+							catItem.category.color
+								? darkBG[catItem.category.color]
+								: 'transparent'}"
+						/>
 						<div onclick="event.stopPropagation()">
 							<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
 								<span
@@ -567,6 +602,15 @@
 								>
 									{catItem.category.name}
 								</span>
+								{#if isColorsForCategories && isCheckboxView}
+									<ColorSelector
+										id={catItem.category.id}
+										selected={catItem.category.color}
+										placement={catIndex < 2 ? 'bottom' : 'top'}
+										classPrefix="bg-"
+										on:select={(event) => onCategoryColorSelect(event.detail.color, catItem)}
+									/>
+								{/if}
 							</h5>
 						</div>
 

@@ -14,7 +14,7 @@ export type CheckListItem = {
 
 export type GroupedByCategoryItem = {
 	category: CategoryOption;
-	items: CheckListItem[];
+	items: CheckListItemEditModel[];
 };
 
 export type CheckListItemEditModel = CheckListItem & {
@@ -38,6 +38,7 @@ export type Proposition = {
 
 export type ChecklistSettings = {
 	isGroupByCategory: boolean;
+	isColorsForCategories: boolean;
 	hasSeenDemo: boolean;
 };
 

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { Dropdown, ToolbarButton } from 'flowbite-svelte';
-	export let id = 'trigger-id';
+	import { getRandomElementId } from '../utils/get-random-element-id';
+	export let id = 'trigger-id' + getRandomElementId(6);
 	export let widthClass = 'w-44';
 </script>
 
 <div {id}>
 	<ToolbarButton
-		class="w-9 h-9 dots-menu text-gray-900 bg-white dark:text-white dark:bg-gray-800 inline-flex items-center justify-center"
+		class="w-9 h-9 dots-menu text-gray-900 dark:text-white inline-flex items-center justify-center"
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

@@ -10,6 +10,7 @@ export const getInitialState = (): KGarooState => {
 		listIds: [],
 		checklistSettings: {
 			isGroupByCategory: false,
+			isColorsForCategories: false,
 			hasSeenDemo: false
 		},
 		categoryOptions: [],

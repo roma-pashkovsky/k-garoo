@@ -39,7 +39,10 @@
 		</ButtonGroup>
 	</form>
 {:else}
-	<h3 on:click|stopPropagation={onEditListNameOpen} class="font-medium text-base sm:text-2xl">
+	<h3
+		on:click|stopPropagation={onEditListNameOpen}
+		class="font-medium text-base sm:text-2xl select-none"
+	>
 		{title}
 	</h3>
 {/if}

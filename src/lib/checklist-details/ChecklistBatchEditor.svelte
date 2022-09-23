@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { Button, ButtonGroup } from 'flowbite-svelte';
+	import { Button } from 'flowbite-svelte';
 	import { ArrowRight, DocumentRemove } from 'svelte-heros';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import type { CategoryOption } from '../../types';
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
-	import { ChevronLeft, DocumentDuplicate } from 'svelte-heros-v2';
+	import { DocumentDuplicate } from 'svelte-heros-v2';
 	import { swipe } from 'svelte-gestures';
 	import { throttler } from '../../utils/throttler';
 	import { t } from '../../utils/i18n.js';
+	import { fly, fade } from 'svelte/transition';
 
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
@@ -65,6 +66,8 @@
 </script>
 
 <div
+	in:fly={{ y: 100 }}
+	out:fade
 	class="grid grid-cols-2 sm:grid-cols-3 grid-rows-2 sm:grid-rows-1"
 	onclick="event.stopPropagation()"
 >
@@ -93,13 +96,16 @@
 			<div style="min-width: 200px;">
 				<ChecklistItemCategoryInput
 					{categoryOptions}
+					addWrapClass="!rounded-l"
 					fullWidth={true}
 					bind:categoryId={changeCategoryId}
 					bind:customCategoryInput
 				/>
 			</div>
 
-			<Button type="submit" color="blue" class="!py-1.5 !px-1"><ArrowRight /></Button>
+			<Button type="submit" color="blue" class="!py-1.5 !px-1 !rounded-r !rounded-l-none"
+				><ArrowRight /></Button
+			>
 		</form>
 	{/if}
 </div>

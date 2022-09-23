@@ -214,6 +214,7 @@
 			{#if isByCategoryView}
 				<div class=" flex-0">
 					<ChecklistItemCategoryInput
+						addWrapClass="rounded"
 						bind:categoryId={editedCategoryId}
 						bind:categoryOptions
 						bind:customCategoryInput

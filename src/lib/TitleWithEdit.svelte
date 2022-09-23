@@ -22,7 +22,7 @@
 {#if isEditListName}
 	<form on:submit|preventDefault={onEditListNameSubmit}>
 		<ButtonGroup>
-			<Button class="!p-0 flex-1 h-9">
+			<Button class="!pt-0 !pb-0 !pr-0 !pl-2 flex-1 h-9">
 				<AppTextInput
 					id="list-name"
 					autofocus

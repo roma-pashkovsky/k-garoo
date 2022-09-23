@@ -67,7 +67,7 @@
 
 <div
 	in:fly={{ y: 100 }}
-	out:fade
+	out:fly={{ y: 100 }}
 	class="grid grid-cols-2 sm:grid-cols-3 grid-rows-2 sm:grid-rows-1"
 	onclick="event.stopPropagation()"
 >

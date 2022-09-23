@@ -33,28 +33,10 @@
 		use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
 		on:swipe={onBodySwipe}
 		on:dblclick
-		class="absolute top-0 bottom-0 left-0 right-0 px-4 sm:px-6 pb-36 overflow-y-auto {noTopPadding
+		class="select-none absolute top-0 bottom-0 left-0 right-0 px-4 sm:px-6 pb-36 overflow-y-auto {noTopPadding
 			? 'pt-0'
 			: 'pt-4'}"
 	>
 		<slot />
 	</div>
 </div>
-
-<style>
-	.toast-wrapper {
-		position: absolute;
-		top: 0.5rem;
-		left: 0;
-		right: 0;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		flex-direction: column;
-		z-index: 50;
-	}
-
-	.toast:not(:last-child) {
-		margin-bottom: 0.5rem;
-	}
-</style>

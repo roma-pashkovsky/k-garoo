@@ -66,6 +66,7 @@
 	let previousItems: CheckListItemEditModel[];
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
+	let shouldCreateNewList = false;
 	const darkBG = darkEquivalents;
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
@@ -83,13 +84,17 @@
 		categoryAutodetector = new CategoryAutodetector(propositions, locale);
 		if (listId) {
 			const list = await store.getList(listId);
-			listName = list.name;
-			items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
+			if (list) {
+				listName = list.name;
+				items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
+			} else {
+				shouldCreateNewList = true;
+			}
 		}
 		updatePropositionsFuzzySearch();
 		checkListForDuplicates();
 		isLoaded = true;
-		if (!listId && !isFirstTimeUse) {
+		if (shouldCreateNewList && !isFirstTimeUse) {
 			setTimeout(() => {
 				onAddToListClicked();
 			});
@@ -372,8 +377,9 @@
 			updateItemInTheList(updated);
 			editedItem = undefined;
 		}
-		if (!listId) {
+		if (shouldCreateNewList) {
 			createNewList();
+			shouldCreateNewList = false;
 		} else {
 			store.upsertListItems(listId, [updated]);
 		}
@@ -404,7 +410,6 @@
 	}
 
 	function createNewList(): void {
-		listId = getUID();
 		store.createList(listId, listName, items);
 	}
 

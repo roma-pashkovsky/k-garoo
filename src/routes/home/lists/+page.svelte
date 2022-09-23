@@ -15,6 +15,7 @@
 	import { copyToClipboard } from '../../../utils/copy-to-clipboard';
 	import { ToastService } from '../../../utils/toasts';
 	import { Link } from 'svelte-heros-v2';
+	import { getUID } from '../../../utils/get-uid';
 
 	const state: KGarooState = getState();
 	let ids = state.listIds || [];
@@ -49,7 +50,8 @@
 	}
 
 	export function onAddButtonClicked(): void {
-		goto('/list-details/create');
+		const listId = getUID();
+		goto(`/list-details/${listId}`);
 	}
 </script>
 

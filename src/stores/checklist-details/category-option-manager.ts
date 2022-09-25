@@ -12,16 +12,17 @@ export class CategoryOptionManager {
 				name: reservedCategories[catKey][this.locale]
 			};
 		});
-		this.sortReservedCategories(reserved);
-		return [...(this.categoryOptions || []), ...reserved];
+		const res = [...(this.categoryOptions || []), ...reserved];
+		this.sortCategories(res);
+		return res;
 	}
 
-	public sortReservedCategories(reserved: CategoryOption[]): void {
+	public sortCategories(reserved: CategoryOption[]): void {
 		reserved.sort((a, b) => {
-			if (a.id === otherCategoryId || a.id === customCategoryId) {
+			if (a.id === customCategoryId) {
 				return 1;
 			}
-			if (b.id === otherCategoryId || b.id === customCategoryId) {
+			if (b.id === customCategoryId) {
 				return -1;
 			}
 			if (a.name < b.name) {

@@ -48,6 +48,9 @@
 
 	$: displayPropositions = propositions.slice(1);
 	$: resetIdForInput = editedItem?.id + selectedPropositionTS;
+	$: isValidInput =
+		editedItem.itemDescription?.length > 0 &&
+		!(editedCategoryId === customCategoryId && !customCategoryInput?.length);
 
 	onMount(() => {
 		shouldAutodetectCategory = editedCategoryId === otherCategoryId;
@@ -132,10 +135,7 @@
 	}
 
 	function onAddFormSubmit(): void {
-		if (!editedItem.itemDescription?.length) {
-			return;
-		}
-		if (editedCategoryId === customCategoryId && !customCategoryInput?.length) {
+		if (!isValidInput) {
 			return;
 		}
 		let addCategory: CategoryOption;
@@ -194,7 +194,8 @@
 		<ChecklistEditorDemo on:next-click={focus} />
 	{/if}
 	<div class="left flex-1 relative">
-		<div class="top flex h-9">
+		<!--		Top row-->
+		<div class="top flex h-9 mb-2">
 			<form on:submit|preventDefault={onAddFormSubmit} class="flex-1 h-full !p-0">
 				<textarea
 					class="resize-none focus:ring-0 single-line w-full h-full !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
@@ -222,8 +223,10 @@
 				</div>
 			{/if}
 		</div>
-		<div class="bottom relative max-w-full">
-			<div class="flex h-9 items-center">
+		<!--		Bottom row-->
+		<div class="bottom flex  relative max-w-full">
+			<!--			Propositions-->
+			<div class="flex-1 flex h-9 items-center">
 				{#each displayPropositions as proposition, index}
 					{#if index > 0}
 						<div class="mx-2 h-9 leading-8 text-gray-500 dark:text-gray-400">
@@ -249,17 +252,19 @@
 					</div>
 				{/each}
 			</div>
+			<!--			Submit button-->
+			<button
+				type="submit"
+				disabled={!isValidInput}
+				on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
+				class="!p-1.5 w-8 h-8 ml-2 rounded text-white {isValidInput
+					? 'bg-blue-600'
+					: 'border border-blue-400'}"
+			>
+				<ArrowRight size="18" />
+			</button>
 		</div>
 	</div>
-
-	<button
-		type="submit"
-		on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
-		class="!p-1.5 w-8 h-14 ml-2 rounded bg-blue-600 text-white"
-		color="blue"
-	>
-		<ArrowRight size="18" />
-	</button>
 </form>
 
 <style>

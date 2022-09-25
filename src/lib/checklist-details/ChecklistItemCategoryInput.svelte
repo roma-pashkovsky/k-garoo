@@ -45,7 +45,7 @@
 			type="text"
 			class="w-full foobar"
 			iconClass="h-4 w-4 mr-2 dark:text-green-500"
-			noBorderInputClass="h-9 inline-block !border-none w-full disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none focus:bg-blue-100 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-2.5 text-sm"
+			noBorderInputClass="h-9 inline-block rounded !border-none w-full disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500 focus:outline-none focus:bg-blue-100 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-2.5 text-sm"
 			placeholder={$t('lists.create_new_list.my-category')}
 			pointerEvent={true}
 			autofocus

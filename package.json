@@ -41,6 +41,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"dotenv": "^16.0.2",
+		"firebase": "^9.10.0",
 		"hammerjs": "^2.0.8",
 		"svelte-gestures": "^1.4.1"
 	}

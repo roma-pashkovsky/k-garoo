@@ -257,9 +257,9 @@
 				type="submit"
 				disabled={!isValidInput}
 				on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
-				class="!p-1.5 w-8 h-8 ml-2 rounded text-white {isValidInput
-					? 'bg-blue-600'
-					: 'border border-blue-400'}"
+				class="!p-1.5 w-8 h-8 ml-2 rounded {isValidInput
+					? 'bg-blue-600 text-white'
+					: 'border border-blue-400 text-gray-500'}"
 			>
 				<ArrowRight size="18" />
 			</button>

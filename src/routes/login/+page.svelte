@@ -1,46 +1,49 @@
 <script lang="ts">
-    import { Input, Label, Button, A } from 'flowbite-svelte';
-    import { goto } from '$app/navigation';
+	import { Input, Label, Button, A } from 'flowbite-svelte';
+	import { goto } from '$app/navigation';
+	import { AuthStore } from '../../stores/login/auth.store';
 
-    export let isSignIn = true;
+	export let isSignIn = true;
 
-    $: submitBtnText = isSignIn ? 'Login' : 'Create';
-    $: linkText = isSignIn ? 'Create account' : 'Login';
+	$: submitBtnText = isSignIn ? 'Login' : 'Create';
+	$: linkText = isSignIn ? 'Create account' : 'Login';
 
-    function onLinkClicked(): void {
-        isSignIn = !isSignIn;
-    }
+	const authStore = new AuthStore();
 
-    function onSubmitClicked(): void {
-        goto('/home/lists')
-    }
+	function onLinkClicked(): void {
+		isSignIn = !isSignIn;
+	}
+
+	function onSubmitClicked(): void {
+		authStore.loginFacebook();
+	}
 </script>
 
 <div class="fixed w-screen h-screen flex items-center justify-center">
-    <div style="height: 390px; width: 340px" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col">
-        <div class="mb-4">
-            <Label for='email' class='block mb-2'>Email</Label>
-            <Input id='email' type="email" placeholder="you@email.com" />
-        </div>
-        <div class="mb-6">
-            <Label for='password' class='block mb-2'>Password</Label>
-            <Input id='password' type="password" />
-        </div>
-        <div class="flex items-center justify-between">
-            <div class="flex space-x-4 items-center">
+	<div
+		style="height: 390px; width: 340px"
+		class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col"
+	>
+		<div class="mb-4">
+			<Label for="email" class="block mb-2">Email</Label>
+			<Input id="email" type="email" placeholder="you@email.com" />
+		</div>
+		<div class="mb-6">
+			<Label for="password" class="block mb-2">Password</Label>
+			<Input id="password" type="password" />
+		</div>
+		<div class="flex items-center justify-between">
+			<div class="flex space-x-4 items-center">
+				<Button on:click={onSubmitClicked} size="lg">
+					<div style="width: 100px;">
+						{submitBtnText}
+					</div>
+				</Button>
 
-                <Button on:click={onSubmitClicked} size="lg">
-                    <div style="width: 100px;">
-                        {submitBtnText}
-                    </div>
-                </Button>
-
-
-                <div on:click={onLinkClicked}>
-                    <A><span class="text-sm hover:underline">{linkText}</span></A>
-                </div>
-            </div>
-
-        </div>
-    </div>
+				<div on:click={onLinkClicked}>
+					<A><span class="text-sm hover:underline">{linkText}</span></A>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

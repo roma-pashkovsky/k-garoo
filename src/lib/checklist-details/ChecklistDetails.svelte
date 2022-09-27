@@ -209,7 +209,6 @@
 	}
 
 	function onCategoryColorSelect(color: string, group: GroupedByCategoryItem): void {
-		console.log('selected: ', color, ' ', group);
 		group.items.forEach((item) => (item.category.color = color));
 		const itemMap = group.items.reduce((p, c) => ({ ...p, [c.id]: c }), {});
 		items = items.map((it) => {
@@ -261,7 +260,6 @@
 		setTimeout(() => {
 			previousItems = [...items];
 			items = items.filter((it) => !itemsToBeDeleted[it.id]);
-			console.log(items);
 			store.removeListItems(listId, itemIds);
 			updatePropositionsFuzzySearch();
 			checkListForDuplicates();
@@ -357,7 +355,6 @@
 		const categoryToAdd: CategoryOption | undefined = e?.detail?.addCategory;
 		if (categoryToAdd) {
 			categoryToAdd.color = pickColorForACategory(items, categoryOptions);
-			console.log(categoryToAdd);
 			categoryOptions = [categoryToAdd, ...categoryOptions];
 			editedCategoryId = categoryToAdd.id;
 			store.addCategoryOption(categoryToAdd);

@@ -17,6 +17,11 @@
 	function onSubmitClicked(): void {
 		authStore.loginFacebook();
 	}
+
+	async function onSignOut(): Promise<void> {
+		await authStore.signOut();
+		console.log('Sign out success');
+	}
 </script>
 
 <div class="fixed w-screen h-screen flex items-center justify-center">
@@ -33,11 +38,15 @@
 			<Input id="password" type="password" />
 		</div>
 		<div class="flex items-center justify-between">
-			<div class="flex space-x-4 items-center">
-				<Button on:click={onSubmitClicked} size="lg">
+			<div class="flexspace-x-4 items-center">
+				<Button on:click={onSubmitClicked} size="md">
 					<div style="width: 100px;">
 						{submitBtnText}
 					</div>
+				</Button>
+
+				<Button on:click={onSignOut} size="md">
+					<div style="width: 100px;">Sign out</div>
 				</Button>
 
 				<div on:click={onLinkClicked}>

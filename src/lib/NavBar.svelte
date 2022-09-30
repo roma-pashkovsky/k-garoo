@@ -1,7 +1,20 @@
 <script lang="ts">
-	import { Navbar, NavBrand, NavHamburger, NavLi, NavUl } from 'flowbite-svelte';
+	import {
+		Avatar,
+		Dropdown,
+		DropdownHeader,
+		DropdownItem,
+		Navbar,
+		NavBrand,
+		NavHamburger,
+		NavLi,
+		NavUl
+	} from 'flowbite-svelte';
 	import { t } from '../utils/i18n.js';
 	import { page } from '$app/stores';
+	import { AuthStore } from '../stores/login/auth.store';
+
+	const user = AuthStore.user;
 
 	$: section = getSectionFromPath($page.url.pathname);
 
@@ -30,7 +43,13 @@
 		</span>
 	</NavBrand>
 	<div class="md:hidden flex items-center flex-wrap">
-		<NavHamburger on:click={toggle} />
+		{#if $user}
+			<div on:click={toggle}>
+				<Avatar id="avatar" src={$user.photoUrl} />
+			</div>
+		{:else}
+			<NavHamburger on:click={toggle} />
+		{/if}
 	</div>
 	<NavUl
 		{hidden}
@@ -42,4 +61,13 @@
 			>{$t('app.sections.settings')}</NavLi
 		>
 	</NavUl>
+	{#if $user}
+		<Avatar id="avatar-menu" class="hidden md:block ml-4" src={$user.photoUrl} on:click={toggle} />
+		<Dropdown class="z-50" placement="bottom" triggeredBy="#avatar-menu">
+			<DropdownHeader>
+				<span class="block text-sm">{$user.displayName}</span>
+			</DropdownHeader>
+			<DropdownItem>Logout</DropdownItem>
+		</Dropdown>
+	{/if}
 </Navbar>

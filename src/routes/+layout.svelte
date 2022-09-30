@@ -17,7 +17,7 @@
 	import type { AppSettings } from '../types';
 	import ThemeSelector from '../lib/ThemeSelector.svelte';
 	import { fade } from 'svelte/transition';
-	import { variables } from '../utils/variables';
+	import { AuthStore } from '../stores/login/auth.store';
 
 	const toastStore = ToastService.getInstance().toasts;
 	let isInitialized = false;
@@ -28,12 +28,11 @@
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 
-	console.log(variables);
-
 	onMount(async () => {
 		await checkForUpdatedApp();
 		await setAppSettings();
 		await checkForLocale();
+		AuthStore.checkAuth();
 		isInitialized = true;
 	});
 

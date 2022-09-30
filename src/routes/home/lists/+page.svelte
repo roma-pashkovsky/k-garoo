@@ -59,7 +59,7 @@
 	<title>K-garoo - {$t('app.my_lists')}</title>
 </svelte:head>
 
-<div class="absolute top-2 right-2 z-10 p-2">
+<div class="absolute top-2 right-2 p-2 z-10">
 	<Button on:click={onAddButtonClicked} class="!p-2 shadow-md"><Plus class="w-8 h-8" /></Button>
 </div>
 <Page>
@@ -69,8 +69,8 @@
 				{$t('lists.no_lists')}
 				<br />
 				{@html $t('lists.no_lists_cta_1')}
-				<a class="underline cursor-pointer" href="/list-details/create"
-					>{$t('lists.no_lists_cta_link')}</a
+				<span class="underline cursor-pointer" on:click={onAddButtonClicked}
+					>{$t('lists.no_lists_cta_link')}</span
 				>
 			</EmptyPage>
 		{/if}

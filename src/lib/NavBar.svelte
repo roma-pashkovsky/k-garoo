@@ -45,7 +45,7 @@
 	<div class="md:hidden flex items-center flex-wrap">
 		{#if $user}
 			<div on:click={toggle}>
-				<Avatar id="avatar" src={$user.photoUrl} />
+				<Avatar size="sm" id="avatar" src={$user.photoUrl} />
 			</div>
 		{:else}
 			<NavHamburger on:click={toggle} />
@@ -62,8 +62,14 @@
 		>
 	</NavUl>
 	{#if $user}
-		<Avatar id="avatar-menu" class="hidden md:block ml-4" src={$user.photoUrl} on:click={toggle} />
-		<Dropdown class="z-50" placement="bottom" triggeredBy="#avatar-menu">
+		<Avatar
+			size="sm"
+			id="avatar-menu"
+			class="hidden md:block ml-4"
+			src={$user.photoUrl}
+			on:click={toggle}
+		/>
+		<Dropdown class="z-50" placement="bottom" triggeredBy="#avatar-menu" frameClass="z-30">
 			<DropdownHeader>
 				<span class="block text-sm">{$user.displayName}</span>
 			</DropdownHeader>

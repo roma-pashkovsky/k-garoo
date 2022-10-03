@@ -13,8 +13,12 @@
 	import { t } from '../utils/i18n.js';
 	import { page } from '$app/stores';
 	import { AuthStore } from '../stores/login/auth.store';
+	import { click_outside } from '../utils/click-outside';
 
+	const authStore = new AuthStore();
 	const user = AuthStore.user;
+	let isLoginModalOpen = false;
+	let wrapperDiv: HTMLDivElement;
 
 	$: section = getSectionFromPath($page.url.pathname);
 
@@ -26,54 +30,71 @@
 			return segments[1];
 		}
 	}
+
+	function onLoginClick(): void {
+		AuthStore.isLoginModalOpen.set(true);
+	}
+
+	function onLogOutClicked(): void {
+		if (confirm(($t as any)('app.basic-confirm'))) {
+			authStore.signOut();
+		}
+	}
 </script>
 
-<Navbar
-	navClass="bg-white px-2 sm:px-4 py-2.5 dark:bg-gray-800 w-full z-20 top-0 left-0 border-b !border-gray-200 dark:!border-gray-600 shadow-sm"
-	navDivClass="!w-full flex flex-wrap justify-between !max-w-full container"
-	let:hidden
-	let:toggle
-	rounded={false}
-	fluid={false}
->
-	<NavBrand href="/">
-		<img src="/logo-blue.svg" class="mr-3 h-6 sm:h-9" alt="K-garoo logo" />
-		<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
-			K-garoo
-		</span>
-	</NavBrand>
-	<div class="md:hidden flex items-center flex-wrap">
-		{#if $user}
-			<div on:click={toggle}>
-				<Avatar size="sm" id="avatar" src={$user.photoUrl} />
-			</div>
-		{:else}
-			<NavHamburger on:click={toggle} />
-		{/if}
-	</div>
-	<NavUl
-		{hidden}
-		divClass="w-full md:flex md:flex-1 md:items-center md:justify-end"
-		ulClass="flex flex-col p-4 sm:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
+<div bind:this={wrapperDiv}>
+	<Navbar
+		navClass="bg-white px-2 sm:px-4 py-2.5 dark:bg-gray-800 w-full z-20 top-0 left-0 border-b !border-gray-200 dark:!border-gray-600 shadow-sm"
+		navDivClass="!w-full flex flex-wrap justify-between !max-w-full"
+		let:hidden
+		let:toggle
+		rounded={false}
+		fluid={false}
 	>
-		<NavLi href="/home/lists" active={section === 'lists'}>{$t('app.sections.lists')}</NavLi>
-		<NavLi href="/home/settings" active={section === 'settings'}
-			>{$t('app.sections.settings')}</NavLi
+		<NavBrand href="/home/lists">
+			<img src="/logo-blue.svg" class="mr-3 h-6 sm:h-9" alt="K-garoo logo" />
+			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+				K-garoo
+			</span>
+		</NavBrand>
+		<div class="flex items-center flex-wrap md:order-2">
+			{#if $user}
+				<Avatar
+					size="sm"
+					id="avatar-menu"
+					class="ml-8 md:order-2"
+					src={$user.photoUrl}
+					on:click={toggle}
+				/>
+				<Dropdown class="z-50" placement="bottom" triggeredBy="#avatar-menu" frameClass="z-30">
+					<DropdownHeader>
+						<span class="block text-sm">{$user.displayName}</span>
+					</DropdownHeader>
+					<DropdownItem on:click={onLogOutClicked}>{$t('app.user-menu.logout')}</DropdownItem>
+				</Dropdown>
+			{/if}
+			<NavHamburger class="md:hidden" on:click={toggle} />
+		</div>
+		<div
+			use:click_outside
+			on:click_outside={() => hidden || toggle()}
+			class="w-full md:flex md:flex-1 md:items-center md:justify-end md:bg-transparent"
 		>
-	</NavUl>
-	{#if $user}
-		<Avatar
-			size="sm"
-			id="avatar-menu"
-			class="hidden md:block ml-4"
-			src={$user.photoUrl}
-			on:click={toggle}
-		/>
-		<Dropdown class="z-50" placement="bottom" triggeredBy="#avatar-menu" frameClass="z-30">
-			<DropdownHeader>
-				<span class="block text-sm">{$user.displayName}</span>
-			</DropdownHeader>
-			<DropdownItem>Logout</DropdownItem>
-		</Dropdown>
-	{/if}
-</Navbar>
+			<NavUl
+				{hidden}
+				ulClass="flex flex-col p-4 sm:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
+			>
+				<NavLi href="/home/lists" active={section === 'lists'}>{$t('app.sections.lists')}</NavLi>
+				<NavLi href="/home/settings" active={section === 'settings'}
+					>{$t('app.sections.settings')}</NavLi
+				>
+				<NavLi href="/home/about" active={section === 'about'}>{$t('app.sections.about')}</NavLi>
+				{#if !$user}
+					<div on:click={onLoginClick}>
+						<NavLi class="cursor-pointer">{$t('app.sections.login')}</NavLi>
+					</div>
+				{/if}
+			</NavUl>
+		</div>
+	</Navbar>
+</div>

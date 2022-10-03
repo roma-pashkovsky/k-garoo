@@ -8,9 +8,12 @@ import {
 	signInWithRedirect,
 	signOut
 } from 'firebase/auth';
-import { getDatabase, ref, onValue, update } from 'firebase/database';
+import { getDatabase, ref, onValue, update, query, orderByChild } from 'firebase/database';
 import { variables } from './variables';
 import type { FirebaseSetItem } from '../types/firebase-utils';
+import { getRandomElementId } from './get-random-element-id';
+import { t } from './i18n';
+import { get } from 'svelte/store';
 
 export class FirebaseUtils {
 	private static isInitialized = false;
@@ -29,6 +32,7 @@ export class FirebaseUtils {
 					storageBucket: variables.FIREBASE_STORAGE_BUCKET,
 					messagingSenderId: variables.FIREBASE_MESSAGING_SENDER_ID
 				});
+				this.setOnAuthStateChanged();
 				this.isInitialized = true;
 			} catch (err) {
 				console.error(err);
@@ -36,8 +40,37 @@ export class FirebaseUtils {
 		}
 	}
 
+	private static onAuthStateChangedListeners: { [id: string]: (user: User | null) => void } = {};
+	public static lastUserValue: User | null;
+
+	private static setOnAuthStateChanged(): void {
+		const auth = getAuth();
+		auth.onAuthStateChanged((user) => {
+			this.lastUserValue = user;
+			Object.keys(this.onAuthStateChangedListeners).forEach((key) => {
+				this.onAuthStateChangedListeners[key](user);
+			});
+		});
+	}
+
 	constructor() {
 		FirebaseUtils.initializeApp();
+	}
+
+	/**
+	 *
+	 * @param cb is called immediately with the current user value
+	 * @return unsubscribe id
+	 */
+	public subscribeOnAuthChanged(cb: (user: User | null) => void): string {
+		cb(FirebaseUtils.lastUserValue);
+		const id = getRandomElementId(6);
+		FirebaseUtils.onAuthStateChangedListeners[id] = cb;
+		return id;
+	}
+
+	public unsubscribeOnAuthChanged(id: string): void {
+		delete FirebaseUtils.onAuthStateChangedListeners[id];
 	}
 
 	public resolveAuth(): Promise<string | null> {
@@ -57,12 +90,16 @@ export class FirebaseUtils {
 		});
 	}
 
-	public readOnce<T>(path: string): Promise<T> {
+	public readOnce<T>(path: string, orderByChildPath?: string): Promise<T> {
 		return new Promise<T>((resolve, reject) => {
 			const db = getDatabase();
 			const readRef = ref(db, path);
+			let readQuery;
+			if (orderByChildPath) {
+				readQuery = query(readRef, orderByChild(orderByChildPath));
+			}
 			onValue(
-				readRef,
+				readQuery || readRef,
 				(snapshot) => {
 					resolve(snapshot.val());
 				},
@@ -113,5 +150,18 @@ export class FirebaseUtils {
 	public signOut(): Promise<void> {
 		const auth = getAuth();
 		return signOut(auth);
+	}
+
+	public async removeUser(): Promise<void> {
+		const auth = getAuth();
+		if (auth.currentUser) {
+			try {
+				await auth.currentUser.delete();
+			} catch (err) {
+				console.log(err);
+				const msg = get(t)('settings.data.failed-to-remove-account-prompt');
+				alert(msg);
+			}
+		}
 	}
 }

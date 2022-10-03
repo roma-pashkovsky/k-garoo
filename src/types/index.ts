@@ -10,6 +10,7 @@ export type CheckListItem = {
 	itemDescription: string;
 	category: CategoryOption;
 	checked: boolean;
+	orderAdded: number;
 };
 
 export type GroupedByCategoryItem = {

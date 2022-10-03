@@ -19,7 +19,8 @@ export class PropositionsManager {
 							itemDescription: capitalize(t),
 							category: {
 								id: wordItem.categoryId,
-								name: reservedCategories[wordItem.categoryId]['en']
+								name: reservedCategories[wordItem.categoryId]['en'],
+								color: reservedCategories[wordItem.categoryId].color
 							},
 							lastUsedUTC: 0
 						});

@@ -8,9 +8,12 @@ export default {
 	en: {
 		'app.logo': 'Easy checklists',
 		'app.my_lists': 'My lists',
+		'app.basic-confirm': 'Are you sure?',
 		'app.sections.lists': 'Lists',
 		'app.sections.settings': 'Settings',
+		'app.sections.about': 'About',
 		'app.sections.login': 'Login',
+		'app.user-menu.logout': 'Logout',
 		'app.lang-placeholder': 'Language',
 		'app.initial-popup.title': 'Welcome to K-garoo of the Checklists!',
 		'app.initial-popup.personalize':
@@ -18,6 +21,8 @@ export default {
 		'app.initial-popup.settings-disclaimer': 'You can always change it in "Settings"',
 		'app.ok.long': 'Okay',
 		'app.undo': 'Undo',
+		'app.login-popup.title': 'Login',
+		'app.login-popup.facebook-button': 'Login with Facebook',
 		'lists.no_lists': 'No lists.',
 		'lists.no_lists_cta_1': "Let's",
 		'lists.no_lists_cta_link': 'add one.',
@@ -69,20 +74,33 @@ export default {
 		'settings.header.language': 'Language',
 		'settings.header.theme': 'Theme',
 		'settings.header.theme-dark': 'Dark',
-		'settings.header.theme-light': 'Light'
+		'settings.header.theme-light': 'Light',
+		'settings.header.data': 'Data',
+		'settings.data.clean-data-button': 'Clean all data',
+		'settings.data.clean-data.warning-title': 'This action cannot be undone',
+		'settings.data.clean-data.warning-body':
+			'All your local data will be removed from this device. If you are logged in, your data on the server and your account will be removed as well.',
+		'settings.data.clean-data.toast-success': 'Cleaned all data',
+		'settings.data.clean-data.toast-failed': 'Failed to remove data',
+		'settings.data.failed-to-remove-account-prompt': `Failed to remove the account. Try logging in again and selecting "Clean all data"`
 	},
 	ua: {
 		'app.logo': 'Списки',
 		'app.my_lists': 'Мої списки',
+		'app.basic-confirm': 'Впевнені?',
 		'app.sections.lists': 'Списки',
 		'app.sections.settings': 'Налаштування',
-		'app.sections.login': 'Увійти',
+		'app.sections.about': 'Про нас',
+		'app.sections.login': 'Вхід',
+		'app.user-menu.logout': 'Вихід',
 		'app.lang-placeholder': 'Мова',
 		'app.initial-popup.title': 'Вітаємо, це K-garoo - Майстер Списків!',
 		'app.initial-popup.personalize': 'Дуже раді Вас бачити! Давайте налаштуємо все під Вас.',
 		'app.initial-popup.settings-disclaimer': 'Це все потім можна змінити в розділі "Налаштування".',
 		'app.ok.long': 'Гаразд',
 		'app.undo': 'Скасувати',
+		'app.login-popup.title': 'Вхід',
+		'app.login-popup.facebook-button': 'Вхід через Facebook',
 		'lists.no_lists': 'Поки що тут немає списків.',
 		'lists.no_lists_cta_1': 'Нумо',
 		'lists.no_lists_cta_link': 'створимо список.',
@@ -133,6 +151,14 @@ export default {
 		'settings.header.language': 'Мова',
 		'settings.header.theme': 'Тема',
 		'settings.header.theme-dark': 'Темна',
-		'settings.header.theme-light': 'Світла'
+		'settings.header.theme-light': 'Світла',
+		'settings.header.data': 'Дані',
+		'settings.data.clean-data-button': 'Видалити всі дані',
+		'settings.data.clean-data.warning-title': 'Цю дію не можна скасувати',
+		'settings.data.clean-data.warning-body':
+			'Всі локальні дані буде видалено з пристрою. Якщо ви увійшли в систему, Ваші дані на сервері і Ваш акаунт буде видалено.',
+		'settings.data.clean-data.toast-success': 'Дані видалено',
+		'settings.data.clean-data.toast-failed': 'Не вдалося видалити дані',
+		'settings.data.failed-to-remove-account-prompt': `Не вдалося видалити акаунт. Спробуйте заново увійти в систему і натисніть "Видалити дані"`
 	}
 } as Translations;

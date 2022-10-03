@@ -39,6 +39,7 @@
 	import { darkEquivalents, pickColorForACategory } from '../../utils/category-colors';
 	import ColorSelector from '../ColorSelector.svelte';
 	import Palette from '../Palette.svelte';
+	import type { Readable } from 'svelte/store';
 
 	export let listId: string | undefined;
 	export let locale: 'en' | 'ua';
@@ -47,7 +48,7 @@
 	let toastManager: ToastManagerType = ToastService.getInstance();
 	let listName: string = ($t as any)('lists.create_new_list.header');
 	let items: CheckListItemEditModel[] = [];
-	let categoryOptions: CategoryOption[] = [];
+	let categoryOptions: Readable<CategoryOption[]>;
 	let propositions: Proposition[] = [];
 
 	let isLoaded: boolean;
@@ -69,7 +70,7 @@
 	let shouldCreateNewList = false;
 	const darkBG = darkEquivalents;
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
-	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
+	$: selectCategoryOptions = ($categoryOptions || []).map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: isAnyItemSelected = items.some((it) => it.selected);
 
@@ -79,9 +80,27 @@
 		isByCategoryView = checklistSettings.isGroupByCategory;
 		isColorsForCategories = checklistSettings.isColorsForCategories;
 		isFirstTimeUse = !checklistSettings.hasSeenDemo;
-		categoryOptions = await store.getCategoryOptions();
+		categoryOptions = store.categoryOptions;
 		propositions = await store.getPropositions();
 		categoryAutodetector = new CategoryAutodetector(propositions, locale);
+		await initList();
+		updatePropositionsFuzzySearch();
+		checkListForDuplicates();
+		setTimeout(() => {
+			isLoaded = true;
+		}, 500);
+		store.doOnAuthChanged(async function (isLoggedIn) {
+			if (isLoggedIn) {
+				await initList();
+			}
+		});
+	});
+
+	onDestroy(() => {
+		store.onDestroy();
+	});
+
+	async function initList(): Promise<void> {
 		if (listId) {
 			const list = await store.getList(listId);
 			if (list) {
@@ -91,15 +110,14 @@
 				shouldCreateNewList = true;
 			}
 		}
-		updatePropositionsFuzzySearch();
-		checkListForDuplicates();
-		isLoaded = true;
 		if (shouldCreateNewList && !isFirstTimeUse) {
 			setTimeout(() => {
 				onAddToListClicked();
 			});
+		} else {
+			closeAllEdits();
 		}
-	});
+	}
 
 	onDestroy(() => {
 		toastManager.clear();
@@ -302,12 +320,11 @@
 		previousItems = items.map((it) => ({ ...it, category: { ...it.category } }));
 		let categoryId = e.categoryId;
 		if (e.newCategory) {
-			e.newCategory.color = pickColorForACategory(items, categoryOptions);
-			categoryOptions = [e.newCategory, ...categoryOptions];
+			e.newCategory.color = pickColorForACategory(items, $categoryOptions);
 			categoryId = e.newCategory.id;
 			store.addCategoryOption(e.newCategory);
 		}
-		let category = categoryOptions.find((c) => c.id === categoryId);
+		let category = e.newCategory || $categoryOptions.find((c) => c.id === categoryId);
 		let count = 0;
 		items = items.map((it) => {
 			if (it.selected) {
@@ -354,12 +371,11 @@
 		}
 		const categoryToAdd: CategoryOption | undefined = e?.detail?.addCategory;
 		if (categoryToAdd) {
-			categoryToAdd.color = pickColorForACategory(items, categoryOptions);
-			categoryOptions = [categoryToAdd, ...categoryOptions];
+			categoryToAdd.color = pickColorForACategory(items, $categoryOptions);
 			editedCategoryId = categoryToAdd.id;
 			store.addCategoryOption(categoryToAdd);
 		}
-		const targetCategory = categoryOptions.find((c) => c.id === editedCategoryId);
+		const targetCategory = categoryToAdd || $categoryOptions.find((c) => c.id === editedCategoryId);
 		const updated = { ...editedItem, category: { ...targetCategory } };
 		if (addToCategoryId) {
 			items = [...items, updated];
@@ -432,7 +448,8 @@
 			category: targetCategory,
 			checked: false,
 			selected: false,
-			isEdited: false
+			isEdited: false,
+			orderAdded: items.length + 1
 		};
 	}
 
@@ -658,7 +675,7 @@
 			<ChecklistItemEditor
 				{editedItem}
 				{isByCategoryView}
-				{categoryOptions}
+				categoryOptions={$categoryOptions}
 				{propositionsFuzzySearch}
 				{store}
 				{categoryAutodetector}
@@ -676,7 +693,7 @@
 		<BottomMenu on:swipe-left={onBodyClick}>
 			<ChecklistBatchEditor
 				{isByCategoryView}
-				{categoryOptions}
+				categoryOptions={$categoryOptions}
 				on:batch-remove={onBatchRemove}
 				on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
 				on:batch-save-new-list={onBatchSaveAsNewList}

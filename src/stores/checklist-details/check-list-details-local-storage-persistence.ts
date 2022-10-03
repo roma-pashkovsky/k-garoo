@@ -6,13 +6,18 @@ import type {
 	ChecklistSettings,
 	Proposition
 } from '../../types';
-import { getState, setState } from '../../utils/local-storage-state';
+import {
+	getListData,
+	getListIds,
+	getState,
+	setListData,
+	setListIds,
+	setState
+} from '../../utils/local-storage-state';
 
 export class CheckListDetailsLocalStoragePersistence {
-	public async getList(listId: string): Promise<CheckList> {
-		const state = getState();
-		const list = state.listData[listId];
-		return Promise.resolve(list);
+	public async getList(listId: string): Promise<CheckList | null> {
+		return Promise.resolve(getListData(listId));
 	}
 
 	public async getCategoryOptions(): Promise<CategoryOption[]> {
@@ -36,44 +41,37 @@ export class CheckListDetailsLocalStoragePersistence {
 	}
 
 	public getListVersion(listId: string): Promise<number | undefined> {
-		const state = getState();
-		if (state.listData[listId]) {
-			return Promise.resolve(state.listData[listId].updated_utc || 0);
+		const list = getListData(listId);
+		if (list) {
+			return Promise.resolve(list.updated_utc || 0);
 		}
 		return Promise.resolve(undefined);
 	}
 
-	public async createList(id: string, name: string, items: CheckListItem[]): Promise<void> {
+	public async createList(
+		id: string,
+		name: string,
+		items: CheckListItem[],
+		ts: number
+	): Promise<void> {
 		await this.updatePropositionsWithItems(items);
-		const state = getState();
-		const listIds = state.listIds;
+		const listIds = getListIds();
 		listIds.unshift(id);
-		setState({
-			...state,
-			listIds
-		});
-		await this.saveListData(id, name, items);
+		setListIds(listIds);
+		await this.saveListData(id, name, items, ts);
 	}
 
-	public async saveListName(id: string, name: string): Promise<void> {
-		const state = getState();
-		const list = state.listData[id];
+	public async saveListName(id: string, name: string, ts: number): Promise<void> {
+		const list = getListData(id);
 		if (list) {
 			list.name = name;
-			setState({
-				...state,
-				listData: {
-					...state.listData,
-					[id]: { ...list, updated_utc: new Date().getTime() }
-				}
-			});
+			setListData(list);
 		}
 	}
 
-	public async upsertListItems(id: string, items: CheckListItem[]): Promise<void> {
+	public async upsertListItems(id: string, items: CheckListItem[], ts: number): Promise<void> {
 		await this.updatePropositionsWithItems(items);
-		const state = getState();
-		const list = state.listData[id];
+		const list = getListData(id);
 		if (list) {
 			items.forEach((item) => {
 				const itemInd = list.items.findIndex((it) => it.id === item.id);
@@ -83,42 +81,25 @@ export class CheckListDetailsLocalStoragePersistence {
 					list.items.push(item);
 				}
 			});
-			setState({
-				...state,
-				listData: {
-					...state.listData,
-					[id]: { ...list, updated_utc: new Date().getTime() }
-				}
-			});
+			setListData({ ...list, updated_utc: ts });
 		}
 	}
 
-	public async setListItems(id: string, items: CheckListItem[]): Promise<void> {
+	public async setListItems(id: string, items: CheckListItem[], ts: number): Promise<void> {
 		const state = getState();
 		const list = state.listData[id];
 		list.items = [...items];
-		setState({
-			...state,
-			listData: {
-				...state.listData,
-				[id]: { ...list, updated_utc: new Date().getTime() }
-			}
-		});
+		setListData({ ...list, updated_utc: ts });
 	}
 
-	public async removeListItems(id: string, itemIds: string[]): Promise<void> {
-		const state = getState();
-		const list = state.listData[id];
-		list.items = list.items.filter((it) => {
-			return !itemIds.some((remId) => remId === it.id);
-		});
-		setState({
-			...state,
-			listData: {
-				...state.listData,
-				[id]: { ...list, updated_utc: new Date().getTime() }
-			}
-		});
+	public async removeListItems(id: string, itemIds: string[], ts: number): Promise<void> {
+		const list = getListData(id);
+		if (list) {
+			list.items = list.items.filter((it) => {
+				return !itemIds.some((remId) => remId === it.id);
+			});
+			setListData({ ...list, updated_utc: ts });
+		}
 	}
 
 	public async addCategoryOption(option: CategoryOption): Promise<void> {
@@ -164,22 +145,14 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
-	public async updateList({ id, items, name }: CheckList): Promise<void> {
-		const state = getState();
-		const oldListData = state.listData;
-		const newListData = {
-			...oldListData,
-			[id]: {
-				id,
-				items,
-				name,
-				updated_utc: new Date().getTime()
-			} as CheckList
-		};
-		setState({
-			...state,
-			listData: newListData
-		});
+	public async updateList({ id, items, name }: CheckList, ts: number): Promise<void> {
+		const newList = {
+			id,
+			items,
+			name,
+			updated_utc: ts
+		} as CheckList;
+		setListData(newList);
 	}
 
 	public async updateProposition(prop: Proposition): Promise<void> {
@@ -195,23 +168,20 @@ export class CheckListDetailsLocalStoragePersistence {
 		}
 	}
 
-	private async saveListData(id: string, name: string, items: CheckListItem[]): Promise<void> {
-		const state = getState();
-		const oldListData = state.listData;
-		const newListData = {
-			...oldListData,
-			[id]: {
-				id,
-				items,
-				name,
-				created_utc: new Date().getTime(),
-				updated_utc: new Date().getTime()
-			} as CheckList
-		};
-		setState({
-			...state,
-			listData: newListData
-		});
+	private async saveListData(
+		id: string,
+		name: string,
+		items: CheckListItem[],
+		ts: number
+	): Promise<void> {
+		const list = {
+			id,
+			items,
+			name,
+			created_utc: ts,
+			updated_utc: ts
+		} as CheckList;
+		setListData(list);
 	}
 
 	private async updatePropositionsWithItems(items: CheckListItem[]): Promise<void> {

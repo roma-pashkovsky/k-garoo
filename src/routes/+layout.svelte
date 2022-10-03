@@ -18,21 +18,24 @@
 	import ThemeSelector from '../lib/ThemeSelector.svelte';
 	import { fade } from 'svelte/transition';
 	import { AuthStore } from '../stores/login/auth.store';
+	import Login from '../lib/Login.svelte';
 
 	const toastStore = ToastService.getInstance().toasts;
 	let isInitialized = false;
-	const appVersion = 4;
+	const appVersion = 5;
 	const isAppReloading = AppReloader.isReloading;
 	let isSetLocalePopupOpen = false;
 	const appSettings: Writable<AppSettings> = appSettingsStore;
+	const isLoginModalOpen = AuthStore.isLoginModalOpen;
+	const isSyncingData = AuthStore.isSyncingData;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 
 	onMount(async () => {
+		AuthStore.init();
 		await checkForUpdatedApp();
 		await setAppSettings();
 		await checkForLocale();
-		AuthStore.checkAuth();
 		isInitialized = true;
 	});
 
@@ -98,6 +101,10 @@
 			}
 		}
 	}
+
+	function onSuccessfulLogin() {
+		AuthStore.isLoginModalOpen.set(false);
+	}
 </script>
 
 <!--Load tailwind colors-->
@@ -116,7 +123,7 @@
 
 <div class="fixed top-0 bottom-0 left-0 right-0 root {$appSettings?.theme}">
 	<div class=" fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
-		{#if !isInitialized || $isAppReloading}
+		{#if !isInitialized || $isAppReloading || $isSyncingData}
 			<FullPageSpinner />
 		{:else}
 			<div class="top-toast-wrapper right-4 sm:right-6">
@@ -158,6 +165,15 @@
 			<Button type="submit" class="w-50">{$t('app.ok.long')}</Button>
 		</div>
 	</form>
+</Modal>
+
+<Modal
+	class="z-50"
+	title={$t('app.login-popup.title')}
+	placement="center"
+	bind:open={$isLoginModalOpen}
+>
+	<Login on:success={onSuccessfulLogin} />
 </Modal>
 
 <style>

@@ -19,6 +19,7 @@
 	const user = AuthStore.user;
 	let isLoginModalOpen = false;
 	let wrapperDiv: HTMLDivElement;
+	let isHidden = false;
 
 	$: section = getSectionFromPath($page.url.pathname);
 
@@ -57,7 +58,7 @@
 				K-garoo
 			</span>
 		</NavBrand>
-		<div class="flex items-center flex-wrap md:order-2">
+		<div class="flex items-center flex-wrap md:order-2" onmousedown="event.preventDefault()">
 			{#if $user}
 				<Avatar
 					size="sm"
@@ -75,11 +76,7 @@
 			{/if}
 			<NavHamburger class="md:hidden" on:click={toggle} />
 		</div>
-		<div
-			use:click_outside
-			on:click_outside={() => hidden || toggle()}
-			class="w-full md:flex md:flex-1 md:items-center md:justify-end md:bg-transparent"
-		>
+		<div class="w-full md:flex md:flex-1 md:items-center md:justify-end md:bg-transparent">
 			<NavUl
 				{hidden}
 				ulClass="flex flex-col p-4 sm:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"

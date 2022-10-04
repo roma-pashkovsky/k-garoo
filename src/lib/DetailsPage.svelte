@@ -1,7 +1,7 @@
-<script lang="ts">
-	import { fade } from 'svelte/transition';
-</script>
+<script lang="ts"></script>
 
-<div in:fade class="select-none fixed top-0 bottom-0 left-0 right-0 flex flex-col">
-	<slot />
+<div class="select-none fixed top-0 bottom-0 left-0 right-0 flex justify-center bg-gray-800">
+	<div class="flex flex-col h-screen w-full max-w-screen-lg bg-white dark:bg-slate-900">
+		<slot />
+	</div>
 </div>

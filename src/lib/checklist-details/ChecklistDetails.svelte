@@ -88,7 +88,7 @@
 		checkListForDuplicates();
 		setTimeout(() => {
 			isLoaded = true;
-		}, 500);
+		}, 200);
 		store.doOnAuthChanged(async function (isLoggedIn) {
 			if (isLoggedIn) {
 				await initList();
@@ -498,8 +498,8 @@
 	}
 </script>
 
-{#if isLoaded}
-	<DetailsPage>
+<DetailsPage>
+	{#if isLoaded}
 		<DetailsTopBar on:back-clicked={onBackClick}>
 			<div slot="page-title">
 				<div class="flex items-center">
@@ -668,43 +668,43 @@
 			{/if}
 			<!--        /List-->
 		</DetailsBody>
-	</DetailsPage>
-	<!--        Bottom input-->
-	{#if !!editedItem}
-		<BottomMenu on:swipe-left={onBodyClick}>
-			<ChecklistItemEditor
-				{editedItem}
-				{isByCategoryView}
-				categoryOptions={$categoryOptions}
-				{propositionsFuzzySearch}
-				{store}
-				{categoryAutodetector}
-				{isFirstTimeUse}
-				on:form-submit={(e) => onAddFormSubmit(e)}
-				on:dismiss={onBodyClick}
-				on:destroy={onEditorFormDestroyed}
-				bind:editedCategoryId
-			/>
-		</BottomMenu>
+	{:else}
+		<FullPageSpinner />
 	{/if}
-	<!--		/Bottom input-->
-	<!--		Batch editing input-->
-	{#if isAnyItemSelected}
-		<BottomMenu on:swipe-left={onBodyClick}>
-			<ChecklistBatchEditor
-				{isByCategoryView}
-				categoryOptions={$categoryOptions}
-				on:batch-remove={onBatchRemove}
-				on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
-				on:batch-save-new-list={onBatchSaveAsNewList}
-				on:dismiss={onBodyClick}
-			/>
-		</BottomMenu>
-	{/if}
-	<!--		/Batch editing input-->
-{:else}
-	<FullPageSpinner />
+</DetailsPage>
+<!--        Bottom input-->
+{#if !!editedItem}
+	<BottomMenu on:swipe-left={onBodyClick}>
+		<ChecklistItemEditor
+			{editedItem}
+			{isByCategoryView}
+			categoryOptions={$categoryOptions}
+			{propositionsFuzzySearch}
+			{store}
+			{categoryAutodetector}
+			{isFirstTimeUse}
+			on:form-submit={(e) => onAddFormSubmit(e)}
+			on:dismiss={onBodyClick}
+			on:destroy={onEditorFormDestroyed}
+			bind:editedCategoryId
+		/>
+	</BottomMenu>
 {/if}
+<!--		/Bottom input-->
+<!--		Batch editing input-->
+{#if isAnyItemSelected}
+	<BottomMenu on:swipe-left={onBodyClick}>
+		<ChecklistBatchEditor
+			{isByCategoryView}
+			categoryOptions={$categoryOptions}
+			on:batch-remove={onBatchRemove}
+			on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
+			on:batch-save-new-list={onBatchSaveAsNewList}
+			on:dismiss={onBodyClick}
+		/>
+	</BottomMenu>
+{/if}
+<!--		/Batch editing input-->
 
 <ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />
 <ChecklistDetailsDemoBody

@@ -45,12 +45,12 @@
 		class="p-2 grid grid-cols-6 gap-1 grid-rows-3"
 	>
 		<Button class="!p-0.5 !rounded" color="light" on:click={() => onColorClick('transparent')}>
-			<div class="w-8 h-8 rounded" />
+			<div class="w-6 h-6 rounded" />
 		</Button>
 
 		{#each colors as color}
 			<Button class="!p-0.5 !rounded" color="light" on:click={() => onColorClick(color)}>
-				<div class="relative w-8 h-8 rounded {classPrefix + color} dark:!bg-transparent">
+				<div class="relative w-6 h-6 rounded {classPrefix + color} dark:!bg-transparent">
 					<div class="absolute inset-0 hidden dark:block {classPrefix + darkBG[color]}" />
 				</div>
 			</Button>

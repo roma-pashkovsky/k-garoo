@@ -86,9 +86,7 @@
 		await initList();
 		updatePropositionsFuzzySearch();
 		checkListForDuplicates();
-		setTimeout(() => {
-			isLoaded = true;
-		}, 200);
+		isLoaded = true;
 		store.doOnAuthChanged(async function (isLoggedIn) {
 			if (isLoggedIn) {
 				await initList();

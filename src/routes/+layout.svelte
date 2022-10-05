@@ -2,7 +2,7 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { getInitialState, getState, setState } from '../utils/local-storage-state';
-	import { goto } from '$app/navigation';
+	import { navigating } from '$app/stores';
 	import { defaultLocale, locale } from '../utils/i18n';
 	import translations from '../utils/i18n-translations';
 	import { ToastService } from '../utils/toasts';
@@ -21,7 +21,6 @@
 	import Login from '../lib/Login.svelte';
 
 	const toastStore = ToastService.getInstance().toasts;
-	let isInitialized = false;
 	const appVersion = 5;
 	const isAppReloading = AppReloader.isReloading;
 	let isSetLocalePopupOpen = false;
@@ -30,13 +29,13 @@
 	const isSyncingData = AuthStore.isSyncingData;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
+	$: isNavigating = !!$navigating;
 
 	onMount(async () => {
 		AuthStore.init();
 		await checkForUpdatedApp();
 		await setAppSettings();
 		await checkForLocale();
-		isInitialized = true;
 	});
 
 	async function setAppSettings(): Promise<void> {
@@ -88,15 +87,15 @@
 
 	async function checkForUpdatedApp(): Promise<void> {
 		const state = getState();
+		console.log(state);
 		if (state?.appVersion !== appVersion) {
 			if (
-				!Object.keys(state).length ||
+				!state?.appVersion !== undefined ||
 				confirm(
 					'K-garoo was updated. Your lists should be cleaned for the app to work correctly. Continue?'
 				)
 			) {
 				setState({ ...getInitialState(), appVersion });
-				goto('/home/lists');
 				await new AppReloader().reload();
 			}
 		}
@@ -123,27 +122,26 @@
 
 <div class="fixed top-0 bottom-0 left-0 right-0 root {$appSettings?.theme}">
 	<div class=" fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
-		{#if !isInitialized || $isAppReloading || $isSyncingData}
+		{#if $isAppReloading || $isSyncingData || $navigating}
 			<FullPageSpinner />
-		{:else}
-			<div class="top-toast-wrapper right-4 sm:right-6">
-				{#each topToasts as toast}
-					<div class="toast">
-						<AppToast class="toast" {toast} />
-					</div>
-				{/each}
-			</div>
-
-			<slot />
-
-			<div class="toast-wrapper">
-				{#each toasts as toast}
-					<div class="toast">
-						<AppToast class="toast" {toast} />
-					</div>
-				{/each}
-			</div>
 		{/if}
+		<div class="top-toast-wrapper right-4 sm:right-6">
+			{#each topToasts as toast}
+				<div class="toast">
+					<AppToast class="toast" {toast} />
+				</div>
+			{/each}
+		</div>
+
+		<slot />
+
+		<div class="toast-wrapper">
+			{#each toasts as toast}
+				<div class="toast">
+					<AppToast class="toast" {toast} />
+				</div>
+			{/each}
+		</div>
 	</div>
 </div>
 

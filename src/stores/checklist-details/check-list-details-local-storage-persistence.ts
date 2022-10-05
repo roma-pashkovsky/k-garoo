@@ -187,7 +187,7 @@ export class CheckListDetailsLocalStoragePersistence {
 	private async updatePropositionsWithItems(items: CheckListItem[]): Promise<void> {
 		const utc = new Date().getTime();
 		const oldPropositions = await this.getPropositions();
-		const propsMap: { [desc: string]: Proposition } = oldPropositions.reduce((p, c) => {
+		const propsMap: { [desc: string]: Proposition } = (oldPropositions || []).reduce((p, c) => {
 			return { ...p, [c.itemDescription.toLowerCase().trim()]: c };
 		}, {});
 		items.forEach((item) => {

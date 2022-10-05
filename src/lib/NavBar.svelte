@@ -13,7 +13,6 @@
 	import { t } from '../utils/i18n.js';
 	import { page } from '$app/stores';
 	import { AuthStore } from '../stores/login/auth.store';
-	import { click_outside } from '../utils/click-outside';
 
 	const authStore = new AuthStore();
 	const user = AuthStore.user;
@@ -53,8 +52,23 @@
 		fluid={false}
 	>
 		<NavBrand href="/home/lists">
-			<img src="/logo-blue.svg" class="mr-3 h-6 sm:h-9" alt="K-garoo logo" />
-			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+			<img
+				src="/logo-blue.svg"
+				width="30"
+				height="24"
+				class="mr-3 block sm:hidden"
+				alt="K-garoo logo"
+			/>
+			<img
+				src="/logo-blue.svg"
+				width="45"
+				height="36"
+				class="mr-3 hidden sm:block"
+				alt="K-garoo logo"
+			/>
+			<span
+				class="self-center whitespace-nowrap text-xl font-semibold dark:text-white inline-block w-32"
+			>
 				K-garoo
 			</span>
 		</NavBrand>

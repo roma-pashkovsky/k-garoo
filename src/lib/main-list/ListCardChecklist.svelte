@@ -37,7 +37,7 @@
 	on:click={() => onCardClicked(card.id)}
 >
 	<Card
-		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-56 sm:w-80 relative"
+		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-64 sm:w-80 relative h-32"
 	>
 		{#if $card}
 			<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
@@ -60,7 +60,9 @@
 					</DropdownItem>
 				</DotMenu>
 			</div>
-			<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-400">
+			<h5
+				class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis"
+			>
 				{$card.name}
 			</h5>
 			<div class="font-normal text-gray-700 dark:text-gray-400 leading-tight">

@@ -21,7 +21,9 @@
 	import { FuzzySearch } from '../../utils/fuzzy-search';
 	import type {
 		CategoryOption,
+		CheckList,
 		CheckListItemEditModel,
+		ChecklistSettings,
 		GroupedByCategoryItem,
 		Proposition
 	} from '../../types';
@@ -41,17 +43,19 @@
 	import Palette from '../Palette.svelte';
 	import type { Readable } from 'svelte/store';
 
-	export let listId: string | undefined;
+	export let listId: string;
 	export let locale: 'en' | 'ua';
-	let store: ChecklistDetailsStore;
+	export let list: CheckList;
+	export let store: ChecklistDetailsStore;
+	export let checklistSettings: ChecklistSettings;
+	export let propositions: Proposition[] = [];
+
 	let categoryAutodetector: CategoryAutodetector;
 	let toastManager: ToastManagerType = ToastService.getInstance();
 	let listName: string = ($t as any)('lists.create_new_list.header');
 	let items: CheckListItemEditModel[] = [];
 	let categoryOptions: Readable<CategoryOption[]>;
-	let propositions: Proposition[] = [];
 
-	let isLoaded: boolean;
 	let isByCategoryView = false;
 	let isCheckboxView = false;
 	let isColorsForCategories = false;
@@ -60,7 +64,7 @@
 	let isAddToListMode: boolean;
 	let addToCategoryId: string;
 	let propositionsFuzzySearch: FuzzySearch<Proposition>;
-	let isFirstTimeUse = true;
+	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
 	let isHideCrossedOut = false;
 	// support undo for delete
@@ -74,19 +78,15 @@
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: isAnyItemSelected = items.some((it) => it.selected);
 
-	onMount(async () => {
-		store = new ChecklistDetailsStore(locale);
-		const checklistSettings = await store.getChecklistSettings();
-		isByCategoryView = checklistSettings.isGroupByCategory;
-		isColorsForCategories = checklistSettings.isColorsForCategories;
-		isFirstTimeUse = !checklistSettings.hasSeenDemo;
+	onMount(() => {
+		setDataFromList(list);
+		isByCategoryView = checklistSettings?.isGroupByCategory || false;
+		isColorsForCategories = checklistSettings?.isColorsForCategories || false;
+		isFirstTimeUse = !checklistSettings?.hasSeenDemo || false;
 		categoryOptions = store.categoryOptions;
-		propositions = await store.getPropositions();
 		categoryAutodetector = new CategoryAutodetector(propositions, locale);
-		await initList();
 		updatePropositionsFuzzySearch();
 		checkListForDuplicates();
-		isLoaded = true;
 		store.doOnAuthChanged(async function (isLoggedIn) {
 			if (isLoggedIn) {
 				await initList();
@@ -95,18 +95,24 @@
 	});
 
 	onDestroy(() => {
-		store.onDestroy();
+		if (store) {
+			store.onDestroy();
+			store.setHasSeenDemo();
+		}
+		toastManager.clear();
 	});
 
 	async function initList(): Promise<void> {
-		if (listId) {
-			const list = await store.getList(listId);
-			if (list) {
-				listName = list.name;
-				items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
-			} else {
-				shouldCreateNewList = true;
-			}
+		const list = await store.getList(listId);
+		setDataFromList(list);
+	}
+
+	function setDataFromList(list: CheckList): void {
+		if (list) {
+			listName = list.name;
+			items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
+		} else {
+			shouldCreateNewList = true;
 		}
 		if (shouldCreateNewList && !isFirstTimeUse) {
 			setTimeout(() => {
@@ -116,13 +122,6 @@
 			closeAllEdits();
 		}
 	}
-
-	onDestroy(() => {
-		toastManager.clear();
-		if (listId) {
-			store.setHasSeenDemo();
-		}
-	});
 
 	function onListTitleSave(): void {
 		if (!listId) {
@@ -497,178 +496,174 @@
 </script>
 
 <DetailsPage>
-	{#if isLoaded}
-		<DetailsTopBar on:back-clicked={onBackClick}>
-			<div slot="page-title">
-				<div class="flex items-center">
-					<TitleWithEdit bind:title={listName} on:title-submit={onListTitleSave} />
-					<div>
-						{#if isHideCrossedOut}
-							<EyeOff on:click={() => (isHideCrossedOut = false)} class="ml-3" size="15" />
-						{/if}
-					</div>
+	<DetailsTopBar on:back-clicked={onBackClick}>
+		<div slot="page-title">
+			<div class="flex items-center">
+				<TitleWithEdit bind:title={listName} on:title-submit={onListTitleSave} />
+				<div>
+					{#if isHideCrossedOut}
+						<EyeOff on:click={() => (isHideCrossedOut = false)} class="ml-3" size="15" />
+					{/if}
 				</div>
 			</div>
-			<div class="space-x-2 flex items-center" slot="right-content">
-				<Button
-					class="!p-1.5 w-9 h-9"
-					color={isCheckboxView ? 'blue' : 'light'}
-					on:click={onToggleCheckboxViewClicked}
-				>
-					<ListBullet size="23" />
-				</Button>
-				<Button
-					on:click={onAddToListClicked}
-					class="!p-1.5 w-9 h-9"
-					color={isAddToListMode ? 'blue' : 'light'}
-				>
-					<Plus size="23" />
-				</Button>
-				<!--			Right menu-->
-				<DotMenu widthClass="w-56">
-					<DropdownItem>
-						<div
-							on:click={() => (isHideCrossedOut = !isHideCrossedOut)}
-							class="w-full flex items-center"
-						>
-							<Button class="!p-1.5 mr-2 w-7 h-7" color={isHideCrossedOut ? 'blue' : 'light'}>
-								{#if isHideCrossedOut}
-									<EyeOff size="15" />
-								{:else}
-									<Eye size="15" />
-								{/if}
-							</Button>
-							<div class="whitespace-nowrap">
-								{#if isHideCrossedOut}
-									{$t('lists.details.show-crossed-out')}
-								{:else}
-									{$t('lists.details.hide-crossed-out')}
-								{/if}
-							</div>
-						</div>
-					</DropdownItem>
-					<DropdownItem>
-						<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
-							<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
-								<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
-							</Button>
-							<div class="whitespace-nowrap">
-								{$t('lists.details.by-category')}
-							</div>
-						</div>
-					</DropdownItem>
-					<DropdownItem>
-						<div on:click={onToggleColorsForCategories} class="w-full flex items-center">
-							<Button class="!p-1.5 mr-2 w-7 h-7" color={isColorsForCategories ? 'blue' : 'light'}>
-								<div class="block dark:hidden">
-									<Palette color={isColorsForCategories ? 'white' : 'black'} />
-								</div>
-								<div class="hidden dark:block">
-									<Palette color="white" />
-								</div>
-							</Button>
-							<div class="whitespace-nowrap">{$t('lists.details.colors-for-categories')}</div>
-						</div>
-					</DropdownItem>
-					<DropdownItem>
-						<div on:click={onGenerateListLinkClicked} class="w-full flex items-center">
-							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
-								<Link size="15" />
-							</Button>
-							{$t('lists.details.link-to-list')}
-						</div>
-					</DropdownItem>
-					<DropdownItem>
-						<div on:click={onShowMeAround} class="w-full flex items-center">
-							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
-								<InformationCircle size="15" />
-							</Button>
-							{$t('lists.details.show-me-around')}
-						</div>
-					</DropdownItem>
-				</DotMenu>
-				<!--			/Right menu-->
-			</div>
-		</DetailsTopBar>
-		<DetailsBody
-			on:body-swipe-left={onBodySwipeLeft}
-			on:body-swipe-right={onBodySwipeRight}
-			on:dblclick={onListBodyDoubleClick}
-		>
-			<!--        List-->
-			{#if isByCategoryView}
-				<!--			By category view-->
-				{#each byCategoryList as catItem, catIndex}
+		</div>
+		<div class="space-x-2 flex items-center" slot="right-content">
+			<Button
+				class="!p-1.5 w-9 h-9"
+				color={isCheckboxView ? 'blue' : 'light'}
+				on:click={onToggleCheckboxViewClicked}
+			>
+				<ListBullet size="23" />
+			</Button>
+			<Button
+				on:click={onAddToListClicked}
+				class="!p-1.5 w-9 h-9"
+				color={isAddToListMode ? 'blue' : 'light'}
+			>
+				<Plus size="23" />
+			</Button>
+			<!--			Right menu-->
+			<DotMenu widthClass="w-56">
+				<DropdownItem>
 					<div
-						class="relative rounded-md  bg-{isColorsForCategories && catItem.category.color
-							? catItem.category.color
-							: 'transparent'} dark:!bg-transparent {catIndex === 0 ? '' : 'mt-6'}"
+						on:click={() => (isHideCrossedOut = !isHideCrossedOut)}
+						class="w-full flex items-center"
 					>
-						<div
-							class="absolute top-0 bottom-0 left-0 right-0 hidden dark:block rounded-md -z-10 bg-{isColorsForCategories &&
-							catItem.category.color
-								? darkBG[catItem.category.color]
-								: 'transparent'}"
-						/>
-						<div onclick="event.stopPropagation()">
-							<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
-								<span
-									class="p-2"
-									use:press={{ timeframe: 400, triggerBeforeFinished: true }}
-									on:press|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
-								>
-									{catItem.category.name}
-								</span>
-								{#if isColorsForCategories && isCheckboxView}
-									<ColorSelector
-										id={catItem.category.id}
-										selected={catItem.category.color}
-										placement={catIndex < 2 ? 'bottom' : 'top'}
-										classPrefix="bg-"
-										on:select={(event) => onCategoryColorSelect(event.detail.color, catItem)}
-									/>
-								{/if}
-							</h5>
-						</div>
-
-						<div class="pl-4">
-							{#each catItem.items as item (item.id)}
-								<ChecklistItem
-									{item}
-									{isCheckboxView}
-									toBeDeleted={itemsToBeDeleted[item.id]}
-									on:swipe={(event) => onItemSwipe(item, event)}
-									on:item-click={() => onItemClick(item)}
-									on:item-long-press={() => onItemLongPress(item)}
-									on:checkbox-change={() => onItemCheckboxChange(item)}
-									addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
-								/>
-							{/each}
+						<Button class="!p-1.5 mr-2 w-7 h-7" color={isHideCrossedOut ? 'blue' : 'light'}>
+							{#if isHideCrossedOut}
+								<EyeOff size="15" />
+							{:else}
+								<Eye size="15" />
+							{/if}
+						</Button>
+						<div class="whitespace-nowrap">
+							{#if isHideCrossedOut}
+								{$t('lists.details.show-crossed-out')}
+							{:else}
+								{$t('lists.details.hide-crossed-out')}
+							{/if}
 						</div>
 					</div>
-				{/each}
-				<!--			/By category view-->
-			{:else}
-				<!--		Plain view-->
-				{#each displayItems as item (item.id)}
-					<ChecklistItem
-						{item}
-						{isCheckboxView}
-						toBeDeleted={itemsToBeDeleted[item.id]}
-						on:swipe={(event) => onItemSwipe(item, event)}
-						on:item-click={() => onItemClick(item)}
-						on:item-long-press={() => onItemLongPress(item)}
-						on:checkbox-change={() => onItemCheckboxChange(item)}
-						addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
+				</DropdownItem>
+				<DropdownItem>
+					<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
+						<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
+							<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
+						</Button>
+						<div class="whitespace-nowrap">
+							{$t('lists.details.by-category')}
+						</div>
+					</div>
+				</DropdownItem>
+				<DropdownItem>
+					<div on:click={onToggleColorsForCategories} class="w-full flex items-center">
+						<Button class="!p-1.5 mr-2 w-7 h-7" color={isColorsForCategories ? 'blue' : 'light'}>
+							<div class="block dark:hidden">
+								<Palette color={isColorsForCategories ? 'white' : 'black'} />
+							</div>
+							<div class="hidden dark:block">
+								<Palette color="white" />
+							</div>
+						</Button>
+						<div class="whitespace-nowrap">{$t('lists.details.colors-for-categories')}</div>
+					</div>
+				</DropdownItem>
+				<DropdownItem>
+					<div on:click={onGenerateListLinkClicked} class="w-full flex items-center">
+						<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+							<Link size="15" />
+						</Button>
+						{$t('lists.details.link-to-list')}
+					</div>
+				</DropdownItem>
+				<DropdownItem>
+					<div on:click={onShowMeAround} class="w-full flex items-center">
+						<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+							<InformationCircle size="15" />
+						</Button>
+						{$t('lists.details.show-me-around')}
+					</div>
+				</DropdownItem>
+			</DotMenu>
+			<!--			/Right menu-->
+		</div>
+	</DetailsTopBar>
+	<DetailsBody
+		on:body-swipe-left={onBodySwipeLeft}
+		on:body-swipe-right={onBodySwipeRight}
+		on:dblclick={onListBodyDoubleClick}
+	>
+		<!--        List-->
+		{#if isByCategoryView}
+			<!--			By category view-->
+			{#each byCategoryList as catItem, catIndex}
+				<div
+					class="relative rounded-md  bg-{isColorsForCategories && catItem.category.color
+						? catItem.category.color
+						: 'transparent'} dark:!bg-transparent {catIndex === 0 ? '' : 'mt-6'}"
+				>
+					<div
+						class="absolute top-0 bottom-0 left-0 right-0 hidden dark:block rounded-md -z-10 bg-{isColorsForCategories &&
+						catItem.category.color
+							? darkBG[catItem.category.color]
+							: 'transparent'}"
 					/>
-				{/each}
-				<!--		/Plain view-->
-			{/if}
-			<!--        /List-->
-		</DetailsBody>
-	{:else}
-		<FullPageSpinner />
-	{/if}
+					<div onclick="event.stopPropagation()">
+						<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
+							<span
+								class="p-2"
+								use:press={{ timeframe: 400, triggerBeforeFinished: true }}
+								on:press|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
+							>
+								{catItem.category.name}
+							</span>
+							{#if isColorsForCategories && isCheckboxView}
+								<ColorSelector
+									id={catItem.category.id}
+									selected={catItem.category.color}
+									placement={catIndex < 2 ? 'bottom' : 'top'}
+									classPrefix="bg-"
+									on:select={(event) => onCategoryColorSelect(event.detail.color, catItem)}
+								/>
+							{/if}
+						</h5>
+					</div>
+
+					<div class="pl-4">
+						{#each catItem.items as item (item.id)}
+							<ChecklistItem
+								{item}
+								{isCheckboxView}
+								toBeDeleted={itemsToBeDeleted[item.id]}
+								on:swipe={(event) => onItemSwipe(item, event)}
+								on:item-click={() => onItemClick(item)}
+								on:item-long-press={() => onItemLongPress(item)}
+								on:checkbox-change={() => onItemCheckboxChange(item)}
+								addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
+							/>
+						{/each}
+					</div>
+				</div>
+			{/each}
+			<!--			/By category view-->
+		{:else}
+			<!--		Plain view-->
+			{#each displayItems as item (item.id)}
+				<ChecklistItem
+					{item}
+					{isCheckboxView}
+					toBeDeleted={itemsToBeDeleted[item.id]}
+					on:swipe={(event) => onItemSwipe(item, event)}
+					on:item-click={() => onItemClick(item)}
+					on:item-long-press={() => onItemLongPress(item)}
+					on:checkbox-change={() => onItemCheckboxChange(item)}
+					addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
+				/>
+			{/each}
+			<!--		/Plain view-->
+		{/if}
+		<!--        /List-->
+	</DetailsBody>
 </DetailsPage>
 <!--        Bottom input-->
 {#if !!editedItem}

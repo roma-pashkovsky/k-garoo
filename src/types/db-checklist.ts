@@ -8,5 +8,4 @@ export type DbChecklist = {
 	items: {
 		[itemId: string]: CheckListItem;
 	};
-	createdById: string | undefined;
 };

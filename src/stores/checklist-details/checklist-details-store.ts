@@ -93,6 +93,23 @@ export class ChecklistDetailsStore {
 			const remote = await ChecklistDetailsStore.dbPersistence.getList(listId);
 			console.log('remote: ', remote);
 			if (remote) {
+				// add list to users collection if logged in
+				if (this.isLoggedIn) {
+					try {
+						const isAddedToUserCollection =
+							await ChecklistDetailsStore.dbPersistence.isListAddedToUserCollection(listId);
+						console.log('checked');
+						if (!isAddedToUserCollection) {
+							await ChecklistDetailsStore.dbPersistence.addListToUserCollection(
+								listId,
+								remote.created_utc
+							);
+						}
+					} catch (err) {
+						console.log(err);
+						console.log('Could not add to user collection');
+					}
+				}
 				if (!localVersion) {
 					await ChecklistDetailsStore.persistence.createList(
 						remote.id,

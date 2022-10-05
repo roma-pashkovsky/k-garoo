@@ -20,6 +20,15 @@ export class ChecklistDetailsDbPersistence extends BaseDbPersistence {
 		return null;
 	}
 
+	public isListAddedToUserCollection(listId: string): Promise<boolean> {
+		return this.firebaseUtils.exists(`listsByUser/${this.userId}/${listId}`);
+	}
+
+	public async addListToUserCollection(listId: string, ts: number): Promise<void> {
+		const listsByUsersPath = `listsByUsers/${this.userId}/${listId}`;
+		await this.firebaseUtils.set([{ path: listsByUsersPath, value: { updated_ts: ts } }]);
+	}
+
 	public isCategoryOptionExist(optionId: string): Promise<boolean> {
 		this.checkUserId();
 		return this.firebaseUtils.exists(`categoryOptionsByUsers/${this.userId}/${optionId}`);
@@ -51,8 +60,7 @@ export class ChecklistDetailsDbPersistence extends BaseDbPersistence {
 	): Promise<void> {
 		this.checkUserId();
 		// add to lists by users
-		const listsByUsersPath = `listsByUsers/${this.userId}/${id}`;
-		await this.firebaseUtils.set([{ path: listsByUsersPath, value: { updated_ts: ts } }]);
+		await this.addListToUserCollection(id, ts);
 		// save list data
 		const itemsMap = arrayToMap(items, 'id');
 

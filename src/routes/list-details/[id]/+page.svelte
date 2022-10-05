@@ -1,9 +1,15 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import ChecklistDetails from '$lib/checklist-details/ChecklistDetails.svelte';
-	import { locale } from '../../../utils/i18n.js';
+	import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
 
-	const listId = $page.params.id;
+	export let data: ChecklistDetailsLoadData;
 </script>
 
-<ChecklistDetails {listId} bind:locale={$locale} />
+<ChecklistDetails
+	listId={data.listId}
+	locale={data.locale}
+	store={data.store}
+	list={data.list}
+	propositions={data.propositions}
+	checklistSettings={data.checklistSettings}
+/>

@@ -15,15 +15,12 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	const toastManager = ToastService.getInstance();
-	const store = new ChecklistMainListStore();
+	export let data;
+	const store: ChecklistMainListStore = data.store;
 	const items = ChecklistMainListStore.items;
 
-	onMount(() => {
-		store.init();
-	});
-
 	onDestroy(() => {
-		store.destroy();
+		store?.destroy();
 	});
 
 	function onListRemove(listId: string, list: CheckList): void {

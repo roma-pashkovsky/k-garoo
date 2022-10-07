@@ -1,5 +1,4 @@
 import type { CategoryOption, CheckList, CheckListItem } from '../../types';
-import { FirebaseUtils } from '../../utils/firebase-utils';
 import type { DbChecklist } from '../../types/db-checklist';
 import { arrayToMap } from '../../utils/array-to-map';
 import { BaseDbPersistence } from '../../utils/base-db-persistence';

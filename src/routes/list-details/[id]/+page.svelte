@@ -7,9 +7,7 @@
 
 <ChecklistDetails
 	listId={data.listId}
-	locale={data.locale}
 	store={data.store}
 	list={data.list}
-	propositions={data.propositions}
 	checklistSettings={data.checklistSettings}
 />

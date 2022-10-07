@@ -9,35 +9,48 @@ import type {
 import {
 	getListData,
 	getListIds,
+	getPropositions,
 	getState,
 	setListData,
 	setListIds,
+	setPropositions,
 	setState
 } from '../../utils/local-storage-state';
 
 export class CheckListDetailsLocalStoragePersistence {
 	public async getList(listId: string): Promise<CheckList | null> {
-		return Promise.resolve(getListData(listId));
+		return new Promise<CheckList | null>((resolve) => {
+			requestAnimationFrame(() => {
+				resolve(getListData(listId));
+			});
+		});
 	}
 
 	public async getCategoryOptions(): Promise<CategoryOption[]> {
-		const state = getState();
-		return Promise.resolve(state.categoryOptions);
+		return new Promise((resolve) => {
+			requestAnimationFrame(() => {
+				const state = getState();
+				resolve(state.categoryOptions);
+			});
+		});
 	}
 
 	public async getPropositions(): Promise<Proposition[]> {
-		const state = getState();
-		return Promise.resolve(state.propositions);
+		return new Promise<Proposition[]>((resolve) => {
+			requestAnimationFrame(() => {
+				const props = getPropositions();
+				resolve(props);
+			});
+		});
 	}
 
 	public async getChecklistSettings(): Promise<ChecklistSettings> {
-		const state = getState();
-		return Promise.resolve(state.checklistSettings);
-	}
-
-	public async getAppSettings(): Promise<AppSettings> {
-		const state = getState();
-		return Promise.resolve(state.appSettings);
+		return new Promise((resolve) => {
+			requestAnimationFrame(() => {
+				const state = getState();
+				resolve(state.checklistSettings);
+			});
+		});
 	}
 
 	public getListVersion(listId: string): Promise<number | undefined> {
@@ -54,7 +67,6 @@ export class CheckListDetailsLocalStoragePersistence {
 		items: CheckListItem[],
 		ts: number
 	): Promise<void> {
-		await this.updatePropositionsWithItems(items);
 		const listIds = getListIds();
 		listIds.unshift(id);
 		setListIds(listIds);
@@ -70,7 +82,6 @@ export class CheckListDetailsLocalStoragePersistence {
 	}
 
 	public async upsertListItems(id: string, items: CheckListItem[], ts: number): Promise<void> {
-		await this.updatePropositionsWithItems(items);
 		const list = getListData(id);
 		if (list) {
 			items.forEach((item) => {
@@ -155,17 +166,13 @@ export class CheckListDetailsLocalStoragePersistence {
 		setListData(newList);
 	}
 
-	public async updateProposition(prop: Proposition): Promise<void> {
-		const state = getState();
-		const propositions = state.propositions;
-		const index = propositions.findIndex((p) => p.id === prop.id);
-		if (index >= 0) {
-			propositions.splice(index, 1, prop);
-			setState({
-				...state,
-				propositions
+	public async setPropositions(props: Proposition[]): Promise<void> {
+		return new Promise((resolve) => {
+			requestAnimationFrame(() => {
+				setPropositions(props);
+				resolve();
 			});
-		}
+		});
 	}
 
 	private async saveListData(
@@ -182,31 +189,5 @@ export class CheckListDetailsLocalStoragePersistence {
 			updated_utc: ts
 		} as CheckList;
 		setListData(list);
-	}
-
-	private async updatePropositionsWithItems(items: CheckListItem[]): Promise<void> {
-		const utc = new Date().getTime();
-		const oldPropositions = await this.getPropositions();
-		const propsMap: { [desc: string]: Proposition } = (oldPropositions || []).reduce((p, c) => {
-			return { ...p, [c.itemDescription.toLowerCase().trim()]: c };
-		}, {});
-		items.forEach((item) => {
-			propsMap[item.itemDescription.toLowerCase().trim()] = {
-				id: item.id,
-				itemDescription: item.itemDescription,
-				category: item.category,
-				lastUsedUTC: utc
-			};
-		});
-		let newPropositions = Object.keys(propsMap).map((propKey) => propsMap[propKey]);
-		newPropositions.sort((a, b) => b.lastUsedUTC - a.lastUsedUTC);
-		if (newPropositions.length > 100) {
-			newPropositions = newPropositions.slice(0, 100);
-		}
-		const state = getState();
-		setState({
-			...state,
-			propositions: newPropositions
-		});
 	}
 }

@@ -22,6 +22,7 @@ export class CategoryAutodetector {
 		if (searchRes?.length) {
 			const topMatch = searchRes[0];
 			const reserved = reservedCategories[topMatch.item.category.id];
+
 			if (reserved) {
 				return {
 					id: reserved.id,

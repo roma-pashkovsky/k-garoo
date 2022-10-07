@@ -3,7 +3,6 @@ import type { ChecklistDetailsStore } from '../../../stores/checklist-details/ch
 
 export interface ChecklistDetailsLoadData {
 	listId: string;
-	propositions: Proposition[];
 	list: CheckList | null;
 	checklistSettings: ChecklistSettings;
 	store: ChecklistDetailsStore;

@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { AppSettings, CheckList, KGarooState } from '../types';
+import type { AppSettings, CheckList, KGarooState, Proposition } from '../types';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
 
 export { customCategoryId, otherCategoryId };
@@ -87,6 +87,20 @@ export const removeListData = (id: string): void => {
 export const setListData = (list: CheckList): void => {
 	const raw = JSON.stringify(list);
 	localStorage.setItem(`k-garoo/listData/${list.id}`, raw);
+};
+
+export const getPropositions = (): Proposition[] => {
+	const record = localStorage.getItem('k-garoo/propositions');
+	if (record) {
+		return JSON.parse(record) as Proposition[];
+	} else {
+		return [];
+	}
+};
+
+export const setPropositions = (props: Proposition[]): void => {
+	const str = JSON.stringify(props || []);
+	localStorage.setItem('k-garoo/propositions', str);
 };
 
 export const cleanAllLocalData = (): void => {

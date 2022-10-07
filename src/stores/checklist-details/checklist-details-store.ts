@@ -1,10 +1,10 @@
 import type {
-	AppSettings,
 	CategoryOption,
 	CheckList,
 	CheckListItem,
 	CheckListItemEditModel,
 	ChecklistSettings,
+	Language,
 	Proposition
 } from '../../types';
 import { CheckListDetailsLocalStoragePersistence } from './check-list-details-local-storage-persistence';
@@ -12,19 +12,32 @@ import { CategoryOptionManager } from './category-option-manager';
 import { PropositionsManager } from './propositions-manager';
 import { FirebaseUtils } from '../../utils/firebase-utils';
 import { ChecklistDetailsDbPersistence } from './checklist-details-db-persistence';
-import { derived, writable } from 'svelte/store';
 import type { Readable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
+import { AppSettingsStore } from '../app/app-settings';
+import { CategoryAutodetector } from './category-autodetector';
 
 export class ChecklistDetailsStore {
 	private static customCategoryOptions = writable<CategoryOption[]>([]);
+	private static savedPropositions = writable<Proposition[]>([]);
+	public static propositions = derived(this.savedPropositions, (props) => {
+		const manager = new PropositionsManager(props, get(AppSettingsStore.lang) as Language);
+		return manager.getPropositions();
+	});
+
 	private static isInit = false;
 	private static firebaseUtils = new FirebaseUtils();
 	private static persistence = new CheckListDetailsLocalStoragePersistence();
 	private static dbPersistence = new ChecklistDetailsDbPersistence();
-	private static async init(): Promise<void> {
+	public static async init(): Promise<void> {
 		if (!ChecklistDetailsStore.isInit) {
+			// custom category options
 			await this.setCategoryOptions();
 			this.dbPersistence.onDbAvailableChange(() => this.setCategoryOptions());
+
+			// propositions
+			const props = await this.persistence.getPropositions();
+			this.savedPropositions.set(props || []);
 			ChecklistDetailsStore.isInit = true;
 		}
 	}
@@ -46,7 +59,6 @@ export class ChecklistDetailsStore {
 	private onAuthChangedFn: ((isLoggedIn: boolean) => Promise<void>) | undefined = undefined;
 
 	constructor(private locale: 'en' | 'ua') {
-		ChecklistDetailsStore.init();
 		this.categoryOptions = derived(
 			ChecklistDetailsStore.customCategoryOptions,
 			($customOptions) => {
@@ -60,6 +72,12 @@ export class ChecklistDetailsStore {
 			if (this.onAuthChangedFn) {
 				this.onAuthChangedFn(this.isLoggedIn);
 			}
+		});
+	}
+
+	public getCategoryAutoDetector(): Readable<CategoryAutodetector> {
+		return derived(ChecklistDetailsStore.propositions, (props) => {
+			return new CategoryAutodetector(props, get(AppSettingsStore.lang) as Language);
 		});
 	}
 
@@ -120,6 +138,7 @@ export class ChecklistDetailsStore {
 						remote.items,
 						remote.updated_utc
 					);
+					this.updatePropositionsWithItems(remote.items);
 				} else {
 					await ChecklistDetailsStore.persistence.updateList(remote, remote.updated_utc);
 				}
@@ -128,19 +147,8 @@ export class ChecklistDetailsStore {
 		}
 	}
 
-	public async getPropositions(): Promise<Proposition[]> {
-		return ChecklistDetailsStore.persistence.getPropositions().then((props) => {
-			const manager = new PropositionsManager(props || [], this.locale);
-			return manager.getPropositions();
-		});
-	}
-
 	public async getChecklistSettings(): Promise<ChecklistSettings> {
 		return ChecklistDetailsStore.persistence.getChecklistSettings();
-	}
-
-	public async getAppSettings(): Promise<AppSettings> {
-		return ChecklistDetailsStore.persistence.getAppSettings();
 	}
 
 	public async createList(
@@ -154,6 +162,7 @@ export class ChecklistDetailsStore {
 		if (this.isLoggedIn) {
 			await ChecklistDetailsStore.dbPersistence.upsertList(id, name, items, ts);
 		}
+		this.updatePropositionsWithItems(items);
 	}
 
 	public async saveListName(id: string, name: string): Promise<void> {
@@ -168,6 +177,7 @@ export class ChecklistDetailsStore {
 		const ts = new Date().getTime();
 		const items = this.editModelsToChecklistItems(editItems);
 		await ChecklistDetailsStore.persistence.upsertListItems(id, items, ts);
+		this.updatePropositionsWithItems(items);
 		if (this.isLoggedIn) {
 			await ChecklistDetailsStore.dbPersistence.upsertListItems(id, items, ts);
 		}
@@ -211,7 +221,42 @@ export class ChecklistDetailsStore {
 	}
 
 	public async updateProposition(prop: Proposition): Promise<void> {
-		return ChecklistDetailsStore.persistence.updateProposition(prop);
+		ChecklistDetailsStore.savedPropositions.update((oldProps) => {
+			const index = oldProps.findIndex((p) => p.id === prop.id);
+			if (index >= 0) {
+				oldProps.splice(index, 1, prop);
+			}
+			return [...oldProps];
+		});
+		return ChecklistDetailsStore.persistence.setPropositions(
+			get(ChecklistDetailsStore.propositions)
+		);
+	}
+
+	private async updatePropositionsWithItems(items: CheckListItem[]): Promise<void> {
+		ChecklistDetailsStore.savedPropositions.update((oldPropositions) => {
+			const utc = new Date().getTime();
+			const propsMap: { [desc: string]: Proposition } = (oldPropositions || []).reduce((p, c) => {
+				return { ...p, [c.itemDescription.toLowerCase().trim()]: c };
+			}, {});
+			items.forEach((item) => {
+				propsMap[item.itemDescription.toLowerCase().trim()] = {
+					id: item.id,
+					itemDescription: item.itemDescription,
+					category: item.category,
+					lastUsedUTC: utc
+				};
+			});
+			let newPropositions = Object.keys(propsMap).map((propKey) => propsMap[propKey]);
+			newPropositions.sort((a, b) => b.lastUsedUTC - a.lastUsedUTC);
+			if (newPropositions.length > 100) {
+				newPropositions = newPropositions.slice(0, 100);
+			}
+			return newPropositions;
+		});
+		await ChecklistDetailsStore.persistence.setPropositions(
+			get(ChecklistDetailsStore.savedPropositions)
+		);
 	}
 
 	private editModelsToChecklistItems(source: CheckListItemEditModel[]): CheckListItem[] {

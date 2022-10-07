@@ -38,18 +38,18 @@
 	import { darkEquivalents, pickColorForACategory } from '../../utils/category-colors';
 	import ColorSelector from '../ColorSelector.svelte';
 	import Palette from '../Palette.svelte';
-	import type { Readable } from 'svelte/store';
+	import type { Readable, Writable } from 'svelte/store';
 	import { t } from '../../stores/app/translate';
 	import { p } from '../../stores/app/plurals';
+	import { derived, writable } from 'svelte/store';
 
 	export let listId: string;
-	export let locale: 'en' | 'ua';
 	export let list: CheckList;
 	export let store: ChecklistDetailsStore;
 	export let checklistSettings: ChecklistSettings;
-	export let propositions: Proposition[] = [];
+	export let propositions: Readable<Proposition[]>;
 
-	let categoryAutodetector: CategoryAutodetector;
+	let categoryAutodetector: Readable<CategoryAutodetector>;
 	let toastManager: ToastManagerType = ToastService.getInstance();
 	let listName: string = ($t as any)('lists.create_new_list.header');
 	let items: CheckListItemEditModel[] = [];
@@ -62,7 +62,7 @@
 	let editedCategoryId: string;
 	let isAddToListMode: boolean;
 	let addToCategoryId: string;
-	let propositionsFuzzySearch: FuzzySearch<Proposition>;
+	let propositionsFuzzySearchTS: Writable<number> = writable(new Date().getTime());
 	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
 	let isHideCrossedOut = false;
@@ -76,15 +76,20 @@
 	$: selectCategoryOptions = ($categoryOptions || []).map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: isAnyItemSelected = items.some((it) => it.selected);
+	let propositionsFuzzySearch: Readable<FuzzySearch<Proposition>>;
 
 	onMount(() => {
 		isByCategoryView = checklistSettings?.isGroupByCategory || false;
 		isColorsForCategories = checklistSettings?.isColorsForCategories || false;
 		isFirstTimeUse = !checklistSettings?.hasSeenDemo;
 		categoryOptions = store.categoryOptions;
+		propositions = ChecklistDetailsStore.propositions;
+		categoryAutodetector = store.getCategoryAutoDetector();
 		setDataFromList(list);
-		categoryAutodetector = new CategoryAutodetector(propositions, locale);
-		updatePropositionsFuzzySearch();
+		propositionsFuzzySearch = derived(
+			[ChecklistDetailsStore.propositions, propositionsFuzzySearchTS],
+			([props, ts]) => getPropositionsFuzzySearch(props)
+		);
 		checkListForDuplicates();
 		store.doOnAuthChanged(async function (isLoggedIn) {
 			if (isLoggedIn) {
@@ -450,10 +455,14 @@
 	}
 
 	function updatePropositionsFuzzySearch(): void {
+		propositionsFuzzySearchTS.set(new Date().getTime());
+	}
+
+	function getPropositionsFuzzySearch(props: Proposition[]): FuzzySearch<Proposition> {
 		const itemDescriptionMap = items
 			.map((it) => it.itemDescription.toLowerCase())
 			.reduce((p, c) => ({ ...p, [c]: true }), {});
-		const filteredPropositions = propositions.filter((prop) => {
+		const filteredPropositions = (props || []).filter((prop) => {
 			return !itemDescriptionMap[prop.itemDescription.toLowerCase()];
 		});
 		const options: FuzzyOptions<Proposition> = {
@@ -461,7 +470,7 @@
 			shouldSort: true,
 			threshold: 0.4
 		};
-		propositionsFuzzySearch = new FuzzySearch<Proposition>(filteredPropositions, options);
+		return new FuzzySearch<Proposition>(filteredPropositions, options);
 	}
 
 	function deselectAllCheckboxes(): void {
@@ -671,9 +680,9 @@
 			{editedItem}
 			{isByCategoryView}
 			categoryOptions={$categoryOptions}
-			{propositionsFuzzySearch}
+			propositionsFuzzySearch={$propositionsFuzzySearch}
 			{store}
-			{categoryAutodetector}
+			categoryAutodetector={$categoryAutodetector}
 			{isFirstTimeUse}
 			on:form-submit={(e) => onAddFormSubmit(e)}
 			on:dismiss={onBodyClick}

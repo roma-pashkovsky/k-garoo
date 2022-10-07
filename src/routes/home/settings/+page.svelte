@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Page from '../../../lib/Page.svelte';
 	import LocaleSelector from '../../../lib/LocaleSelector.svelte';
-	import { t } from '../../../utils/i18n';
 	import ThemeSelector from '../../../lib/ThemeSelector.svelte';
 	import { Alert, Button, Spinner } from 'flowbite-svelte';
 	import { CleanDataStore } from '../../../stores/app/clean-data-store.js';
 	import { ToastService } from '../../../utils/toasts';
+	import { t } from '../../../stores/app/translate';
 
 	const cleanDataStore = new CleanDataStore();
 	const toastManager = ToastService.getInstance();

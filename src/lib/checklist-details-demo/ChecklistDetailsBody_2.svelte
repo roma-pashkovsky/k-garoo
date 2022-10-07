@@ -3,7 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import Gif from '../Gif.svelte';
-	import { t } from '../../utils/i18n.js';
+	import { t } from '../../stores/app/translate';
 
 	const dispatch = createEventDispatcher();
 	let leftSwipeSrc = '/img/swipe-remove-1.gif';

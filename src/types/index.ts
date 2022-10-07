@@ -43,10 +43,14 @@ export type ChecklistSettings = {
 	hasSeenDemo: boolean;
 };
 
+export type Language = 'en' | 'ua';
+export type Theme = 'dark' | 'light' | undefined;
+
 export type AppSettings = {
-	lang: string | undefined;
+	version: number;
+	lang: Language | undefined;
 	isLocaleSet: boolean;
-	theme: 'dark' | 'light';
+	theme: Theme;
 };
 
 export type AppInstructions = {
@@ -64,5 +68,4 @@ export type KGarooState = {
 	checklistSettings: ChecklistSettings;
 	appSettings: AppSettings;
 	appInstructions: AppInstructions;
-	appVersion: number;
 };

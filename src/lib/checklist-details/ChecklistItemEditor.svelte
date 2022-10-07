@@ -1,13 +1,10 @@
 <script lang="ts">
 	import type { CategoryOption, CheckListItem, Proposition } from '../../types';
-	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import { ArrowRight } from 'svelte-heros';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { customCategoryId, otherCategoryId } from '../../utils/local-storage-state';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
-	import { ChevronLeft } from 'svelte-heros-v2';
 	import { FuzzySearch } from '../../utils/fuzzy-search';
-	import { swipe } from 'svelte-gestures';
 	import { fade } from 'svelte/transition';
 	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
 	import { getUID } from '../../utils/get-uid';
@@ -15,7 +12,7 @@
 	import { debouncer } from '../../utils/debouncer';
 	import { isEnter, Keycodes } from '../../utils/keycodes';
 	import ChecklistEditorDemo from '../checklist-details-demo/ChecklistEditorDemo.svelte';
-	import { t } from '../../utils/i18n.js';
+	import { t } from '../../stores/app/translate';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;

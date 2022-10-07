@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { Button } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import DefaultPaneWrap from '../DefaultPaneWrap.svelte';
 	import Gif from '../Gif.svelte';
-	import { t } from '../../utils/i18n.js';
+	import { t } from '../../stores/app/translate';
 
 	const dispatch = createEventDispatcher();
 	let useCategoriesGif = '/img/view-by-category.gif';

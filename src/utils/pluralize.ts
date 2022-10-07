@@ -1,5 +1,4 @@
 import { derived } from 'svelte/store';
-import { locale } from './i18n';
 
 const pluralizations: {
 	[locale: string]: { [word: string]: { default: string; special: { [count: number]: string } } };
@@ -25,7 +24,7 @@ const pluralizations: {
 	}
 };
 
-const pluralize = (l: string, word: string, count: number): string => {
+export const pluralize = (l: string, word: string, count: number): string => {
 	if (!pluralizations[l] || !pluralizations[l][word]) {
 		throw new Error('No pluralization for ' + l + ', ' + word);
 	}
@@ -34,8 +33,3 @@ const pluralize = (l: string, word: string, count: number): string => {
 	}
 	return `${count} ${pluralizations[l][word].default}`;
 };
-
-export const p = derived(
-	locale,
-	($locale) => (word: string, count: number) => pluralize($locale, word, count)
-);

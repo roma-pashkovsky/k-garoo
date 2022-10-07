@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Badge, Tooltip } from 'flowbite-svelte';
-	import { t } from '../../utils/i18n.js';
+	import { t } from '../../stores/app/translate';
 
 	export let show: boolean;
 </script>

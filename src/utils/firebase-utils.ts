@@ -1,19 +1,13 @@
 import type { FirebaseApp } from 'firebase/app';
-import type { User } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import {
-	FacebookAuthProvider,
-	getAuth,
-	signInWithPopup,
-	signInWithRedirect,
-	signOut
-} from 'firebase/auth';
-import { getDatabase, ref, onValue, update, query, orderByChild } from 'firebase/database';
+import type { User } from 'firebase/auth';
+import { FacebookAuthProvider, getAuth, signInWithPopup, signOut } from 'firebase/auth';
+import { getDatabase, onValue, orderByChild, query, ref, update } from 'firebase/database';
 import { variables } from './variables';
 import type { FirebaseSetItem } from '../types/firebase-utils';
 import { getRandomElementId } from './get-random-element-id';
-import { t } from './i18n';
 import { get } from 'svelte/store';
+import { t } from '../stores/app/translate';
 
 export class FirebaseUtils {
 	private static isInitialized = false;

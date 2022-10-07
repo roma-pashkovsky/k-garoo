@@ -1,16 +1,16 @@
 <script>
 	import Page from '../../../lib/Page.svelte';
 	import { A, Heading, P } from 'flowbite-svelte';
-	import { locale } from '../../../utils/i18n';
+	import { AppSettingsStore } from '../../../stores/app/app-settings';
 
-	const l = locale;
+	const l = AppSettingsStore.lang;
 </script>
 
 <Page>
 	<section>
 		<div class="section mb-6">
 			{#if $l === 'ua'}
-				<Heading tag="h2" class="mb-4">Про нас</Heading>
+				<Heading tag="h4" class="mb-4">Про нас</Heading>
 				<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">
 					Привіт! Нас звуть Анна і Роман. Ми з України. Розробили цей веб-додаток, щоби можна було
 					легко створювати списки для покупок і зручно працювати з ними на мобільних пристроях.
@@ -22,7 +22,7 @@
 				</P>
 			{/if}
 			{#if $l === 'en'}
-				<Heading tag="h2" class="mb-4">About us</Heading>
+				<Heading tag="h4" class="mb-4">About us</Heading>
 				<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">
 					Hey there from Ukraine! It's Anna and Roman. We've developed this web-app so that you can
 					easily create and manage shopping lists, especially on your phone.

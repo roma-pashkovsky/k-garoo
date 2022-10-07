@@ -1,37 +1,27 @@
 <script lang="ts">
-	import { appSettingsStore } from '../stores/app/app-settings.js';
+	import { AppSettingsStore, defaultLocale } from '../stores/app/app-settings.js';
 	import { Select } from 'flowbite-svelte';
-	import { t } from '../utils/i18n';
-	import { getState, setState } from '../utils/local-storage-state';
-	import { derived } from 'svelte/store';
+	import { derived, get } from 'svelte/store';
+	import { t } from '../stores/app/translate';
+	import type { Theme } from '../types';
+	import { translate } from '../utils/i18n';
 
-	let theme = $appSettingsStore?.theme;
-	const themeOptions = derived(appSettingsStore, () => [
-		{
-			name: ($t as any)('settings.header.theme-light'),
-			value: 'light'
-		},
-		{
-			name: ($t as any)('settings.header.theme-dark'),
-			value: 'dark'
-		}
-	]);
+	let theme: Theme = get(AppSettingsStore.theme);
+	const themeOptions = derived(AppSettingsStore.lang, () => {
+		return [
+			{
+				name: translate(get(AppSettingsStore.lang) || defaultLocale, 'settings.header.theme-light'),
+				value: 'light'
+			},
+			{
+				name: translate(get(AppSettingsStore.lang) || defaultLocale, 'settings.header.theme-dark'),
+				value: 'dark'
+			}
+		];
+	});
 
 	function onChange(): void {
-		const state = getState();
-		setState({
-			...state,
-			appSettings: {
-				...state.appSettings,
-				theme
-			}
-		});
-		appSettingsStore.update((settings) => {
-			return {
-				...settings,
-				theme
-			};
-		});
+		AppSettingsStore.setTheme(theme);
 	}
 </script>
 

@@ -3,8 +3,8 @@
 	import type { CategoryOption } from '../../types';
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import { onMount } from 'svelte';
-	import { t } from '../../utils/i18n.js';
 	import { X } from 'svelte-heros';
+	import { t } from '../../stores/app/translate';
 
 	export let categoryId: string;
 	export let customCategoryInput: string;

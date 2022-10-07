@@ -1,12 +1,10 @@
-import { derived, writable } from 'svelte/store';
-import type { Readable } from 'svelte/store';
 import translations from './i18n-translations';
 
-export const defaultLocale = 'en';
-export const locale = writable(defaultLocale);
-export const locales = Object.keys(translations);
-
-export function translate(locale: string, key: string, vars: { [key: string]: string } = {}) {
+export function translate(
+	locale: string | undefined,
+	key: string,
+	vars: { [key: string]: string } = {}
+) {
 	// Let's throw some errors if we're trying to use keys/locales that don't exist.
 	// We could improve this by using Typescript and/or fallback values.
 	if (!key) throw new Error('no key provided to $t()');
@@ -25,10 +23,3 @@ export function translate(locale: string, key: string, vars: { [key: string]: st
 
 	return text;
 }
-
-export const t: Readable<(key: string, vars?: any) => string> = derived(
-	locale,
-	($locale) =>
-		(key: string, vars = {}) =>
-			translate($locale, key, vars)
-);

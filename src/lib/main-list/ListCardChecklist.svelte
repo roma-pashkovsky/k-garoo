@@ -6,7 +6,7 @@
 	import DotMenu from '../DotMenu.svelte';
 	import { DocumentRemove } from 'svelte-heros';
 	import { Link } from 'svelte-heros-v2';
-	import { t } from '../../utils/i18n.js';
+	import { t } from '../../stores/app/translate';
 
 	export let listId: string;
 

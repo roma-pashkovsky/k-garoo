@@ -2,9 +2,9 @@
 	import DefaultPaneWrap from '../DefaultPaneWrap.svelte';
 	import { Button } from 'flowbite-svelte';
 	import Gif from '../Gif.svelte';
-	import { t } from '../../utils/i18n.js';
 	import { click_outside } from '../../utils/click-outside';
 	import { createEventDispatcher } from 'svelte';
+	import { t } from '../../stores/app/translate';
 
 	let isShown = true;
 
@@ -33,8 +33,11 @@
 					class="flex items-center"
 					onmousedown="event.stopPropagation(); event.preventDefault();"
 				>
-					<Gif src={leftSwipeSrc} height="38px" />
-					<div class="ml-3 text-sm whitespace-nowrap">{$t('lists.details.demo.exit-editor')}</div>
+					<Gif addClass="block md:hidden" src={leftSwipeSrc} height="38px" />
+					<div class="block md:hidden ml-3 text-sm whitespace-nowrap">
+						{$t('lists.details.demo.exit-editor')}
+					</div>
+					<div class="hidden md:block">{$t('lists.details.demo.exit-editor.md')}</div>
 					<Button
 						class="!p-2 ml-3 whitespace-nowrap text-blue-600"
 						color="default"
@@ -49,10 +52,11 @@
 					class="flex items-center"
 					onmousedown="event.stopPropagation(); event.preventDefault();"
 				>
-					<Gif src={rightSwipeSrc} height="38px" />
-					<div class="ml-3 text-sm whitespace-nowrap tracking-tighter">
+					<Gif addClass="block md:hidden" src={rightSwipeSrc} height="38px" />
+					<div class="ml-3 text-sm whitespace-nowrap tracking-tighter block md:hidden">
 						{$t('lists.details.demo.submit-editor')}
 					</div>
+					<div class="hidden md:block">{$t('lists.details.demo.submit-editor.md')}</div>
 					<Button
 						class="!p-2 ml-3 whitespace-nowrap text-blue-600"
 						color="default"

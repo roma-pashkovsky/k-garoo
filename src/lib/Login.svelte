@@ -3,7 +3,7 @@
 	import { AuthStore } from '../stores/login/auth.store';
 	import { Button } from 'flowbite-svelte';
 	import { processError } from '../utils/process-error';
-	import { t } from '../utils/i18n.js';
+	import { t } from '../stores/app/translate';
 
 	const dispatch = createEventDispatcher();
 	const authStore = new AuthStore();

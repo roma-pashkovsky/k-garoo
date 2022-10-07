@@ -3,8 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import Gif from '../Gif.svelte';
 	import DefaultPaneWrap from '../DefaultPaneWrap.svelte';
-	import { t } from '../../utils/i18n.js';
-	import { click_outside } from '../../utils/click-outside';
+	import { t } from '../../stores/app/translate.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -13,7 +12,7 @@
 	}
 </script>
 
-<div use:click_outside on:click_outside={onForward}>
+<div>
 	<DefaultPaneWrap>
 		<div class="flex justify-center mb-4">
 			<Gif src="/img/press-hold-item.gif" width="80" />

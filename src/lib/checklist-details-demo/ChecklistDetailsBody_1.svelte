@@ -2,7 +2,7 @@
 	import { Button, Toast } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { t } from '../../utils/i18n.js';
+	import { t } from '../../stores/app/translate';
 
 	const dispatch = createEventDispatcher();
 

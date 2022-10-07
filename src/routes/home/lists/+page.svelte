@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { Button } from 'flowbite-svelte';
 	import { Plus } from 'svelte-heros';
 	import { goto } from '$app/navigation';
-	import { locale, t, translate } from '../../../utils/i18n';
 	import type { CheckList } from '../../../types';
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
 	import Page from '../../../lib/Page.svelte';
@@ -12,7 +10,10 @@
 	import { getUID } from '../../../utils/get-uid';
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
 	import { ChecklistMainListStore } from '../../../stores/checklist-main-list/checklist-main-list-store';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
+	import { doubleTap } from '../../../utils/double-tap';
+	import { t } from '../../../stores/app/translate';
+	import { get } from 'svelte/store';
 
 	const toastManager = ToastService.getInstance();
 	export let data;
@@ -24,7 +25,7 @@
 	});
 
 	function onListRemove(listId: string, list: CheckList): void {
-		if (confirm(translate($locale, 'lists.remove-warning', { list: list.name }))) {
+		if (confirm(get(t)('lists.remove-warning', { list: list.name }))) {
 			store.removeList(listId);
 		}
 	}
@@ -33,7 +34,7 @@
 		const url = getDecodeLinkToList(list);
 		await copyToClipboard(url);
 		toastManager.push({
-			text: ($t as any)('lists.details.link-created'),
+			text: get(t)('lists.details.link-created'),
 			closePrevious: false
 		});
 	}
@@ -52,8 +53,13 @@
 	<title>K-garoo - {$t('app.my_lists')}</title>
 </svelte:head>
 
-<div class="absolute top-2 right-2 p-2 z-10">
-	<Button on:click={onAddButtonClicked} class="!p-2 shadow-md"><Plus class="w-6 h-6" /></Button>
+<div class="absolute top-2 md:top-4 right-2 md:right-4 p-2 z-10">
+	<button
+		use:doubleTap
+		on:tap={onAddButtonClicked}
+		class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
+		><Plus class="w-6 h-6" /></button
+	>
 </div>
 <Page>
 	<div class="flex items-start justify-center" style="padding-top: 4rem">

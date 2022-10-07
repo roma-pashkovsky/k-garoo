@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { Select } from 'flowbite-svelte';
-	import { locale, t } from '../utils/i18n.js';
-	import { getState, setState } from '../utils/local-storage-state';
 	import { AppReloader } from '../stores/app/app-reloader';
-	import { appSettingsStore } from '../stores/app/app-settings';
+	import { AppSettingsStore } from '../stores/app/app-settings';
+	import { get } from 'svelte/store';
+	import { t } from '../stores/app/translate';
+	import type { Language } from '../types';
+
+	let lang: Language = get(AppSettingsStore.lang);
 
 	const localeOptions = [
 		{
@@ -18,10 +21,7 @@
 	const appReloader = new AppReloader();
 
 	function onLocaleChange(): void {
-		const state = getState();
-		setState({ ...state, appSettings: { ...state.appSettings, lang: $locale } });
-		appSettingsStore.set({ ...state.appSettings, lang: $locale });
-		appReloader.reload();
+		AppSettingsStore.setLanguage(lang);
 	}
 </script>
 
@@ -29,6 +29,6 @@
 	style="width: 117px;"
 	placeholder={$t('app.lang-placeholder')}
 	items={localeOptions}
-	bind:value={$locale}
+	bind:value={lang}
 	on:change={onLocaleChange}
 />

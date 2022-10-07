@@ -5,6 +5,7 @@
 	export let height = 'auto';
 	export let src: string;
 	export let alt = 'image';
+	export let addClass = '';
 
 	let imgSrc = '/';
 
@@ -13,4 +14,4 @@
 	});
 </script>
 
-<img src={imgSrc} {width} {alt} style="height: {height}; width: {width}" />
+<img class={addClass} src={imgSrc} {width} {alt} style="height: {height}; width: {width}" />

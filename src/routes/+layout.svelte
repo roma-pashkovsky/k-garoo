@@ -1,110 +1,42 @@
 <script lang="ts">
 	import '../app.css';
-	import { onMount } from 'svelte';
-	import { getInitialState, getState, setState } from '../utils/local-storage-state';
 	import { navigating } from '$app/stores';
-	import { defaultLocale, locale } from '../utils/i18n';
-	import translations from '../utils/i18n-translations';
 	import { ToastService } from '../utils/toasts';
 	import AppToast from '../lib/AppToast.svelte';
 	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
 	import { AppReloader } from '../stores/app/app-reloader';
 	import { Button, Modal } from 'flowbite-svelte';
 	import LocaleSelector from '../lib/LocaleSelector.svelte';
-	import { t } from '../utils/i18n.js';
-	import { appSettingsStore } from '../stores/app/app-settings';
-	import type { Writable } from 'svelte/store';
-	import type { AppSettings } from '../types';
 	import ThemeSelector from '../lib/ThemeSelector.svelte';
 	import { fade } from 'svelte/transition';
 	import { AuthStore } from '../stores/login/auth.store';
 	import Login from '../lib/Login.svelte';
+	import { AppSettingsStore } from '../stores/app/app-settings';
+	import { get } from 'svelte/store';
+	import { t } from '../stores/app/translate';
 
 	const toastStore = ToastService.getInstance().toasts;
-	const appVersion = 5;
 	const isAppReloading = AppReloader.isReloading;
-	let isSetLocalePopupOpen = false;
-	const appSettings: Writable<AppSettings> = appSettingsStore;
+	let isSetLocalePopupOpen = !get(AppSettingsStore.isLocaleSet);
 	const isLoginModalOpen = AuthStore.isLoginModalOpen;
 	const isSyncingData = AuthStore.isSyncingData;
+	const theme = AppSettingsStore.theme;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 	$: isNavigating = !!$navigating;
 
-	onMount(async () => {
-		AuthStore.init();
-		await checkForUpdatedApp();
-		await setAppSettings();
-		await checkForLocale();
-	});
-
-	async function setAppSettings(): Promise<void> {
-		const store = getState();
-		appSettings.set(store.appSettings);
-	}
-
-	function getLocaleFromBrowser(): string {
-		const browserLanguages = navigator.languages;
-		for (let i = 0; i < browserLanguages.length; i++) {
-			const l = browserLanguages[i].split('-')[0];
-			if (translations[l]) {
-				return l;
-			}
-		}
-		return defaultLocale;
-	}
-
-	async function checkForLocale(): Promise<void> {
-		const state = getState();
-		const isLocaleSet = !!state.appSettings.isLocaleSet;
-		if (isLocaleSet) {
-			const l = $appSettings?.lang || getLocaleFromBrowser();
-			locale.set(l);
-			setState({
-				...state,
-				appSettings: {
-					...(state?.appSettings || ({} as any)),
-					lang: l
-				}
-			});
-			appSettingsStore.set({ ...(state?.appSettings || ({} as any)), lang: l });
-		} else {
-			isSetLocalePopupOpen = true;
-		}
-	}
-
-	async function onSelectLocaleFromPopup(): Promise<void> {
-		const state = getState();
-		isSetLocalePopupOpen = false;
-		setState({
-			...state,
-			appSettings: {
-				...(state?.appSettings || ({} as any)),
-				isLocaleSet: true
-			}
-		});
-	}
-
-	async function checkForUpdatedApp(): Promise<void> {
-		const state = getState();
-		console.log(state);
-		if (state?.appVersion !== appVersion) {
-			if (
-				!state?.appVersion !== undefined ||
-				confirm(
-					'K-garoo was updated. Your lists should be cleaned for the app to work correctly. Continue?'
-				)
-			) {
-				setState({ ...getInitialState(), appVersion });
-				await new AppReloader().reload();
-			}
-		}
-	}
-
 	function onSuccessfulLogin() {
 		AuthStore.isLoginModalOpen.set(false);
 	}
+
+	function onCloseSettingsPopup(): void {
+		AppSettingsStore.markIsLocaleSet();
+	}
 </script>
+
+<svelte:head>
+	<title>K-garoo - {$t('app.logo')}</title>
+</svelte:head>
 
 <!--Load tailwind colors-->
 <div
@@ -120,8 +52,8 @@
 	bg-amber-900"
 />
 
-<div class="fixed top-0 bottom-0 left-0 right-0 root {$appSettings?.theme}">
-	<div class=" fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
+<div class="fixed top-0 bottom-0 left-0 right-0 root {$theme}">
+	<div class="fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
 		{#if $isAppReloading || $isSyncingData || $navigating}
 			<FullPageSpinner />
 		{/if}
@@ -145,7 +77,7 @@
 	</div>
 </div>
 
-<Modal bind:open={isSetLocalePopupOpen} size="xs" on:hide={onSelectLocaleFromPopup}>
+<Modal bind:open={isSetLocalePopupOpen} size="xs" on:hide={onCloseSettingsPopup}>
 	<form on:submit|preventDefault={() => (isSetLocalePopupOpen = false)} in:fade>
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0 mb-4">
 			{$t('app.initial-popup.title')}

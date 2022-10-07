@@ -9,8 +9,8 @@
 	import { DocumentDuplicate } from 'svelte-heros-v2';
 	import { swipe } from 'svelte-gestures';
 	import { throttler } from '../../utils/throttler';
-	import { t } from '../../utils/i18n.js';
-	import { fly, fade } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
+	import { t } from '../../stores/app/translate';
 
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];

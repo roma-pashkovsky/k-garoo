@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { press, swipe } from 'svelte-gestures';
+	import { swipe } from 'svelte-gestures';
 	import { createEventDispatcher } from 'svelte';
 	import { ToastService } from '../utils/toasts';
-	import AppToast from './AppToast.svelte';
+	import { doubleTap } from '../utils/double-tap';
 
 	const toastStore = ToastService.getInstance().toasts;
 	$: toasts = $toastStore.filter((t) => t.type === 'details-top');
@@ -33,6 +33,8 @@
 		use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
 		on:swipe={onBodySwipe}
 		on:dblclick
+		use:doubleTap
+		on:dbltap
 		class="select-none absolute top-0 bottom-0 left-0 right-0 px-4 sm:px-6 pb-36 overflow-y-auto {noTopPadding
 			? 'pt-0'
 			: 'pt-4'}"

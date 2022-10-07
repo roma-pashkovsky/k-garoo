@@ -13,7 +13,6 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
-	import { t } from '../../utils/i18n';
 	import { Briefcase, Eye, InformationCircle, Link, ListBullet, Plus } from 'svelte-heros-v2';
 	import { press } from 'svelte-gestures';
 	import { goto } from '$app/navigation';
@@ -30,18 +29,18 @@
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
 	import { getUID } from '../../utils/get-uid';
 	import TitleWithEdit from '../TitleWithEdit.svelte';
-	import FullPageSpinner from '../FullPageSpinner.svelte';
 	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
 	import { copyToClipboard } from '../../utils/copy-to-clipboard';
 	import type { ToastManagerType } from '../../utils/toasts';
 	import { ToastService } from '../../utils/toasts';
 	import { getDecodeLinkToList } from '../../utils/get-decode-link-to-list';
-	import { p } from '../../utils/pluralize';
 	import { darkEquivalents, pickColorForACategory } from '../../utils/category-colors';
 	import ColorSelector from '../ColorSelector.svelte';
 	import Palette from '../Palette.svelte';
 	import type { Readable } from 'svelte/store';
+	import { t } from '../../stores/app/translate';
+	import { p } from '../../stores/app/plurals';
 
 	export let listId: string;
 	export let locale: 'en' | 'ua';
@@ -79,11 +78,11 @@
 	$: isAnyItemSelected = items.some((it) => it.selected);
 
 	onMount(() => {
-		setDataFromList(list);
 		isByCategoryView = checklistSettings?.isGroupByCategory || false;
 		isColorsForCategories = checklistSettings?.isColorsForCategories || false;
-		isFirstTimeUse = !checklistSettings?.hasSeenDemo || false;
+		isFirstTimeUse = !checklistSettings?.hasSeenDemo;
 		categoryOptions = store.categoryOptions;
+		setDataFromList(list);
 		categoryAutodetector = new CategoryAutodetector(propositions, locale);
 		updatePropositionsFuzzySearch();
 		checkListForDuplicates();
@@ -351,7 +350,7 @@
 			const newItems = items.filter((it) => it.selected);
 			const newName = listName + ' > ' + ($p as any)('item', newItems.length);
 			await store.createList(listId, newName, newItems);
-			goto(`/list-details/${listId}`);
+			await goto(`/list-details/${listId}`);
 			setTimeout(() => {
 				location.reload();
 			});
@@ -591,7 +590,7 @@
 	<DetailsBody
 		on:body-swipe-left={onBodySwipeLeft}
 		on:body-swipe-right={onBodySwipeRight}
-		on:dblclick={onListBodyDoubleClick}
+		on:dbltap={onListBodyDoubleClick}
 	>
 		<!--        List-->
 		{#if isByCategoryView}

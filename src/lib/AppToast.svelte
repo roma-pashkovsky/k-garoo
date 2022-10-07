@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Toast as ToastType } from '../utils/toasts';
 	import { Toast } from 'flowbite-svelte';
-	import { t } from '../utils/i18n.js';
 	import { fly } from 'svelte/transition';
+	import { t } from '../stores/app/translate';
 
 	export let toast: ToastType;
 </script>

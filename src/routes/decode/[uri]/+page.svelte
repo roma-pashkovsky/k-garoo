@@ -4,9 +4,9 @@
 	import FullPageSpinner from '../../../lib/FullPageSpinner.svelte';
 	import { StringCompressor } from '../../../utils/string-compressor';
 	import type { CheckList } from '../../../types';
-	import { t } from '../../../utils/i18n';
 	import { DecodeStore } from '../../../stores/decode/decode.store';
 	import { goto } from '$app/navigation';
+	import { t } from '../../../stores/app/translate';
 
 	const compressor = new StringCompressor();
 	const store = new DecodeStore();

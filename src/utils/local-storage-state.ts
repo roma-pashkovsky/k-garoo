@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { CheckList, KGarooState } from '../types';
+import type { AppSettings, CheckList, KGarooState } from '../types';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
 
 export { customCategoryId, otherCategoryId };
@@ -18,13 +18,13 @@ export const getInitialState = (): KGarooState => {
 		appSettings: {
 			lang: undefined,
 			isLocaleSet: false,
-			theme: 'light'
+			theme: undefined,
+			version: 0
 		},
 		appInstructions: {
 			isAddFromPropositionsViewed: false,
 			isEditListFromDetailsViewed: false
-		},
-		appVersion: 0
+		}
 	};
 };
 
@@ -46,6 +46,20 @@ export const setState = (state: KGarooState): void => {
 	}
 	const str = JSON.stringify(state);
 	localStorage.setItem('k-garoo', str);
+};
+
+export const getAppSettings = (): AppSettings | null => {
+	const record = localStorage.getItem('k-garoo/appSettings');
+	if (record) {
+		return JSON.parse(record);
+	} else {
+		return null;
+	}
+};
+
+export const setAppSettings = (settings: AppSettings): void => {
+	const str = JSON.stringify(settings);
+	localStorage.setItem('k-garoo/appSettings', str);
 };
 
 export const getListIds = (): string[] => {

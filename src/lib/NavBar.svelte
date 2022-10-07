@@ -10,9 +10,9 @@
 		NavLi,
 		NavUl
 	} from 'flowbite-svelte';
-	import { t } from '../utils/i18n.js';
 	import { page } from '$app/stores';
 	import { AuthStore } from '../stores/login/auth.store';
+	import { t } from '../stores/app/translate';
 
 	const authStore = new AuthStore();
 	const user = AuthStore.user;
@@ -53,14 +53,14 @@
 	>
 		<NavBrand href="/home/lists">
 			<img
-				src="/logo-blue.svg"
+				src="/logo-blue.png"
 				width="30"
 				height="24"
 				class="mr-3 block sm:hidden"
 				alt="K-garoo logo"
 			/>
 			<img
-				src="/logo-blue.svg"
+				src="/logo-blue.png"
 				width="45"
 				height="36"
 				class="mr-3 hidden sm:block"

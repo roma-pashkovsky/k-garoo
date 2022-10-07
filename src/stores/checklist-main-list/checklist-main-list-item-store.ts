@@ -10,8 +10,9 @@ export class ChecklistMainListItemStore {
 	private localPersistence = new ChecklistMainListLocalStoragePersistence();
 	private dbPersistence = new ChecklistMainListDbPersistence();
 
-	public init(listId: string): void {
-		this.setCheckList(listId);
+	public async init(listId: string): Promise<void> {
+		const fromLocal = await this.localPersistence.getChecklist(listId);
+		this.checklist.set(fromLocal);
 		this.dbPersistence.onDbAvailableChange(async () => {
 			this.setCheckList(listId);
 		});

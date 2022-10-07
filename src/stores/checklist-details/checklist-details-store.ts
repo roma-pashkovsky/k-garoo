@@ -12,7 +12,7 @@ import { CategoryOptionManager } from './category-option-manager';
 import { PropositionsManager } from './propositions-manager';
 import { FirebaseUtils } from '../../utils/firebase-utils';
 import { ChecklistDetailsDbPersistence } from './checklist-details-db-persistence';
-import type { Readable } from 'svelte/store';
+import type { Readable, Writable } from 'svelte/store';
 import { derived, get, writable } from 'svelte/store';
 import { AppSettingsStore } from '../app/app-settings';
 import { CategoryAutodetector } from './category-autodetector';
@@ -20,10 +20,13 @@ import { CategoryAutodetector } from './category-autodetector';
 export class ChecklistDetailsStore {
 	private static customCategoryOptions = writable<CategoryOption[]>([]);
 	private static savedPropositions = writable<Proposition[]>([]);
-	public static propositions = derived(this.savedPropositions, (props) => {
-		const manager = new PropositionsManager(props, get(AppSettingsStore.lang) as Language);
-		return manager.getPropositions();
-	});
+	public static propositions = derived(
+		[this.savedPropositions, AppSettingsStore.lang],
+		([props, lang]) => {
+			const manager = new PropositionsManager(props, lang as Language);
+			return manager.getPropositions();
+		}
+	);
 
 	private static isInit = false;
 	private static firebaseUtils = new FirebaseUtils();
@@ -51,14 +54,17 @@ export class ChecklistDetailsStore {
 			this.customCategoryOptions.set(customCategoryOptions);
 		}
 	}
-
 	public categoryOptions: Readable<CategoryOption[]>;
+	public checklist: Writable<CheckList | null> = writable();
 
 	private authSubscriptionId: string;
 	private isLoggedIn = false;
 	private onAuthChangedFn: ((isLoggedIn: boolean) => Promise<void>) | undefined = undefined;
 
-	constructor(private locale: 'en' | 'ua') {
+	constructor(private listId: string, private locale: 'en' | 'ua') {
+		ChecklistDetailsStore.persistence.getList(listId).then((list) => {
+			this.checklist.set(list);
+		});
 		this.categoryOptions = derived(
 			ChecklistDetailsStore.customCategoryOptions,
 			($customOptions) => {
@@ -67,11 +73,13 @@ export class ChecklistDetailsStore {
 			}
 		);
 		this.authSubscriptionId = ChecklistDetailsStore.firebaseUtils.subscribeOnAuthChanged((user) => {
-			console.log('auth changed: ', user);
 			this.isLoggedIn = !!user;
 			if (this.onAuthChangedFn) {
 				this.onAuthChangedFn(this.isLoggedIn);
 			}
+			this.getList(listId).then((list) => {
+				this.checklist.set(list);
+			});
 		});
 	}
 

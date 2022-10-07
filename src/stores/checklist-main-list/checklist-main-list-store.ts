@@ -11,7 +11,8 @@ export class ChecklistMainListStore {
 	private dbPersistence = new ChecklistMainListDbPersistence();
 
 	public async init(): Promise<void> {
-		await this.setItems();
+		const local = await this.localPersistence.getList();
+		ChecklistMainListStore.items.set(local);
 		this.dbPersistence.onDbAvailableChange(async () => {
 			// this callback should fire after other auth callbacks,
 			// so that we wait until the data is synced

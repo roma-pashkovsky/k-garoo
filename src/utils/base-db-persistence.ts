@@ -20,6 +20,7 @@ export class BaseDbPersistence {
 	}
 
 	public onDbAvailableChange(cb: (isAvailable: boolean) => Promise<void>): void {
+		cb(this.isDbAvailable);
 		this.onDbAvailableChangeCb = cb;
 	}
 

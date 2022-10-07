@@ -10,14 +10,11 @@ export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData |
 	if (browser) {
 		ChecklistDetailsStore.init();
 		const l: 'en' | 'ua' = get(AppSettingsStore.lang) as 'en' | 'ua';
-		const store = new ChecklistDetailsStore(l);
-		const list = await store.getList(listId);
+		const store = new ChecklistDetailsStore(listId, l);
 		const checklistSettings = await store.getChecklistSettings();
 		return {
 			listId,
 			store,
-			locale: l,
-			list,
 			checklistSettings
 		};
 	}

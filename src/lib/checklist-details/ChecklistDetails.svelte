@@ -41,10 +41,9 @@
 	import type { Readable, Writable } from 'svelte/store';
 	import { t } from '../../stores/app/translate';
 	import { p } from '../../stores/app/plurals';
-	import { derived, writable } from 'svelte/store';
+	import { derived, get, writable } from 'svelte/store';
 
 	export let listId: string;
-	export let list: CheckList;
 	export let store: ChecklistDetailsStore;
 	export let checklistSettings: ChecklistSettings;
 	export let propositions: Readable<Proposition[]>;
@@ -85,16 +84,14 @@
 		categoryOptions = store.categoryOptions;
 		propositions = ChecklistDetailsStore.propositions;
 		categoryAutodetector = store.getCategoryAutoDetector();
-		setDataFromList(list);
+		setDataFromList(get(store.checklist));
 		propositionsFuzzySearch = derived(
 			[ChecklistDetailsStore.propositions, propositionsFuzzySearchTS],
 			([props, ts]) => getPropositionsFuzzySearch(props)
 		);
 		checkListForDuplicates();
-		store.doOnAuthChanged(async function (isLoggedIn) {
-			if (isLoggedIn) {
-				await initList();
-			}
+		store.checklist.subscribe((list) => {
+			setDataFromList(list);
 		});
 	});
 
@@ -111,15 +108,17 @@
 		setDataFromList(list);
 	}
 
+	let timeoutHandle: any;
 	function setDataFromList(list: CheckList): void {
+		console.log('Setting list data: ', list);
 		if (list) {
 			listName = list.name;
 			items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
 		} else {
 			shouldCreateNewList = true;
 		}
-		if (shouldCreateNewList && !isFirstTimeUse) {
-			setTimeout(() => {
+		if (shouldCreateNewList && !isFirstTimeUse && !timeoutHandle) {
+			timeoutHandle = setTimeout(() => {
 				onAddToListClicked();
 			});
 		} else {

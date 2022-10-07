@@ -5,7 +5,7 @@ export class CleanDataStore {
 	private dbPersistence = new CleanDataDbPersistence();
 
 	public async cleanAllData(): Promise<void> {
-		if (this.dbPersistence.isDbAvailable) {
+		if (this.dbPersistence.isLoggedIn) {
 			await this.dbPersistence.cleanAllData();
 		}
 		cleanAllLocalData();

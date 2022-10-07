@@ -2,6 +2,7 @@ import { FirebaseUtils } from './firebase-utils';
 
 export class BaseDbPersistence {
 	public isDbAvailable = false;
+	public isLoggedIn = false;
 	protected firebaseUtils = new FirebaseUtils();
 	protected userId: string | null = null;
 	private readonly firebaseSubId: string;
@@ -10,7 +11,8 @@ export class BaseDbPersistence {
 	constructor() {
 		this.firebaseSubId = this.firebaseUtils.subscribeOnAuthChanged((user) => {
 			this.userId = user?.uid || null;
-			this.isDbAvailable = !!user;
+			this.isDbAvailable = !(user === undefined);
+			this.isLoggedIn = !!user;
 			if (this.onDbAvailableChangeCb) {
 				this.onDbAvailableChangeCb(this.isDbAvailable);
 			}

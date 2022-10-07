@@ -62,6 +62,7 @@
 			</div>
 			<h5
 				class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis"
+				style="min-height: 30px"
 			>
 				{$card.name}
 			</h5>
@@ -69,13 +70,21 @@
 				<ul>
 					{#if $card.items?.length}
 						<div>
-							<li class="mb-1 {$card.items[0]?.checked ? 'checked' : ''}">
+							<li
+								class="mb-1 whitespace-nowrap overflow-hidden text-ellipsis {$card.items[0]?.checked
+									? 'checked'
+									: ''}"
+							>
 								{$card.items[0].itemDescription}
 							</li>
 						</div>
 					{/if}
 					{#if $card.items?.length > 1}
-						<li class={$card.items[1]?.checked ? 'checked' : ''}>
+						<li
+							class="whitespace-nowrap overflow-hidden text-ellipsis {$card.items[1]?.checked
+								? 'checked'
+								: ''}"
+						>
 							{$card.items[1].itemDescription}
 						</li>
 					{/if}

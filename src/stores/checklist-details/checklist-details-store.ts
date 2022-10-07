@@ -30,7 +30,7 @@ export class ChecklistDetailsStore {
 	}
 
 	private static async setCategoryOptions(): Promise<void> {
-		if (this.dbPersistence.isDbAvailable) {
+		if (this.dbPersistence.isLoggedIn) {
 			const categoryOptionsDb = await this.dbPersistence.getCategoryOptions();
 			this.customCategoryOptions.set(categoryOptionsDb);
 		} else {
@@ -55,6 +55,7 @@ export class ChecklistDetailsStore {
 			}
 		);
 		this.authSubscriptionId = ChecklistDetailsStore.firebaseUtils.subscribeOnAuthChanged((user) => {
+			console.log('auth changed: ', user);
 			this.isLoggedIn = !!user;
 			if (this.onAuthChangedFn) {
 				this.onAuthChangedFn(this.isLoggedIn);
@@ -72,7 +73,9 @@ export class ChecklistDetailsStore {
 
 	public async getList(listId: string): Promise<CheckList | null> {
 		console.log('getting: ', listId);
-
+		if (!ChecklistDetailsStore.dbPersistence.isDbAvailable) {
+			return ChecklistDetailsStore.persistence.getList(listId);
+		}
 		const localVersion = await ChecklistDetailsStore.persistence.getListVersion(listId);
 		console.log('local version: ', localVersion);
 		const dbVersion = await ChecklistDetailsStore.dbPersistence.getListVersion(listId);

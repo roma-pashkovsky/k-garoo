@@ -39,13 +39,13 @@ export class ChecklistMainListStore {
 			return items.filter((id) => id !== listId);
 		});
 		await this.localPersistence.removeList(listId);
-		if (this.dbPersistence.isDbAvailable) {
+		if (this.dbPersistence.isLoggedIn) {
 			await this.dbPersistence.removeList(listId);
 		}
 	}
 
 	private async setItems(): Promise<void> {
-		if (this.dbPersistence.isDbAvailable) {
+		if (this.dbPersistence.isLoggedIn) {
 			const items = await this.dbPersistence.getList();
 			console.log('remote items: ', items);
 			ChecklistMainListStore.items.set(items);

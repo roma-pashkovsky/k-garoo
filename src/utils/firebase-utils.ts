@@ -52,11 +52,12 @@ export class FirebaseUtils {
 	}
 
 	/**
-	 *
+	 * Initially the user is undefined - it means the db has not been connected yet.
+	 * Then user becomes either null (not logged in) or User (logged in).
 	 * @param cb is called immediately with the current user value
 	 * @return unsubscribe id
 	 */
-	public subscribeOnAuthChanged(cb: (user: User | null) => void): string {
+	public subscribeOnAuthChanged(cb: (user: User | null | undefined) => void): string {
 		cb(FirebaseUtils.lastUserValue);
 		const id = getRandomElementId(6);
 		FirebaseUtils.onAuthStateChangedListeners[id] = cb;

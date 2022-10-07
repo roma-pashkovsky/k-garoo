@@ -22,9 +22,6 @@ export class ChecklistMainListDbPersistence extends BaseDbPersistence {
 	}
 
 	public async getChecklist(listId: string): Promise<CheckList | null> {
-		if (!this.userId) {
-			throw new Error('Cannot perform operation for anonymous');
-		}
 		const db = await this.firebaseUtils.readOnce<DbChecklist | null>(`listData/${listId}`);
 		if (db) {
 			const items = Object.values(db.items);

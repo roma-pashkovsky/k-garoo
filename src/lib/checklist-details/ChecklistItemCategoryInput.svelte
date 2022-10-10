@@ -34,7 +34,7 @@
 </script>
 
 <div
-	class="!p-0 inline-block dark:bg-gray-800 items-center input-wrapper {addWrapClass}  {isCustomCategoryOpen
+	class="!p-0 inline-block bg-gray-100 dark:bg-gray-800 items-center input-wrapper {addWrapClass}  {isCustomCategoryOpen
 		? 'custom-open'
 		: ''} {fullWidth ? 'w-full' : ''}"
 >

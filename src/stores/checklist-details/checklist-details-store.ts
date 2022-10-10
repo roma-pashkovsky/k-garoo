@@ -48,6 +48,7 @@ export class ChecklistDetailsStore {
 	private static async setCategoryOptions(): Promise<void> {
 		if (this.dbPersistence.isLoggedIn) {
 			const categoryOptionsDb = await this.dbPersistence.getCategoryOptions();
+			await this.persistence.setCategoryOptions(categoryOptionsDb || []);
 			this.customCategoryOptions.set(categoryOptionsDb);
 		} else {
 			const customCategoryOptions = await this.persistence.getCategoryOptions();

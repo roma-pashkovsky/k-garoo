@@ -35,6 +35,16 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
+	public setCategoryOptions(options: CategoryOption[]): Promise<void> {
+		return new Promise((resolve) => {
+			requestAnimationFrame(() => {
+				const state = getState();
+				setState({ ...state, categoryOptions: options });
+				resolve();
+			});
+		});
+	}
+
 	public async getPropositions(): Promise<Proposition[]> {
 		return new Promise<Proposition[]>((resolve) => {
 			requestAnimationFrame(() => {
@@ -114,12 +124,17 @@ export class CheckListDetailsLocalStoragePersistence {
 	}
 
 	public async addCategoryOption(option: CategoryOption): Promise<void> {
-		const state = getState();
-		const oldOptions = state.categoryOptions;
-		const newOptions = [option, ...oldOptions];
-		setState({
-			...state,
-			categoryOptions: newOptions
+		return new Promise((resolve) => {
+			requestAnimationFrame(() => {
+				const state = getState();
+				const oldOptions = state.categoryOptions || [];
+				const newOptions = [option, ...oldOptions];
+				setState({
+					...state,
+					categoryOptions: newOptions
+				});
+				resolve();
+			});
 		});
 	}
 

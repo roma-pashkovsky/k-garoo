@@ -4,6 +4,10 @@ import { otherCategoryId } from './local-storage-state';
 export const getChecklistGroupedByCategory = (items: CheckListItem[]): GroupedByCategoryItem[] => {
 	const byCategoryObj: any = {};
 	items.forEach((item) => {
+		if (!item.category) {
+			console.warn('Item without category: ', item);
+			return;
+		}
 		if (!byCategoryObj[item.category.id]) {
 			byCategoryObj[item.category.id] = { category: item.category, items: [] };
 		}

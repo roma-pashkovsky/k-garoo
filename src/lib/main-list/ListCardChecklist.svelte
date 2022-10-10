@@ -71,7 +71,8 @@
 					{#if $card.items?.length}
 						<div>
 							<li
-								class="mb-1 whitespace-nowrap overflow-hidden text-ellipsis {$card.items[0]?.checked
+								class="mb-1 whitespace-nowrap overflow-hidden text-ellipsis w-56 sm:w-64 {$card
+									.items[0]?.checked
 									? 'checked'
 									: ''}"
 							>
@@ -81,7 +82,8 @@
 					{/if}
 					{#if $card.items?.length > 1}
 						<li
-							class="whitespace-nowrap overflow-hidden text-ellipsis {$card.items[1]?.checked
+							class="whitespace-nowrap overflow-hidden text-ellipsis w-56 sm:w-64 {$card.items[1]
+								?.checked
 								? 'checked'
 								: ''}"
 						>

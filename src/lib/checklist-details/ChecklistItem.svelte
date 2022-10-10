@@ -74,7 +74,7 @@
 			<div>
 				<!--				use:press={{ timeframe: 400, triggerBeforeFinished: true }}-->
 				<div
-					use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
+					use:swipe={{ timeframe: 300, minSwipeDistance: 70, touchAction: 'pan-y' }}
 					on:swipe
 					on:long-press={onItemLongPress}
 					class="item py-1.5 px-2 my-2 rounded {addClass} {item?.checked ? 'line-through' : ''}"

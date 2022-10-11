@@ -131,6 +131,10 @@
 		editedCategoryId = prop.category.id;
 	}
 
+	function onCategoryUserInput(): void {
+		shouldAutodetectCategory = false;
+	}
+
 	function onAddFormSubmit(): void {
 		if (!isValidInput) {
 			return;
@@ -216,6 +220,7 @@
 						bind:categoryId={editedCategoryId}
 						bind:categoryOptions
 						bind:customCategoryInput
+						on:user-input={onCategoryUserInput}
 					/>
 				</div>
 			{/if}

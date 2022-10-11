@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import { X } from 'svelte-heros';
 	import { t } from '../../stores/app/translate';
+	import { createEventDispatcher } from 'svelte';
 
 	export let categoryId: string;
 	export let customCategoryInput: string;
@@ -12,6 +13,7 @@
 	export let fullWidth: boolean;
 	export let addWrapClass: string;
 	let prevCategoryId = categoryId;
+	const dispatch = createEventDispatcher();
 
 	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
 	$: isCustomCategoryOpen = categoryId === customCategoryId;
@@ -21,6 +23,7 @@
 	});
 
 	function onCategorySelectChange() {
+		dispatch('user-input');
 		if (categoryId !== customCategoryId) {
 			prevCategoryId = categoryId;
 		} else {

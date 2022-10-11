@@ -18,6 +18,24 @@
 			<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">
 				<List tag="ul" ulClass="text-gray-500 dark:text-gray-400 list-disc list-inside">
 					<Li class="pb-3">
+						<strong>Get a good word.</strong> Get yourself more educated on the Ukrainian and Russian
+						relations, using a neutral source like Wiki. It will make you more immune to the Russian
+						propaganda narratives, like some mysterious nazis or "bioweapon labs". If you believe that
+						Russia was "provoked" to start the war by NATO, just know that it's a very Russian way of
+						clearing itself from responsibility.
+					</Li>
+					<Li class="pb-3">
+						<strong>Spread a good word.</strong> Russia relies heavily on corrupt media to give itself
+						some kind of moral grounds. So every kind word you say to support Ukraine helps counterbalance
+						their attempts.
+					</Li>
+					<Li class="pb-3">
+						<strong>Stay calm.</strong> Your emotions are a primary target for any terrorist. Especially
+						your fear is of interest. Is the nuclear threat real? Does Putin have anything else in his
+						pocket? K.Garoo has no answers to these questions. The only thing he knows is that yielding
+						to crazy dictators won't make the world a safer place.
+					</Li>
+					<Li class="pb-3">
 						<strong>Donate, if you can.</strong> Ukraine has many friends and their support is
 						priceless. Who should I donate to? Some options are a sure way to bring value:
 						<br />
@@ -51,24 +69,6 @@
 								>
 							</Li>
 						</List>
-					</Li>
-					<Li class="pb-3">
-						<strong>Get a good word.</strong> Get yourself more educated on the Ukrainian and Russian
-						relations, using a neutral source like Wiki. It will make you more immune to the Russian
-						propaganda narratives, like some mysterious nazis or "bioweapon labs". If you believe that
-						Russia was "provoked" to start the war by NATO, just know that it's a very Russian way of
-						clearing itself from responsibility.
-					</Li>
-					<Li class="pb-3">
-						<strong>Spread a good word.</strong> Russia relies heavily on corrupt media to give itself
-						some kind of moral grounds. So every kind word you say to support Ukraine helps counterbalance
-						their attempts.
-					</Li>
-					<Li class="pb-3">
-						<strong>Stay calm.</strong> Your emotions are a primary target for any terrorist. Especially
-						your fear is of interest. Is the nuclear threat real? Does Putin have anything else in his
-						pocket? K.Garoo has no answers to these questions. The only thing he knows is that yielding
-						to crazy dictators won't make the world a safer place.
 					</Li>
 				</List>
 			</P>

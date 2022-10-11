@@ -18,7 +18,6 @@
 	const user = AuthStore.user;
 	let isLoginModalOpen = false;
 	let wrapperDiv: HTMLDivElement;
-	let isHidden = false;
 
 	$: section = getSectionFromPath($page.url.pathname);
 
@@ -70,6 +69,14 @@
 				class="self-center whitespace-nowrap text-xl font-semibold dark:text-white inline-block w-32"
 			>
 				K-garoo
+				<a href="/home/support-ukraine"
+					><img
+						src="/flag-Ukraine.png"
+						height="15"
+						alt="support Ukraine"
+						class="h-6 inline-block"
+					/></a
+				>
 			</span>
 		</NavBrand>
 		<div class="flex items-center flex-wrap md:order-2" onmousedown="event.preventDefault()">

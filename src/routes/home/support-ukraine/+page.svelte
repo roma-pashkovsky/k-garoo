@@ -2,9 +2,14 @@
 	import Page from '../../../lib/Page.svelte';
 	import { Heading, Li, List, P } from 'flowbite-svelte';
 	import { AppSettingsStore } from '../../../stores/app/app-settings';
+	import { t } from '../../../stores/app/translate';
 
 	const l = AppSettingsStore.lang;
 </script>
+
+<svelte:head>
+	<title>K-garoo - {$t('app.sections.support-ua')}</title>
+</svelte:head>
 
 <Page>
 	{#if $l === 'en'}
@@ -19,14 +24,14 @@
 				<List tag="ul" ulClass="text-gray-500 dark:text-gray-400 list-disc list-inside">
 					<Li class="pb-3">
 						<strong>Get a good word.</strong> Get yourself more educated on the Ukrainian and Russian
-						relations, using a neutral source like Wiki. It will make you more immune to the Russian
-						propaganda narratives, like some mysterious nazis or "bioweapon labs". If you believe that
-						Russia was "provoked" to start the war by NATO, just know that it's a very Russian way of
-						clearing itself from responsibility.
+						relations, using a neutral source like Wiki. It will raise your immunity to Russian propaganda
+						narratives, like some mysterious nazis or "bioweapon labs". If you believe that Russia was
+						"provoked" to start the war by NATO, just know that it's a very Russian way of clearing itself
+						from responsibility.
 					</Li>
 					<Li class="pb-3">
 						<strong>Spread a good word.</strong> Russia relies heavily on corrupt media to give itself
-						some kind of moral grounds. So every kind word you say to support Ukraine helps counterbalance
+						some kind of moral grounds. So every word you say to support Ukraine helps counterbalance
 						their attempts.
 					</Li>
 					<Li class="pb-3">

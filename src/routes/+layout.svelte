@@ -4,16 +4,15 @@
 	import { ToastService } from '../utils/toasts';
 	import AppToast from '../lib/AppToast.svelte';
 	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
+	import InitConfigPopup from '../lib/InitConfigPopup.svelte';
 	import { AppReloader } from '../stores/app/app-reloader';
-	import { Button, Modal } from 'flowbite-svelte';
-	import LocaleSelector from '../lib/LocaleSelector.svelte';
-	import ThemeSelector from '../lib/ThemeSelector.svelte';
-	import { fade } from 'svelte/transition';
+	import { Modal } from 'flowbite-svelte';
 	import { AuthStore } from '../stores/login/auth.store';
 	import Login from '../lib/Login.svelte';
 	import { AppSettingsStore } from '../stores/app/app-settings';
 	import { get } from 'svelte/store';
 	import { t } from '../stores/app/translate';
+	import { goto } from '$app/navigation';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
@@ -31,6 +30,11 @@
 
 	function onCloseSettingsPopup(): void {
 		AppSettingsStore.markIsLocaleSet();
+	}
+
+	function onShowHowAddToMain(): void {
+		AppSettingsStore.markIsLocaleSet();
+		goto('/home/add-app-to-main-screen');
 	}
 </script>
 
@@ -77,25 +81,11 @@
 	</div>
 </div>
 
-<Modal bind:open={isSetLocalePopupOpen} size="xs" on:hide={onCloseSettingsPopup}>
-	<form on:submit|preventDefault={() => (isSetLocalePopupOpen = false)} in:fade>
-		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0 mb-4">
-			{$t('app.initial-popup.title')}
-		</h3>
-		<p class="mb-3">{$t('app.initial-popup.personalize')}</p>
-		<div class="flex space-x-2">
-			<LocaleSelector />
-			<ThemeSelector />
-		</div>
-
-		<p class="text-sm text-gray-600 py-3">
-			{$t('app.initial-popup.settings-disclaimer')}
-		</p>
-		<div class="flex justify-end">
-			<Button type="submit" class="w-50">{$t('app.ok.long')}</Button>
-		</div>
-	</form>
-</Modal>
+<InitConfigPopup
+	open={isSetLocalePopupOpen}
+	on:complete={onCloseSettingsPopup}
+	on:show-how-add-to-main={onShowHowAddToMain}
+/>
 
 <Modal
 	class="z-50"

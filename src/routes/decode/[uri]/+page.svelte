@@ -8,10 +8,10 @@
 	import { goto } from '$app/navigation';
 	import { t } from '../../../stores/app/translate';
 
-	const compressor = new StringCompressor();
 	const store = new DecodeStore();
 
 	onMount(async () => {
+		const compressor = new StringCompressor();
 		const uri = $page.params.uri;
 		if (!uri) {
 			throw new Error('Bad uri');

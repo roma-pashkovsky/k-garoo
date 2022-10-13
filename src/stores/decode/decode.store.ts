@@ -8,10 +8,15 @@ export class DecodeStore {
 
 		if (savedVersion === undefined) {
 			// new list has to be created
-			await this.persistence.createList(checklist.id, checklist.name, checklist.items);
+			await this.persistence.createList(
+				checklist.id,
+				checklist.name,
+				checklist.items,
+				checklist.updated_utc
+			);
 		} else if (savedVersion < checklist.updated_utc || 0) {
 			// list should be updated
-			await this.persistence.updateList(checklist);
+			await this.persistence.updateList(checklist, checklist.updated_utc);
 		}
 	}
 }

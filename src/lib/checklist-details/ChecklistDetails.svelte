@@ -172,13 +172,21 @@
 	}
 
 	async function onGenerateListLinkClicked(): Promise<void> {
-		const list = await store.getList(listId);
-		const url = getDecodeLinkToList(list);
-		await copyToClipboard(url);
-		toastManager.push({
-			text: ($t as any)('lists.details.link-created'),
-			closePrevious: false
-		});
+		const url = getDecodeLinkToList(get(store.checklist));
+		try {
+			await navigator.clipboard.writeText(url);
+			toastManager.push({
+				text: ($t as any)('lists.details.link-created'),
+				closePrevious: false
+			});
+		} catch (err) {
+			console.error(err);
+			toastManager.push({
+				text: 'Failed to copy url',
+				color: 'warning',
+				closePrevious: false
+			});
+		}
 	}
 
 	function onShowMeAround() {

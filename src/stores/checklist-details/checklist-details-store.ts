@@ -202,11 +202,11 @@ export class ChecklistDetailsStore {
 
 	public async setListItems(id: string, editItems: CheckListItemEditModel[]): Promise<void> {
 		const ts = new Date().getTime();
-		return ChecklistDetailsStore.persistence.setListItems(
-			id,
-			this.editModelsToChecklistItems(editItems),
-			ts
-		);
+		const items = this.editModelsToChecklistItems(editItems);
+		await ChecklistDetailsStore.persistence.setListItems(id, items, ts);
+		if (this.isLoggedIn) {
+			return ChecklistDetailsStore.dbPersistence.setListItems(id, items, ts);
+		}
 	}
 
 	public async addCategoryOption(option: CategoryOption): Promise<void> {

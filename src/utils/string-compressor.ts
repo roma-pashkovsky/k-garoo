@@ -1,10 +1,8 @@
 export class StringCompressor {
-	private lzString = (window as any).LZString as any;
+	private lzString: any;
 
 	constructor() {
-		if (!(window as any).LZString) {
-			console.warn('no lz string found');
-		}
+		this.lzString = (window as any)?.LZString as any;
 	}
 
 	public compressToEncodedURIComponent(source: string): string {

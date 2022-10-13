@@ -2,9 +2,14 @@
 	import Page from '../../../lib/Page.svelte';
 	import { A, Heading, P } from 'flowbite-svelte';
 	import { AppSettingsStore } from '../../../stores/app/app-settings';
+	import { t } from '../../../stores/app/translate';
 
 	const l = AppSettingsStore.lang;
 </script>
+
+<svelte:head>
+	<title>K-garoo - {$t('app.sections.about')}</title>
+</svelte:head>
 
 <Page>
 	<section>

@@ -58,6 +58,16 @@
 	<!--	Clean data-->
 	<div id="clean" name="clean" class="mb-8">
 		<h4 class="font-medium mb-4">{$t('settings.header.data')}</h4>
+
+		<p class="pl-10">
+			<Button outline on:click={onCleanAllData} color="red">
+				{#if isCleaningData}
+					<Spinner class="mr-3" size="4" />
+				{/if}
+				{$t('settings.data.clean-data-button')}</Button
+			>
+		</p>
+
 		<div class="my-3 pl-10" style="max-width: 400px">
 			<Alert color="red">
 				<svg
@@ -81,14 +91,5 @@
 				</div>
 			</Alert>
 		</div>
-
-		<p class="pl-10">
-			<Button outline on:click={onCleanAllData} color="red">
-				{#if isCleaningData}
-					<Spinner class="mr-3" size="4" />
-				{/if}
-				{$t('settings.data.clean-data-button')}</Button
-			>
-		</p>
 	</div>
 </Page>

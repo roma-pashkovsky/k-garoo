@@ -173,7 +173,21 @@
 	}
 
 	async function onGenerateListLinkClicked(): Promise<void> {
-		const url = getDecodeLinkToList(get(store.checklist));
+		const url = getDecodeLinkToList({
+			id: listId,
+			name: listName,
+			items: items.map((s, i) => {
+				return {
+					id: s.id,
+					itemDescription: s.itemDescription,
+					category: s.category,
+					checked: s.checked,
+					orderAdded: i
+				};
+			}),
+			created_utc: new Date().getTime(),
+			updated_utc: new Date().getTime()
+		});
 		try {
 			await navigator.clipboard.writeText(url);
 			toastManager.push({

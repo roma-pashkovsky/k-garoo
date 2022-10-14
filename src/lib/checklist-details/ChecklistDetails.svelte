@@ -42,6 +42,7 @@
 	import { t } from '../../stores/app/translate';
 	import { p } from '../../stores/app/plurals';
 	import { derived, get, writable } from 'svelte/store';
+	import { getDefaultListName } from '../../utils/get-default-list-name';
 
 	export let listId: string;
 	export let store: ChecklistDetailsStore;
@@ -50,7 +51,7 @@
 
 	let categoryAutodetector: Readable<CategoryAutodetector>;
 	let toastManager: ToastManagerType = ToastService.getInstance();
-	let listName: string = ($t as any)('lists.create_new_list.header');
+	let listName: string = getDefaultListName();
 	let items: CheckListItemEditModel[] = [];
 	let categoryOptions: Readable<CategoryOption[]>;
 

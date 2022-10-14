@@ -53,16 +53,24 @@
 	<title>K-garoo - {$t('app.my_lists')}</title>
 </svelte:head>
 
-<div class="absolute top-2 md:top-4 right-2 md:right-4 p-2 z-10">
+<div class="hidden md:block absolute top-8 right-8 z-10">
 	<button
 		use:doubleTap
 		on:tap={onAddButtonClicked}
 		class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
-		><Plus class="w-6 h-6" /></button
+		><Plus class="w-7 h-7" /></button
+	>
+</div>
+<div class="block md:hidden absolute bottom-4 right-4 p-2 z-10">
+	<button
+		use:doubleTap
+		on:tap={onAddButtonClicked}
+		class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
+		><Plus class="w-7 h-7" /></button
 	>
 </div>
 <Page>
-	<div class="flex items-start justify-center" style="padding-top: 4rem">
+	<div class="flex items-start justify-center">
 		{#if !$items?.length}
 			<EmptyPage class="pt-6">
 				{$t('lists.no_lists')}

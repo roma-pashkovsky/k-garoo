@@ -16,8 +16,10 @@
 		<div class="mb-8">
 			<Heading tag="h4" class="mb-4">Hey there...</Heading>
 			<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">
-				As you know, there's war going on in Ukraine. K.Garoo believes that supporting Ukraine
-				should be on every checklist.
+				As you know, there's war going on in Ukraine. Russia has attacked our country because it
+				doesn't like our aspirations to become a democratic, liberal, prospering and truly
+				independent state. The outcome of this war will determine what values we'll have in the
+				future. K.Garoo believes that supporting Ukraine should be on every checklist.
 			</P>
 			<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">How can I support?</P>
 			<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">

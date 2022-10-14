@@ -10,15 +10,14 @@
 		NavLi,
 		NavUl
 	} from 'flowbite-svelte';
+	import UserMenu from './UserMenu.svelte';
 	import { page } from '$app/stores';
 	import { AuthStore } from '../stores/login/auth.store';
 	import { t } from '../stores/app/translate';
 	import { click_outside } from '../utils/click-outside';
 
-	const authStore = new AuthStore();
-	const user = AuthStore.user;
-	let isLoginModalOpen = false;
 	let hidden = true;
+	const user = AuthStore.user;
 
 	$: section = getSectionFromPath($page.url.pathname);
 
@@ -33,12 +32,6 @@
 
 	function onLoginClick(): void {
 		AuthStore.isLoginModalOpen.set(true);
-	}
-
-	function onLogOutClicked(): void {
-		if (confirm(($t as any)('app.basic-confirm'))) {
-			authStore.signOut();
-		}
 	}
 
 	function onToggle(): void {
@@ -86,21 +79,14 @@
 				>
 			</span>
 		</NavBrand>
-		<div class="flex items-center flex-wrap md:order-2" onmousedown="event.preventDefault()">
-			{#if $user}
-				<Avatar size="sm" id="avatar-menu" class="ml-8 md:order-2" src={$user.photoUrl} />
-				<Dropdown class="z-50" placement="bottom" triggeredBy="#avatar-menu" frameClass="z-30">
-					<DropdownHeader>
-						<span class="block text-sm">{$user.displayName}</span>
-					</DropdownHeader>
-					<DropdownItem on:click={onLogOutClicked}>{$t('app.user-menu.logout')}</DropdownItem>
-				</Dropdown>
-			{/if}
+		<div class="flex items-center flex-wrap md:order-2">
+			<UserMenu />
 			<NavHamburger class="md:hidden" on:click={onToggle} />
 		</div>
 		<NavUl
 			{hidden}
-			ulClass="flex flex-col py-2 px-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
+			divClass="w-full md:block md:w-auto md:flex-1"
+			ulClass="flex flex-col py-2 px-4 mt-4 md:flex-row md:flex-1 md:justify-end md:space-x-8 md:mt-0 md:text-sm md:font-medium"
 		>
 			<NavLi href="/home/lists" active={section === 'lists'}>{$t('app.sections.lists')}</NavLi>
 			<NavLi href="/home/settings" active={section === 'settings'}

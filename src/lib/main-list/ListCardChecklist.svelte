@@ -37,7 +37,7 @@
 	on:click={() => onCardClicked(card.id)}
 >
 	<Card
-		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-64 sm:w-80 relative h-32"
+		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 sm:w-80 relative h-32"
 	>
 		{#if $card}
 			<div class="absolute top-1 right-1" onclick="event.stopPropagation()">

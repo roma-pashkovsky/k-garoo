@@ -1,5 +1,15 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	export let value: string;
+	export let selectOnInit = false;
+	let input: HTMLInputElement;
+
+	onMount(() => {
+		if (selectOnInit && input) {
+			input.select();
+		}
+	});
 </script>
 
 <input
@@ -9,6 +19,7 @@
 	autofocus
 	inputmode="text"
 	bind:value
+	bind:this={input}
 	on:submit
 	on:input
 	on:blur

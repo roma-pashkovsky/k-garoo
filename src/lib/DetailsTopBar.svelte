@@ -19,10 +19,10 @@
 			<ArrowLeft size="24" on:click={onBackClicked} />
 		</Button>
 	</div>
-	<div class="flex items-center left flex-1 ml-2 sm:ml-4">
-		<h3 class="font-medium text-base sm:text-2xl">
+	<div class="flex items-center left flex-1 mx-2 sm:mx-4">
+		<div class="font-medium text-base sm:text-2xl inline-block w-full">
 			<slot name="page-title" />
-		</h3>
+		</div>
 	</div>
 	<div class=" right">
 		<slot class="flex items-center" name="right-content" />

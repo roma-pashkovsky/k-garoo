@@ -11,6 +11,5 @@ export const getDefaultListName = (): string => {
 		dateStyle: 'short',
 		timeStyle: 'short'
 	});
-	console.log(formatter.formatToParts(date));
 	return formatter.format(date);
 };

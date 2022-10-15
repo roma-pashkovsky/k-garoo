@@ -5,7 +5,6 @@
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
 	import Page from '../../../lib/Page.svelte';
 	import { getDecodeLinkToList } from '../../../utils/get-decode-link-to-list';
-	import { copyToClipboard } from '../../../utils/copy-to-clipboard';
 	import { ToastService } from '../../../utils/toasts';
 	import { getUID } from '../../../utils/get-uid';
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
@@ -32,11 +31,19 @@
 
 	async function onListGetLink(list: CheckList): Promise<void> {
 		const url = getDecodeLinkToList(list);
-		await copyToClipboard(url);
-		toastManager.push({
-			text: get(t)('lists.details.link-created'),
-			closePrevious: false
-		});
+		try {
+			await navigator.clipboard.writeText(url);
+			toastManager.push({
+				text: get(t)('lists.details.link-created'),
+				closePrevious: false
+			});
+		} catch (err) {
+			console.error(err);
+			toastManager.push({
+				text: 'Failed to copy url',
+				color: 'warning'
+			});
+		}
 	}
 
 	export function onCardClicked(id: string): void {

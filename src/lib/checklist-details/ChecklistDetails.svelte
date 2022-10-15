@@ -31,7 +31,6 @@
 	import TitleWithEdit from '../TitleWithEdit.svelte';
 	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
-	import { copyToClipboard } from '../../utils/copy-to-clipboard';
 	import type { ToastManagerType } from '../../utils/toasts';
 	import { ToastService } from '../../utils/toasts';
 	import { getDecodeLinkToList } from '../../utils/get-decode-link-to-list';
@@ -39,9 +38,9 @@
 	import ColorSelector from '../ColorSelector.svelte';
 	import Palette from '../Palette.svelte';
 	import type { Readable, Writable } from 'svelte/store';
+	import { derived, get, writable } from 'svelte/store';
 	import { t } from '../../stores/app/translate';
 	import { p } from '../../stores/app/plurals';
-	import { derived, get, writable } from 'svelte/store';
 	import { getDefaultListName } from '../../utils/get-default-list-name';
 
 	export let listId: string;

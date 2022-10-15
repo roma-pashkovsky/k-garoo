@@ -13,6 +13,7 @@
 	import { get } from 'svelte/store';
 	import { t } from '../stores/app/translate';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;

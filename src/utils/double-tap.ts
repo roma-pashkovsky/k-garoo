@@ -1,7 +1,7 @@
 import { doubleTapHandler } from './double-tap-handler';
 
 export function doubleTap(node: HTMLElement) {
-	const speed = 500;
+	const speed = 250;
 	const distance = 40;
 	const event = 'ontouchend' in node ? 'touchend' : 'mouseup';
 	const handler = doubleTapHandler(speed, distance);

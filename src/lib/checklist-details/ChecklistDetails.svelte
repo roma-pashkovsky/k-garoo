@@ -544,13 +544,6 @@
 			>
 				<ListBullet size="23" />
 			</Button>
-			<Button
-				on:click={onAddToListClicked}
-				class="!p-1.5 w-9 h-9"
-				color={isAddToListMode ? 'blue' : 'light'}
-			>
-				<Plus size="23" />
-			</Button>
 			<!--			Right menu-->
 			<DotMenu widthClass="w-56">
 				<DropdownItem>
@@ -692,6 +685,24 @@
 			<!--		/Plain view-->
 		{/if}
 		<!--        /List-->
+		<!--		Add item button-->
+		<svelte:fragment slot="float">
+			<div class="md:hidden absolute bottom-8 right-8">
+				{#if !editedItem}
+					<Button class="!p-2" on:click={onAddToListClicked} color="blue">
+						<Plus />
+					</Button>
+				{/if}
+			</div>
+
+			<div class="hidden md:block absolute top-8 right-8">
+				{#if !editedItem}
+					<Button class="!p-2" on:click={onAddToListClicked} color="blue">
+						<Plus />
+					</Button>
+				{/if}
+			</div>
+		</svelte:fragment>
 	</DetailsBody>
 </DetailsPage>
 <!--        Bottom input-->

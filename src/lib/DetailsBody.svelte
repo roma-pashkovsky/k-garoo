@@ -35,10 +35,11 @@
 		on:dblclick
 		use:doubleTap
 		on:dbltap
-		class="select-none absolute top-0 bottom-0 left-0 right-0 px-4 sm:px-6 pb-36 overflow-y-auto {noTopPadding
+		class="select-none absolute top-0 bottom-0 left-0 right-0 px-4 md:px-8 pb-36 overflow-y-auto {noTopPadding
 			? 'pt-0'
 			: 'pt-4'}"
 	>
 		<slot />
 	</div>
+	<slot name="float" />
 </div>

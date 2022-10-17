@@ -214,7 +214,7 @@ export class ChecklistDetailsStore {
 		if (this.isLoggedIn) {
 			await ChecklistDetailsStore.dbPersistence.addCategoryOption(option);
 		}
-		ChecklistDetailsStore.customCategoryOptions.update((prev) => [option, ...prev]);
+		ChecklistDetailsStore.customCategoryOptions.update((prev) => [option, ...(prev || [])]);
 	}
 
 	public async updateByCategoryView(isByCategory: boolean): Promise<void> {
@@ -235,7 +235,7 @@ export class ChecklistDetailsStore {
 			if (index >= 0) {
 				oldProps.splice(index, 1, prop);
 			}
-			return [...oldProps];
+			return [...(oldProps || [])];
 		});
 		return ChecklistDetailsStore.persistence.setPropositions(
 			get(ChecklistDetailsStore.propositions)

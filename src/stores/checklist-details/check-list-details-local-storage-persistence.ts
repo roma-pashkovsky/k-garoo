@@ -1,5 +1,5 @@
 import type {
-	AppSettings,
+	ByListSettings,
 	CategoryOption,
 	CheckList,
 	CheckListItem,
@@ -61,6 +61,32 @@ export class CheckListDetailsLocalStoragePersistence {
 				resolve(state.checklistSettings);
 			});
 		});
+	}
+
+	public async setHideCrossedOut(listId: string, isHide: boolean): Promise<void> {
+		const state = getState();
+		const settings = state.checklistSettings;
+		const byList = settings.byList || {};
+		const byCurrentList = (byList[listId] || {}) as ByListSettings;
+		setState({
+			...state,
+			checklistSettings: {
+				...settings,
+				byList: {
+					...byList,
+					[listId]: {
+						...byCurrentList,
+						hideCrossedOut: isHide
+					}
+				}
+			}
+		});
+	}
+
+	public isHideCrossedOut(listId: string): Promise<boolean> {
+		return this.getChecklistSettings().then((settings) =>
+			settings.byList && settings.byList[listId] ? settings.byList[listId].hideCrossedOut : false
+		);
 	}
 
 	public getListVersion(listId: string): Promise<number | undefined> {

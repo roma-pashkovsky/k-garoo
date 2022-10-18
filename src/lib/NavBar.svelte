@@ -1,15 +1,5 @@
 <script lang="ts">
-	import {
-		Avatar,
-		Dropdown,
-		DropdownHeader,
-		DropdownItem,
-		Navbar,
-		NavBrand,
-		NavHamburger,
-		NavLi,
-		NavUl
-	} from 'flowbite-svelte';
+	import { Navbar, NavBrand, NavHamburger, NavLi, NavUl } from 'flowbite-svelte';
 	import UserMenu from './UserMenu.svelte';
 	import { page } from '$app/stores';
 	import { AuthStore } from '../stores/login/auth.store';
@@ -68,7 +58,7 @@
 			<span
 				class="self-center whitespace-nowrap text-xl font-semibold dark:text-white inline-block w-32"
 			>
-				K-garoo
+				Garoo
 				<a href="/home/support-ukraine"
 					><img
 						src="/flag-Ukraine.png"

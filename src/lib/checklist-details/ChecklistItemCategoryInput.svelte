@@ -64,7 +64,7 @@
 			items={selectCategoryOptions}
 			placeholder={$t('lists.create_new_list.set-category-to')}
 			bind:value={categoryId}
-			on:change={onCategorySelectChange}
+			on:input={onCategorySelectChange}
 		/>
 	{/if}
 </div>

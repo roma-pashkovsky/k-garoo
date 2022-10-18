@@ -41,6 +41,13 @@ export type ChecklistSettings = {
 	isGroupByCategory: boolean;
 	isColorsForCategories: boolean;
 	hasSeenDemo: boolean;
+	byList: {
+		[listId: string]: ByListSettings;
+	};
+};
+
+export type ByListSettings = {
+	hideCrossedOut: boolean;
 };
 
 export type Language = 'en' | 'ua';

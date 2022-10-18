@@ -1,4 +1,5 @@
 import type {
+	ByListSettings,
 	CategoryOption,
 	CheckList,
 	CheckListItem,
@@ -67,9 +68,13 @@ export class ChecklistDetailsStore {
 			this.checklist.set(list);
 		});
 		this.categoryOptions = derived(
-			ChecklistDetailsStore.customCategoryOptions,
-			($customOptions) => {
-				const manager = new CategoryOptionManager($customOptions || [], this.locale);
+			[ChecklistDetailsStore.customCategoryOptions, this.checklist],
+			([$customOptions, $checklist]) => {
+				const manager = new CategoryOptionManager(
+					$customOptions || [],
+					$checklist?.items || [],
+					this.locale
+				);
 				return manager.getCategoryOptions();
 			}
 		);
@@ -158,6 +163,14 @@ export class ChecklistDetailsStore {
 
 	public async getChecklistSettings(): Promise<ChecklistSettings> {
 		return ChecklistDetailsStore.persistence.getChecklistSettings();
+	}
+
+	public isHideCrossedOut(listId: string): Promise<boolean> {
+		return ChecklistDetailsStore.persistence.isHideCrossedOut(listId);
+	}
+
+	public async setHideCrossedOut(listId: string, isHide: boolean): Promise<void> {
+		return ChecklistDetailsStore.persistence.setHideCrossedOut(listId, isHide);
 	}
 
 	public async createList(

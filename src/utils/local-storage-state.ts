@@ -11,7 +11,8 @@ export const getInitialState = (): KGarooState => {
 		checklistSettings: {
 			isGroupByCategory: false,
 			isColorsForCategories: false,
-			hasSeenDemo: false
+			hasSeenDemo: false,
+			byList: {}
 		},
 		categoryOptions: [],
 		propositions: [],

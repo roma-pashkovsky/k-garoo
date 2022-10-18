@@ -132,6 +132,7 @@
 	}
 
 	function onCategoryUserInput(): void {
+		console.log('cat select input');
 		shouldAutodetectCategory = false;
 	}
 

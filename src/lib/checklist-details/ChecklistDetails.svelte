@@ -81,6 +81,10 @@
 		isByCategoryView = checklistSettings?.isGroupByCategory || false;
 		isColorsForCategories = checklistSettings?.isColorsForCategories || false;
 		isFirstTimeUse = !checklistSettings?.hasSeenDemo;
+		isHideCrossedOut =
+			checklistSettings?.byList && checklistSettings.byList[listId]
+				? checklistSettings.byList[listId].hideCrossedOut
+				: false;
 		categoryOptions = store.categoryOptions;
 		propositions = ChecklistDetailsStore.propositions;
 		categoryAutodetector = store.getCategoryAutoDetector();
@@ -102,11 +106,6 @@
 		}
 		toastManager.clear();
 	});
-
-	async function initList(): Promise<void> {
-		const list = await store.getList(listId);
-		setDataFromList(list);
-	}
 
 	let timeoutHandle: any;
 	function setDataFromList(list: CheckList): void {
@@ -340,13 +339,20 @@
 
 	function onBatchChangeCategory(e: ChangeCategoryEvent): void {
 		previousItems = items.map((it) => ({ ...it, category: { ...it.category } }));
-		let categoryId = e.categoryId;
+		let category;
 		if (e.newCategory) {
-			e.newCategory.color = pickColorForACategory(items, $categoryOptions);
-			categoryId = e.newCategory.id;
-			store.addCategoryOption(e.newCategory);
+			const compareName = e.newCategory.name.toLowerCase();
+			const alreadyAdded = $categoryOptions.find((opt) => opt.name.toLowerCase() === compareName);
+			if (!alreadyAdded) {
+				e.newCategory.color = pickColorForACategory(items, $categoryOptions);
+				store.addCategoryOption(e.newCategory);
+				category = e.newCategory;
+			} else {
+				category = alreadyAdded;
+			}
+		} else {
+			category = $categoryOptions.find((c) => c.id === e.categoryId);
 		}
-		let category = e.newCategory || $categoryOptions.find((c) => c.id === categoryId);
 		let count = 0;
 		items = items.map((it) => {
 			if (it.selected) {
@@ -391,13 +397,22 @@
 			addToCategoryId = undefined;
 			return;
 		}
+		let targetCategory: CategoryOption;
 		const categoryToAdd: CategoryOption | undefined = e?.detail?.addCategory;
 		if (categoryToAdd) {
-			categoryToAdd.color = pickColorForACategory(items, $categoryOptions);
-			editedCategoryId = categoryToAdd.id;
-			store.addCategoryOption(categoryToAdd);
+			const compareName = categoryToAdd.name.toLowerCase();
+			const alreadyAdded = $categoryOptions.find((c) => c.name.toLowerCase() === compareName);
+			if (!alreadyAdded) {
+				categoryToAdd.color = pickColorForACategory(items, $categoryOptions);
+				editedCategoryId = categoryToAdd.id;
+				store.addCategoryOption(categoryToAdd);
+				targetCategory = categoryToAdd;
+			} else {
+				targetCategory = alreadyAdded;
+			}
+		} else {
+			targetCategory = $categoryOptions.find((c) => c.id === editedCategoryId);
 		}
-		const targetCategory = categoryToAdd || $categoryOptions.find((c) => c.id === editedCategoryId);
 		const updated = { ...editedItem, category: { ...targetCategory } };
 		if (addToCategoryId) {
 			items = [...items, updated];
@@ -522,6 +537,16 @@
 		});
 		items = [...items];
 	}
+
+	async function onToggleHideCrossedOut(): Promise<void> {
+		isHideCrossedOut = !isHideCrossedOut;
+		await store.setHideCrossedOut(listId, isHideCrossedOut);
+	}
+
+	async function onShowCrossedOut(): Promise<void> {
+		isHideCrossedOut = false;
+		await store.setHideCrossedOut(listId, isHideCrossedOut);
+	}
 </script>
 
 <DetailsPage>
@@ -531,7 +556,7 @@
 				<TitleWithEdit bind:title={listName} on:title-submit={onListTitleSave} />
 				<div>
 					{#if isHideCrossedOut}
-						<EyeOff on:click={() => (isHideCrossedOut = false)} class="ml-3" size="15" />
+						<EyeOff on:click={onShowCrossedOut} class="ml-3" size="15" />
 					{/if}
 				</div>
 			</div>
@@ -547,10 +572,7 @@
 			<!--			Right menu-->
 			<DotMenu widthClass="w-56">
 				<DropdownItem>
-					<div
-						on:click={() => (isHideCrossedOut = !isHideCrossedOut)}
-						class="w-full flex items-center"
-					>
+					<div on:click={onToggleHideCrossedOut} class="w-full flex items-center">
 						<Button class="!p-1.5 mr-2 w-7 h-7" color={isHideCrossedOut ? 'blue' : 'light'}>
 							{#if isHideCrossedOut}
 								<EyeOff size="15" />

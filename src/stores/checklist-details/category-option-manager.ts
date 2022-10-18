@@ -1,10 +1,18 @@
-import type { CategoryOption } from '../../types';
-import { customCategoryId, otherCategoryId, reservedCategories } from '../../utils/autodetect-data';
+import type { CategoryOption, CheckListItem } from '../../types';
+import { customCategoryId, reservedCategories } from '../../utils/autodetect-data';
 
 export class CategoryOptionManager {
-	constructor(private categoryOptions: CategoryOption[], private locale: 'en' | 'ua') {}
+	constructor(
+		private categoryOptions: CategoryOption[],
+		private listItems: CheckListItem[],
+		private locale: 'en' | 'ua'
+	) {}
 
 	public getCategoryOptions(): CategoryOption[] {
+		const optionsMap: { [s: string]: CategoryOption } = {};
+		(this.listItems || [])
+			.map((it) => it.category)
+			.forEach((c) => (optionsMap[c.name.toLowerCase()] = c));
 		const reserved = Object.keys(reservedCategories).map((catKey) => {
 			return {
 				id: catKey,
@@ -12,7 +20,13 @@ export class CategoryOptionManager {
 				name: reservedCategories[catKey][this.locale]
 			};
 		});
-		const res = [...(this.categoryOptions || []), ...reserved];
+		[...(this.categoryOptions || []), ...reserved].forEach((c) => {
+			const n = c.name.toLowerCase();
+			if (!optionsMap[n]) {
+				optionsMap[n] = c;
+			}
+		});
+		const res = Object.values(optionsMap);
 		this.sortCategories(res);
 		return res;
 	}

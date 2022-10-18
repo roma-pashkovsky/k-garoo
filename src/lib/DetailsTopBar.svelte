@@ -13,6 +13,7 @@
 
 <div
 	class="sticky flex justify-between items-center bg-white dark:bg-gray-900 z-30 px-2 sm:px-4 py-2.5 border-b border-gray-200 dark:border-gray-600 shadow-sm"
+	style="contain: layout style"
 >
 	<div class="flex items-center">
 		<Button color="white" class="!p-1.5">

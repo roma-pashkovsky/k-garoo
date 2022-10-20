@@ -3,6 +3,8 @@ import { ChecklistMainListDbPersistence } from './checklist-main-list-db-persist
 import { ChecklistMainListLocalStoragePersistence } from './checklist-main-list-local-storage-persistence';
 import { setListIds } from '../../utils/local-storage-state';
 import { AuthStore } from '../login/auth.store';
+import type { PersistedList } from '../../types';
+import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-ids-from-persisted-list';
 
 export class ChecklistMainListStore {
 	public static items = writable<string[]>([]);
@@ -12,7 +14,7 @@ export class ChecklistMainListStore {
 
 	public async init(): Promise<void> {
 		const local = await this.localPersistence.getList();
-		ChecklistMainListStore.items.set(local);
+		ChecklistMainListStore.items.set(getSortedListIdsFromPersistedList(local));
 		this.dbPersistence.onDbAvailableChange(async () => {
 			// this callback should fire after other auth callbacks,
 			// so that we wait until the data is synced
@@ -48,17 +50,16 @@ export class ChecklistMainListStore {
 	private async setItems(): Promise<void> {
 		if (this.dbPersistence.isLoggedIn) {
 			const items = await this.dbPersistence.getList();
-			console.log('remote items: ', items);
-			ChecklistMainListStore.items.set(items);
+			ChecklistMainListStore.items.set(getSortedListIdsFromPersistedList(items));
 			this.updateLocalStoreWithRemoteItems(items);
 		} else {
 			const items = await this.localPersistence.getList();
 			console.log('local items: ', items);
-			ChecklistMainListStore.items.set(items);
+			ChecklistMainListStore.items.set(getSortedListIdsFromPersistedList(items));
 		}
 	}
 
-	private updateLocalStoreWithRemoteItems(listIds: string[]): void {
-		setListIds(listIds);
+	private updateLocalStoreWithRemoteItems(list: PersistedList): void {
+		setListIds(list);
 	}
 }

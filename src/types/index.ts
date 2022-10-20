@@ -65,8 +65,14 @@ export type AppInstructions = {
 	isAddFromPropositionsViewed: boolean;
 };
 
+export type PersistedList = {
+	[listId: string]: {
+		updated_ts: number;
+	};
+};
+
 export type KGarooState = {
-	listIds: string[];
+	listIds: PersistedList;
 	listData: {
 		[listId: string]: CheckList;
 	};

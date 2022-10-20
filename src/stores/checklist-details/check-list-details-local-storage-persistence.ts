@@ -26,6 +26,16 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
+	public isListAddedToUserCollection(listId: string): Promise<boolean> {
+		return new Promise<boolean>((resolve) => {
+			requestAnimationFrame(() => {
+				const listIds = getListIds();
+				const isAdded = !!listIds[listId];
+				resolve(isAdded);
+			});
+		});
+	}
+
 	public async getCategoryOptions(): Promise<CategoryOption[]> {
 		return new Promise((resolve) => {
 			requestAnimationFrame(() => {
@@ -83,12 +93,6 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
-	public isHideCrossedOut(listId: string): Promise<boolean> {
-		return this.getChecklistSettings().then((settings) =>
-			settings.byList && settings.byList[listId] ? settings.byList[listId].hideCrossedOut : false
-		);
-	}
-
 	public getListVersion(listId: string): Promise<number | undefined> {
 		const list = getListData(listId);
 		if (list) {
@@ -103,10 +107,24 @@ export class CheckListDetailsLocalStoragePersistence {
 		items: CheckListItem[],
 		ts: number
 	): Promise<void> {
-		const listIds = getListIds();
-		listIds.unshift(id);
-		setListIds(listIds);
+		await this.addListToUserCollection(id, ts);
 		await this.saveListData(id, name, items, ts);
+	}
+
+	public async addListToUserCollection(listId: string, ts: number): Promise<void> {
+		return new Promise<void>((resolve) => {
+			requestAnimationFrame(() => {
+				const listIds = getListIds();
+				const newLists = {
+					...listIds,
+					[listId]: {
+						updated_ts: ts
+					}
+				};
+				setListIds(newLists);
+				resolve();
+			});
+		});
 	}
 
 	public async saveListName(id: string, name: string, ts: number): Promise<void> {
@@ -197,14 +215,15 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
-	public async updateList({ id, items, name }: CheckList, ts: number): Promise<void> {
+	public async updateList({ id, items, name, updated_utc, created_utc }: CheckList): Promise<void> {
 		const newList = {
 			id,
 			items,
 			name,
-			updated_utc: ts
+			updated_utc,
+			created_utc
 		} as CheckList;
-		setListData(newList);
+		await setListData(newList);
 	}
 
 	public async setPropositions(props: Proposition[]): Promise<void> {
@@ -216,7 +235,7 @@ export class CheckListDetailsLocalStoragePersistence {
 		});
 	}
 
-	private async saveListData(
+	public async saveListData(
 		id: string,
 		name: string,
 		items: CheckListItem[],

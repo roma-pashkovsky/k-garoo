@@ -20,7 +20,7 @@ export class ChecklistDetailsDbPersistence extends BaseDbPersistence {
 	}
 
 	public isListAddedToUserCollection(listId: string): Promise<boolean> {
-		return this.firebaseUtils.exists(`listsByUser/${this.userId}/${listId}`);
+		return this.firebaseUtils.exists(`listsByUsers/${this.userId}/${listId}`);
 	}
 
 	public async addListToUserCollection(listId: string, ts: number): Promise<void> {
@@ -60,17 +60,7 @@ export class ChecklistDetailsDbPersistence extends BaseDbPersistence {
 		this.checkUserId();
 		// add to lists by users
 		await this.addListToUserCollection(id, ts);
-		// save list data
-		const itemsMap = arrayToMap(items, 'id');
-
-		const list: DbChecklist = {
-			id,
-			name,
-			items: itemsMap,
-			updated_utc: ts,
-			created_utc: ts
-		};
-		await this.firebaseUtils.set([{ path: `listData/${id}`, value: list }]);
+		await this.saveListData(id, name, items, ts);
 	}
 
 	public async saveListName(id: string, name: string, ts: number): Promise<void> {
@@ -132,12 +122,30 @@ export class ChecklistDetailsDbPersistence extends BaseDbPersistence {
 		await this.firebaseUtils.set([optionUpdate]);
 	}
 
-	public async updateList({ id, items, name }: CheckList, ts: number): Promise<void> {
-		const listByUserUpdate = {
-			path: `listsByUsers/${this.userId}/${id}`,
-			value: { updated_ts: ts }
-		};
+	public async updateList({ id, items, name, updated_utc, created_utc }: CheckList): Promise<void> {
 		const itemsMap = arrayToMap(items, 'id');
+		const list: DbChecklist = {
+			id,
+			name,
+			items: itemsMap,
+			updated_utc,
+			created_utc
+		};
+		const listDataUpdate = {
+			path: `listData/${id}`,
+			value: list
+		};
+		await this.firebaseUtils.set([listDataUpdate]);
+	}
+
+	public async saveListData(
+		id: string,
+		name: string,
+		items: CheckListItem[],
+		ts: number
+	): Promise<void> {
+		const itemsMap = arrayToMap(items, 'id');
+
 		const list: DbChecklist = {
 			id,
 			name,
@@ -145,11 +153,7 @@ export class ChecklistDetailsDbPersistence extends BaseDbPersistence {
 			updated_utc: ts,
 			created_utc: ts
 		};
-		const listDataUpdate = {
-			path: `listData/${id}`,
-			value: list
-		};
-		await this.firebaseUtils.set([listByUserUpdate, listDataUpdate]);
+		await this.firebaseUtils.set([{ path: `listData/${id}`, value: list }]);
 	}
 
 	private checkUserId(): void {

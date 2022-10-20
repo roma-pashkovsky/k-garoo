@@ -13,7 +13,8 @@ export class SyncStore {
 
 	public async syncLocalDataToDb(): Promise<void> {
 		// sync local lists
-		const localListIds = await this.localListPersistence.getList();
+		const localList = await this.localListPersistence.getList();
+		const localListIds = localList ? Object.keys(localList) : [];
 		for (const localId of localListIds) {
 			const localVersion = await this.localDetailsPersistence.getListVersion(localId);
 			const dbVersion = await this.dbDetailsPersistence.getListVersion(localId);
@@ -23,8 +24,6 @@ export class SyncStore {
 					if (!dbVersion) {
 						const { id, name, items, updated_utc } = list;
 						await this.dbDetailsPersistence.upsertList(id, name, items, updated_utc);
-					} else {
-						await this.dbDetailsPersistence.updateList(list, list.updated_utc);
 					}
 				}
 			}

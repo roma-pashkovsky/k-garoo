@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { AppSettings, CheckList, KGarooState, Proposition } from '../types';
+import type { AppSettings, CheckList, KGarooState, PersistedList, Proposition } from '../types';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
 
 export { customCategoryId, otherCategoryId };
@@ -7,7 +7,7 @@ export { customCategoryId, otherCategoryId };
 export const getInitialState = (): KGarooState => {
 	return {
 		listData: {},
-		listIds: [],
+		listIds: {},
 		checklistSettings: {
 			isGroupByCategory: false,
 			isColorsForCategories: false,
@@ -63,14 +63,14 @@ export const setAppSettings = (settings: AppSettings): void => {
 	localStorage.setItem('k-garoo/appSettings', str);
 };
 
-export const getListIds = (): string[] => {
-	const raw = localStorage.getItem('k-garoo/listIds');
-	return JSON.parse(raw || '[]') as string[];
+export const getListIds = (): PersistedList => {
+	const raw = localStorage.getItem('k-garoo/list');
+	return JSON.parse(raw || '{}') as PersistedList;
 };
 
-export const setListIds = (ids: string[]): void => {
-	const raw = JSON.stringify(ids || []);
-	localStorage.setItem('k-garoo/listIds', raw);
+export const setListIds = (list: PersistedList): void => {
+	const raw = JSON.stringify(list || {});
+	localStorage.setItem('k-garoo/list', raw);
 };
 
 export const getListData = (id: string): CheckList | null => {

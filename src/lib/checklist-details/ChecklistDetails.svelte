@@ -70,11 +70,13 @@
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
 	let shouldCreateNewList = false;
+	let isAddedToUsersCollection: Writable<boolean>;
 	const darkBG = darkEquivalents;
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: selectCategoryOptions = ($categoryOptions || []).map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: isAnyItemSelected = items.some((it) => it.selected);
+	$: isListReadOnly = !shouldCreateNewList && !$isAddedToUsersCollection;
 	let propositionsFuzzySearch: Readable<FuzzySearch<Proposition>>;
 
 	onMount(() => {
@@ -93,6 +95,7 @@
 			[ChecklistDetailsStore.propositions, propositionsFuzzySearchTS],
 			([props, ts]) => getPropositionsFuzzySearch(props)
 		);
+		isAddedToUsersCollection = store.isAddedToUsersList;
 		checkListForDuplicates();
 		store.checklist.subscribe((list) => {
 			setDataFromList(list);
@@ -109,18 +112,24 @@
 
 	let timeoutHandle: any;
 	function setDataFromList(list: CheckList): void {
-		console.log('Setting list data: ', list);
 		if (list) {
 			listName = list.name;
 			items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
+			shouldCreateNewList = false;
 		} else {
 			shouldCreateNewList = true;
 		}
-		if (shouldCreateNewList && !isFirstTimeUse && !timeoutHandle) {
-			timeoutHandle = setTimeout(() => {
-				onAddToListClicked();
-			});
+		if (shouldCreateNewList) {
+			if (!isFirstTimeUse && !timeoutHandle) {
+				timeoutHandle = setTimeout(() => {
+					editedItem = getNewListItem();
+					editedCategoryId = editedItem.category.id;
+					isAddToListMode = true;
+					addToCategoryId = undefined;
+				}, 300);
+			}
 		} else {
+			clearTimeout(timeoutHandle);
 			closeAllEdits();
 		}
 	}
@@ -221,6 +230,9 @@
 	}
 
 	function onListBodyDoubleClick(): void {
+		if (isListReadOnly) {
+			return;
+		}
 		if (isAddToListMode || isCheckboxView || addToCategoryId || !!editedItem) {
 			isCheckboxView = false;
 			deselectAllCheckboxes();
@@ -562,73 +574,78 @@
 			</div>
 		</div>
 		<div class="space-x-2 flex items-center" slot="right-content">
-			<Button
-				class="!p-1.5 w-9 h-9"
-				color={isCheckboxView ? 'blue' : 'light'}
-				on:click={onToggleCheckboxViewClicked}
-			>
-				<ListBullet size="23" />
-			</Button>
+			{#if !isListReadOnly}
+				<Button
+					class="!p-1.5 w-9 h-9"
+					color={isCheckboxView ? 'blue' : 'light'}
+					on:click={onToggleCheckboxViewClicked}
+				>
+					<ListBullet size="23" />
+				</Button>
+			{/if}
 			<!--			Right menu-->
-			<DotMenu widthClass="w-56">
-				<DropdownItem>
-					<div on:click={onToggleHideCrossedOut} class="w-full flex items-center">
-						<Button class="!p-1.5 mr-2 w-7 h-7" color={isHideCrossedOut ? 'blue' : 'light'}>
-							{#if isHideCrossedOut}
-								<EyeOff size="15" />
-							{:else}
-								<Eye size="15" />
-							{/if}
-						</Button>
-						<div class="whitespace-nowrap">
-							{#if isHideCrossedOut}
-								{$t('lists.details.show-crossed-out')}
-							{:else}
-								{$t('lists.details.hide-crossed-out')}
-							{/if}
-						</div>
-					</div>
-				</DropdownItem>
-				<DropdownItem>
-					<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
-						<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
-							<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
-						</Button>
-						<div class="whitespace-nowrap">
-							{$t('lists.details.by-category')}
-						</div>
-					</div>
-				</DropdownItem>
-				<DropdownItem>
-					<div on:click={onToggleColorsForCategories} class="w-full flex items-center">
-						<Button class="!p-1.5 mr-2 w-7 h-7" color={isColorsForCategories ? 'blue' : 'light'}>
-							<div class="block dark:hidden">
-								<Palette color={isColorsForCategories ? 'white' : 'black'} />
+			{#if !isListReadOnly}
+				<DotMenu widthClass="w-56">
+					<DropdownItem>
+						<div on:click={onToggleHideCrossedOut} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isHideCrossedOut ? 'blue' : 'light'}>
+								{#if isHideCrossedOut}
+									<EyeOff size="15" />
+								{:else}
+									<Eye size="15" />
+								{/if}
+							</Button>
+							<div class="whitespace-nowrap">
+								{#if isHideCrossedOut}
+									{$t('lists.details.show-crossed-out')}
+								{:else}
+									{$t('lists.details.hide-crossed-out')}
+								{/if}
 							</div>
-							<div class="hidden dark:block">
-								<Palette color="white" />
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
+								<Briefcase size="15" variation={isByCategoryView ? 'solid' : 'outline'} />
+							</Button>
+							<div class="whitespace-nowrap">
+								{$t('lists.details.by-category')}
 							</div>
-						</Button>
-						<div class="whitespace-nowrap">{$t('lists.details.colors-for-categories')}</div>
-					</div>
-				</DropdownItem>
-				<DropdownItem>
-					<div on:click={onGenerateListLinkClicked} class="w-full flex items-center">
-						<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
-							<Link size="15" />
-						</Button>
-						{$t('lists.details.link-to-list')}
-					</div>
-				</DropdownItem>
-				<DropdownItem>
-					<div on:click={onShowMeAround} class="w-full flex items-center">
-						<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
-							<InformationCircle size="15" />
-						</Button>
-						{$t('lists.details.show-me-around')}
-					</div>
-				</DropdownItem>
-			</DotMenu>
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onToggleColorsForCategories} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isColorsForCategories ? 'blue' : 'light'}>
+								<div class="block dark:hidden">
+									<Palette color={isColorsForCategories ? 'white' : 'black'} />
+								</div>
+								<div class="hidden dark:block">
+									<Palette color="white" />
+								</div>
+							</Button>
+							<div class="whitespace-nowrap">{$t('lists.details.colors-for-categories')}</div>
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onGenerateListLinkClicked} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+								<Link size="15" />
+							</Button>
+							{$t('lists.details.link-to-list')}
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onShowMeAround} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+								<InformationCircle size="15" />
+							</Button>
+							{$t('lists.details.show-me-around')}
+						</div>
+					</DropdownItem>
+				</DotMenu>
+			{/if}
+
 			<!--			/Right menu-->
 		</div>
 	</DetailsTopBar>
@@ -709,22 +726,36 @@
 		<!--        /List-->
 		<!--		Add item button-->
 		<svelte:fragment slot="float">
-			<div class="md:hidden absolute bottom-8 right-8">
-				{#if !editedItem}
-					<Button class="!p-2" on:click={onAddToListClicked} color="blue">
-						<Plus />
-					</Button>
-				{/if}
-			</div>
+			{#if !isListReadOnly}
+				<div class="md:hidden absolute bottom-8 right-8">
+					{#if !editedItem}
+						<Button class="!p-2" on:click={onAddToListClicked} color="blue">
+							<Plus />
+						</Button>
+					{/if}
+				</div>
 
-			<div class="hidden md:block absolute top-8 right-8">
-				{#if !editedItem}
-					<Button class="!p-2" on:click={onAddToListClicked} color="blue">
-						<Plus />
-					</Button>
-				{/if}
-			</div>
+				<div class="hidden md:block absolute top-8 right-8">
+					{#if !editedItem}
+						<Button class="!p-2" on:click={onAddToListClicked} color="blue">
+							<Plus />
+						</Button>
+					{/if}
+				</div>
+			{/if}
 		</svelte:fragment>
+		<!--Add list to user's collection-->
+		{#if isListReadOnly}
+			<div
+				class="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-end z-20"
+				onmousedown="event.stopPropagation(); event.preventDefault()"
+			>
+				<div class="w-full flex justify-end py-4 px-4">
+					<Button>Add to my lists</Button>
+				</div>
+			</div>
+		{/if}
+		<!--EOF Add list to user's collection-->
 	</DetailsBody>
 </DetailsPage>
 <!--        Bottom input-->

@@ -13,16 +13,27 @@
 	import { get } from 'svelte/store';
 	import { t } from '../stores/app/translate';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { loadListItems } from '../stores/checklist-main-list/checklist-main-list-store';
+	import { auth } from '../stores/login/auth';
+	import { loadCategoryOptions } from '../stores/checklist-details/category-options';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
 	let isSetLocalePopupOpen = !get(AppSettingsStore.isLocaleSet);
 	const isLoginModalOpen = AuthStore.isLoginModalOpen;
-	const isSyncingData = AuthStore.isSyncingData;
+	const isResolved = AuthStore.isResolved;
 	const theme = AppSettingsStore.theme;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 	$: isNavigating = !!$navigating;
+
+	onMount(() => {
+		auth.subscribe(() => {
+			loadListItems(true);
+			loadCategoryOptions(true);
+		});
+	});
 
 	function onSuccessfulLogin() {
 		AuthStore.isLoginModalOpen.set(false);
@@ -39,7 +50,7 @@
 </script>
 
 <svelte:head>
-	<title>K-garoo - {$t('app.logo')}</title>
+	<title>Garoo - {$t('app.logo')}</title>
 </svelte:head>
 
 <!--Load tailwind colors-->
@@ -58,7 +69,7 @@
 
 <div class="fixed top-0 bottom-0 left-0 right-0 root {$theme}">
 	<div class="fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
-		{#if $isAppReloading || $isSyncingData || $navigating}
+		{#if $isAppReloading || $navigating}
 			<FullPageSpinner />
 		{/if}
 		<div class="top-toast-wrapper right-4 sm:right-6">

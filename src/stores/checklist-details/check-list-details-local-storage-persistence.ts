@@ -76,7 +76,7 @@ export class CheckListDetailsLocalStoragePersistence {
 	public async setHideCrossedOut(listId: string, isHide: boolean): Promise<void> {
 		const state = getState();
 		const settings = state.checklistSettings;
-		const byList = settings.byList || {};
+		const byList = settings?.byList || {};
 		const byCurrentList = (byList[listId] || {}) as ByListSettings;
 		setState({
 			...state,

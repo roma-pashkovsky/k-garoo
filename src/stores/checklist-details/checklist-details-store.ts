@@ -1,5 +1,4 @@
 import type {
-	ByListSettings,
 	CategoryOption,
 	CheckList,
 	CheckListItem,
@@ -13,13 +12,16 @@ import { CategoryOptionManager } from './category-option-manager';
 import { PropositionsManager } from './propositions-manager';
 import { FirebaseUtils } from '../../utils/firebase-utils';
 import { ChecklistDetailsDbPersistence } from './checklist-details-db-persistence';
-import type { Readable, Writable } from 'svelte/store';
+import type { Readable } from 'svelte/store';
 import { derived, get, writable } from 'svelte/store';
 import { AppSettingsStore } from '../app/app-settings';
 import { CategoryAutodetector } from './category-autodetector';
+import { getUID } from '../../utils/get-uid';
+import { addCategoryOption, categoryOptionsByUser } from './category-options';
+import { auth } from '../login/auth';
 
 export class ChecklistDetailsStore {
-	private static customCategoryOptions = writable<CategoryOption[]>([]);
+	private static customCategoryOptions = categoryOptionsByUser;
 	private static savedPropositions = writable<Proposition[]>([]);
 	public static propositions = derived(
 		[this.savedPropositions, AppSettingsStore.lang],
@@ -32,58 +34,30 @@ export class ChecklistDetailsStore {
 	private static isInit = false;
 	private static firebaseUtils = new FirebaseUtils();
 	private static persistence = new CheckListDetailsLocalStoragePersistence();
-	private static dbPersistence = new ChecklistDetailsDbPersistence();
+	private dbPersistence = new ChecklistDetailsDbPersistence();
 	public static async init(): Promise<void> {
 		if (!ChecklistDetailsStore.isInit) {
-			// custom category options
-			await this.setCategoryOptions();
-			this.dbPersistence.onDbAvailableChange(() => this.setCategoryOptions());
-
 			// propositions
 			const props = await this.persistence.getPropositions();
 			this.savedPropositions.set(props || []);
 			ChecklistDetailsStore.isInit = true;
 		}
 	}
-
-	private static async setCategoryOptions(): Promise<void> {
-		if (this.dbPersistence.isLoggedIn) {
-			const categoryOptionsDb = await this.dbPersistence.getCategoryOptions();
-			await this.persistence.setCategoryOptions(categoryOptionsDb || []);
-			this.customCategoryOptions.set(categoryOptionsDb);
-		} else {
-			const customCategoryOptions = await this.persistence.getCategoryOptions();
-			this.customCategoryOptions.set(customCategoryOptions);
-		}
-	}
 	public categoryOptions: Readable<CategoryOption[]>;
-	public checklist: Writable<CheckList | null> = writable();
-	public isAddedToUsersList: Writable<boolean> = writable(false);
+	private get isLoggedIn(): boolean {
+		return !!get(auth).user;
+	}
 
-	private authSubscriptionId: string;
-	private isLoggedIn = false;
-	private onAuthChangedFn: ((isLoggedIn: boolean) => Promise<void>) | undefined = undefined;
-
-	constructor(private listId: string, private locale: 'en' | 'ua') {
-		this.initList();
+	constructor(private checklist: CheckList, private locale: 'en' | 'ua') {
 		this.categoryOptions = derived(
-			[ChecklistDetailsStore.customCategoryOptions, this.checklist],
-			([$customOptions, $checklist]) => {
+			ChecklistDetailsStore.customCategoryOptions,
+			($customOptions) => {
 				const manager = new CategoryOptionManager(
 					$customOptions || [],
-					$checklist?.items || [],
+					checklist?.items || [],
 					this.locale
 				);
 				return manager.getCategoryOptions();
-			}
-		);
-		this.authSubscriptionId = ChecklistDetailsStore.firebaseUtils.subscribeOnAuthChanged(
-			async (user) => {
-				this.isLoggedIn = !!user;
-				if (this.onAuthChangedFn) {
-					this.onAuthChangedFn(this.isLoggedIn);
-				}
-				await this.initList();
 			}
 		);
 	}
@@ -94,88 +68,76 @@ export class ChecklistDetailsStore {
 		});
 	}
 
-	public onDestroy(): void {
-		ChecklistDetailsStore.firebaseUtils.unsubscribeOnAuthChanged(this.authSubscriptionId);
-	}
+	// private async initList(): Promise<void> {
+	// 	let isInUserCollection = false;
+	// 	let list: CheckList | null = null;
+	// 	if (!this.dbPersistence.isDbAvailable) {
+	// 		isInUserCollection = await ChecklistDetailsStore.persistence.isListAddedToUserCollection(
+	// 			this.listId
+	// 		);
+	// 		list = await ChecklistDetailsStore.persistence.getList(this.listId);
+	// 	} else if (!this.dbPersistence.isLoggedIn) {
+	// 		// db available
+	// 		isInUserCollection = await ChecklistDetailsStore.persistence.isListAddedToUserCollection(
+	// 			this.listId
+	// 		);
+	// 		list = await this.readListCacheFirst(this.listId);
+	// 	} else {
+	// 		// user logged in
+	// 		isInUserCollection = await this.dbPersistence.isListAddedToUserCollection(
+	// 			this.listId
+	// 		);
+	// 		if (isInUserCollection) {
+	// 			list = await this.readListComparingVersions(this.listId);
+	// 		} else {
+	// 			list = await this.readListCacheFirst(this.listId);
+	// 		}
+	// 		if (isInUserCollection && !!list) {
+	// 			await ChecklistDetailsStore.persistence.addListToUserCollection(
+	// 				this.listId,
+	// 				list.created_utc
+	// 			);
+	// 		}
+	// 	}
+	// 	this.isAddedToUsersList.set(isInUserCollection);
+	// 	this.checklist.set(list);
+	// }
 
-	private async initList(): Promise<void> {
-		let isInUserCollection = false;
-		let list: CheckList | null = null;
-		if (!ChecklistDetailsStore.dbPersistence.isDbAvailable) {
-			isInUserCollection = await ChecklistDetailsStore.persistence.isListAddedToUserCollection(
-				this.listId
-			);
-			list = await ChecklistDetailsStore.persistence.getList(this.listId);
-		} else if (!ChecklistDetailsStore.dbPersistence.isLoggedIn) {
-			// db available
-			isInUserCollection = await ChecklistDetailsStore.persistence.isListAddedToUserCollection(
-				this.listId
-			);
-			list = await this.readListCacheFirst(this.listId);
-		} else {
-			// user logged in
-			isInUserCollection = await ChecklistDetailsStore.dbPersistence.isListAddedToUserCollection(
-				this.listId
-			);
-			if (isInUserCollection) {
-				list = await this.readListComparingVersions(this.listId);
-			} else {
-				list = await this.readListCacheFirst(this.listId);
-			}
-			if (isInUserCollection && !!list) {
-				await ChecklistDetailsStore.persistence.addListToUserCollection(
-					this.listId,
-					list.created_utc
-				);
-			}
-		}
-		this.isAddedToUsersList.set(isInUserCollection);
-		this.checklist.set(list);
-	}
-
-	private async readListCacheFirst(listId: string): Promise<CheckList | null> {
-		let list = await ChecklistDetailsStore.persistence.getList(this.listId);
-		if (!list) {
-			list = await ChecklistDetailsStore.dbPersistence.getList(this.listId);
-			if (list) {
-				const { id, items, name, updated_utc } = list;
-				await ChecklistDetailsStore.persistence.saveListData(id, name, items, updated_utc);
-			}
-		}
-		return list;
-	}
-
-	public async readListComparingVersions(listId: string): Promise<CheckList | null> {
-		console.log('getting: ', listId);
-		const localVersion = await ChecklistDetailsStore.persistence.getListVersion(listId);
-		console.log('local version: ', localVersion);
-		const dbVersion = await ChecklistDetailsStore.dbPersistence.getListVersion(listId);
-		console.log('db version: ', dbVersion);
-		if ((localVersion || 0) >= (dbVersion || 0)) {
-			const local = await ChecklistDetailsStore.persistence.getList(listId);
-			console.log('local: ', local);
-			if (local) {
-				await ChecklistDetailsStore.dbPersistence.updateList(local);
-			}
-			return local;
-		} else {
-			const remote = await ChecklistDetailsStore.dbPersistence.getList(listId);
-			console.log('remote: ', remote);
-			if (remote) {
-				if (!localVersion) {
-					await ChecklistDetailsStore.persistence.createList(
-						remote.id,
-						remote.name,
-						remote.items,
-						remote.updated_utc
-					);
-					this.updatePropositionsWithItems(remote.items);
+	public async addListToMyCollection(list: CheckList): Promise<string | null> {
+		const ts = new Date().getTime();
+		if (list) {
+			if (this.dbPersistence.isDbAvailable && this.dbPersistence.isLoggedIn) {
+				const isSharedWithMe = !!list.sharedBy;
+				if (isSharedWithMe) {
+					await ChecklistDetailsStore.persistence.addListToUserCollection(list.id, ts);
+					await this.dbPersistence.addListToUserCollection(list.id, ts);
+					return list.id;
 				} else {
-					await ChecklistDetailsStore.persistence.updateList(remote);
+					const copy: CheckList = {
+						...list,
+						id: getUID(),
+						created_utc: ts,
+						updated_utc: ts
+					};
+					await ChecklistDetailsStore.persistence.addListToUserCollection(copy.id, ts);
+					await this.dbPersistence.addListToUserCollection(copy.id, ts);
+					await ChecklistDetailsStore.persistence.updateList(copy);
+					await this.dbPersistence.updateList(copy);
+					return copy.id;
 				}
+			} else {
+				const copy: CheckList = {
+					...list,
+					id: getUID(),
+					created_utc: ts,
+					updated_utc: ts
+				};
+				await ChecklistDetailsStore.persistence.addListToUserCollection(copy.id, ts);
+				await ChecklistDetailsStore.persistence.updateList(copy);
+				return copy.id;
 			}
-			return remote;
 		}
+		return null;
 	}
 
 	public async getChecklistSettings(): Promise<ChecklistSettings> {
@@ -194,8 +156,8 @@ export class ChecklistDetailsStore {
 		const ts = new Date().getTime();
 		const items = this.editModelsToChecklistItems(editItems);
 		await ChecklistDetailsStore.persistence.createList(id, name, items, ts);
-		if (this.isLoggedIn) {
-			await ChecklistDetailsStore.dbPersistence.upsertList(id, name, items, ts);
+		if (get(auth).user) {
+			await this.dbPersistence.upsertList(id, name, items, ts);
 		}
 		this.updatePropositionsWithItems(items);
 	}
@@ -204,7 +166,7 @@ export class ChecklistDetailsStore {
 		const ts = new Date().getTime();
 		await ChecklistDetailsStore.persistence.saveListName(id, name, ts);
 		if (this.isLoggedIn) {
-			await ChecklistDetailsStore.dbPersistence.saveListName(id, name, ts);
+			await this.dbPersistence.saveListName(id, name, ts);
 		}
 	}
 
@@ -214,7 +176,7 @@ export class ChecklistDetailsStore {
 		await ChecklistDetailsStore.persistence.upsertListItems(id, items, ts);
 		this.updatePropositionsWithItems(items);
 		if (this.isLoggedIn) {
-			await ChecklistDetailsStore.dbPersistence.upsertListItems(id, items, ts);
+			await this.dbPersistence.upsertListItems(id, items, ts);
 		}
 	}
 
@@ -222,7 +184,7 @@ export class ChecklistDetailsStore {
 		const ts = new Date().getTime();
 		await ChecklistDetailsStore.persistence.removeListItems(id, itemIds, ts);
 		if (this.isLoggedIn) {
-			await ChecklistDetailsStore.dbPersistence.removeListItems(id, itemIds, ts);
+			await this.dbPersistence.removeListItems(id, itemIds, ts);
 		}
 	}
 
@@ -231,16 +193,12 @@ export class ChecklistDetailsStore {
 		const items = this.editModelsToChecklistItems(editItems);
 		await ChecklistDetailsStore.persistence.setListItems(id, items, ts);
 		if (this.isLoggedIn) {
-			return ChecklistDetailsStore.dbPersistence.setListItems(id, items, ts);
+			return this.dbPersistence.setListItems(id, items, ts);
 		}
 	}
 
 	public async addCategoryOption(option: CategoryOption): Promise<void> {
-		await ChecklistDetailsStore.persistence.addCategoryOption(option);
-		if (this.isLoggedIn) {
-			await ChecklistDetailsStore.dbPersistence.addCategoryOption(option);
-		}
-		ChecklistDetailsStore.customCategoryOptions.update((prev) => [option, ...(prev || [])]);
+		return addCategoryOption(option);
 	}
 
 	public async updateByCategoryView(isByCategory: boolean): Promise<void> {

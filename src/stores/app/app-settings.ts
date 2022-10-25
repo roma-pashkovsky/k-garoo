@@ -13,15 +13,30 @@ export const locales = Object.keys(translations);
 
 const currentAppVersion = 1;
 
+export const appSettings = writable<AppSettings>({
+	isLocaleSet: true,
+	lang: 'en',
+	theme: 'light',
+	version: currentAppVersion
+});
+
+export const loadAppSettings = async (f = fetch): Promise<void> => {
+	const settingsResp = await f('/api/v1/settings', { method: 'GET' });
+	const settings = await settingsResp.json();
+	if (settings) {
+		appSettings.set(settings);
+	}
+};
+
+export const updateAppSettingsEndpoint = async (settings: AppSettings): Promise<void> => {
+	await fetch('/api/v1/settings', { method: 'POST', body: JSON.stringify(settings) });
+};
+
 export class AppSettingsStore {
-	private static appSettings = writable<AppSettings>(getInitialState().appSettings);
-	public static lang = derived(AppSettingsStore.appSettings, (settings) => settings?.lang);
-	public static theme = derived(AppSettingsStore.appSettings, (settings) => settings?.theme);
-	public static isLocaleSet = derived(
-		AppSettingsStore.appSettings,
-		(settings) => settings?.isLocaleSet
-	);
-	public static appVersion = derived(AppSettingsStore.appSettings, (settings) => settings?.version);
+	public static lang = derived(appSettings, (settings) => settings?.lang);
+	public static theme = derived(appSettings, (settings) => settings?.theme);
+	public static isLocaleSet = derived(appSettings, (settings) => settings?.isLocaleSet, true);
+	public static appVersion = derived(appSettings, (settings) => settings?.version);
 
 	private static isInit = false;
 
@@ -37,9 +52,8 @@ export class AppSettingsStore {
 			} else if (settings.version !== currentAppVersion) {
 				settings = await this.doForOldApp(settings);
 			}
-			this.appSettings.set(settings);
+			appSettings.set(settings);
 			setAppSettings(settings);
-			console.log(get(this.appSettings));
 			this.isInit = true;
 		}
 	}
@@ -62,24 +76,27 @@ export class AppSettingsStore {
 	}
 
 	public static async setLanguage(l: Language): Promise<void> {
-		this.appSettings.update((s) => {
+		appSettings.update((s) => {
 			return { ...(s || getInitialState().appSettings), lang: l };
 		});
-		setAppSettings(get(this.appSettings) as AppSettings);
+		setAppSettings(get(appSettings) as AppSettings);
+		await updateAppSettingsEndpoint(get(appSettings) as AppSettings);
 	}
 
 	public static async setTheme(t: Theme): Promise<void> {
-		this.appSettings.update((s) => {
+		appSettings.update((s) => {
 			return { ...(s || getInitialState().appSettings), theme: t };
 		});
-		setAppSettings(get(this.appSettings) as AppSettings);
+		setAppSettings(get(appSettings) as AppSettings);
+		await updateAppSettingsEndpoint(get(appSettings) as AppSettings);
 	}
 
 	public static async markIsLocaleSet(): Promise<void> {
-		this.appSettings.update((s) => {
+		appSettings.update((s) => {
 			return { ...(s as AppSettings), isLocaleSet: true };
 		});
-		setAppSettings(get(this.appSettings) as AppSettings);
+		setAppSettings(get(appSettings) as AppSettings);
+		await updateAppSettingsEndpoint(get(appSettings) as AppSettings);
 	}
 }
 

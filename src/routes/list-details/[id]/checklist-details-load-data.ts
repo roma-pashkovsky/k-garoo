@@ -1,8 +1,7 @@
-import type { ChecklistSettings } from '../../../types';
-import type { ChecklistDetailsStore } from '../../../stores/checklist-details/checklist-details-store';
+import type { CheckList, ChecklistSettings } from '../../../types';
 
 export interface ChecklistDetailsLoadData {
 	listId: string;
-	checklistSettings: ChecklistSettings;
-	store: ChecklistDetailsStore;
+	checklistSettings?: ChecklistSettings;
+	list: CheckList | null;
 }

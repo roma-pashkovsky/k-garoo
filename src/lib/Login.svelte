@@ -15,7 +15,7 @@
 			await authStore.loginFacebook();
 			dispatch('success');
 		} catch (err) {
-			processError('Failed to login with facebook', err);
+			processError('Failed to session with facebook', err);
 		} finally {
 			isLoading = false;
 		}

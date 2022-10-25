@@ -1,9 +1,13 @@
+import type { AppUser } from './auth';
+
 export type CheckList = {
 	id: string;
 	created_utc: number;
 	updated_utc: number;
 	name: string;
 	items: CheckListItem[];
+	isMyList?: boolean;
+	sharedBy?: AppUser;
 };
 export type CheckListItem = {
 	id: string;

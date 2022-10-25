@@ -35,7 +35,7 @@
 </script>
 
 <svelte:head>
-	<title>K-garoo - {$t('app.sections.settings')}</title>
+	<title>Garoo - {$t('app.sections.settings')}</title>
 </svelte:head>
 
 <Page>

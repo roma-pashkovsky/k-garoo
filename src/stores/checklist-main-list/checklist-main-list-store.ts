@@ -1,37 +1,36 @@
 import { get, writable } from 'svelte/store';
 import { ChecklistMainListDbPersistence } from './checklist-main-list-db-persistence';
 import { ChecklistMainListLocalStoragePersistence } from './checklist-main-list-local-storage-persistence';
-import { setListIds } from '../../utils/local-storage-state';
-import { AuthStore } from '../login/auth.store';
+import { getListIds } from '../../utils/local-storage-state';
 import type { PersistedList } from '../../types';
 import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-ids-from-persisted-list';
+import { auth } from '../login/auth';
+
+export const items = writable<string[]>([]);
+
+export const loadListItems = async (browser: boolean, f = fetch): Promise<void> => {
+	let list: PersistedList | null;
+	const user = get(auth).user;
+	if (user) {
+		const listIdsResp = await f(`/api/v1/lists`);
+		list = await listIdsResp.json();
+	} else {
+		if (browser) {
+			list = getListIds();
+		} else {
+			list = null;
+		}
+	}
+	if (list) {
+		items.set(getSortedListIdsFromPersistedList(list));
+	}
+};
 
 export class ChecklistMainListStore {
-	public static items = writable<string[]>([]);
+	public static items = items;
 
 	private localPersistence = new ChecklistMainListLocalStoragePersistence();
 	private dbPersistence = new ChecklistMainListDbPersistence();
-
-	public async init(): Promise<void> {
-		const local = await this.localPersistence.getList();
-		ChecklistMainListStore.items.set(getSortedListIdsFromPersistedList(local));
-		this.dbPersistence.onDbAvailableChange(async () => {
-			// this callback should fire after other auth callbacks,
-			// so that we wait until the data is synced
-			setTimeout(async () => {
-				if (!get(AuthStore.isSyncingData)) {
-					await this.setItems();
-				} else {
-					const unsub = AuthStore.isSyncingData.subscribe((isSyncing) => {
-						if (!isSyncing) {
-							this.setItems();
-							unsub();
-						}
-					});
-				}
-			}, 200);
-		});
-	}
 
 	public destroy() {
 		this.dbPersistence.destroy();
@@ -45,21 +44,5 @@ export class ChecklistMainListStore {
 		if (this.dbPersistence.isLoggedIn) {
 			await this.dbPersistence.removeList(listId);
 		}
-	}
-
-	private async setItems(): Promise<void> {
-		if (this.dbPersistence.isLoggedIn) {
-			const items = await this.dbPersistence.getList();
-			ChecklistMainListStore.items.set(getSortedListIdsFromPersistedList(items));
-			this.updateLocalStoreWithRemoteItems(items);
-		} else {
-			const items = await this.localPersistence.getList();
-			console.log('local items: ', items);
-			ChecklistMainListStore.items.set(getSortedListIdsFromPersistedList(items));
-		}
-	}
-
-	private updateLocalStoreWithRemoteItems(list: PersistedList): void {
-		setListIds(list);
 	}
 }

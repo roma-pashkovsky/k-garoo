@@ -12,6 +12,7 @@ export class CategoryOptionManager {
 		const optionsMap: { [s: string]: CategoryOption } = {};
 		(this.listItems || [])
 			.map((it) => it.category)
+			.filter((c) => !!c.name)
 			.forEach((c) => (optionsMap[c.name.toLowerCase()] = c));
 		const reserved = Object.keys(reservedCategories).map((catKey) => {
 			return {
@@ -20,12 +21,14 @@ export class CategoryOptionManager {
 				name: reservedCategories[catKey][this.locale]
 			};
 		});
-		[...(this.categoryOptions || []), ...reserved].forEach((c) => {
-			const n = c.name.toLowerCase();
-			if (!optionsMap[n]) {
-				optionsMap[n] = c;
-			}
-		});
+		[...(this.categoryOptions || []), ...reserved]
+			.filter((c) => !!c.name)
+			.forEach((c) => {
+				const n = c.name.toLowerCase();
+				if (!optionsMap[n]) {
+					optionsMap[n] = c;
+				}
+			});
 		const res = Object.values(optionsMap);
 		this.sortCategories(res);
 		return res;

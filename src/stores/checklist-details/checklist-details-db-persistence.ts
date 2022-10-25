@@ -23,6 +23,10 @@ export class ChecklistDetailsDbPersistence extends BaseDbPersistence {
 		return this.firebaseUtils.exists(`listsByUsers/${this.userId}/${listId}`);
 	}
 
+	public isListSharedWithUser(listId: string): Promise<boolean> {
+		throw new Error('Not implemented');
+	}
+
 	public async addListToUserCollection(listId: string, ts: number): Promise<void> {
 		const listsByUsersPath = `listsByUsers/${this.userId}/${listId}`;
 		await this.firebaseUtils.set([{ path: listsByUsersPath, value: { updated_ts: ts } }]);

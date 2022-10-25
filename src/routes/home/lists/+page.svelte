@@ -1,22 +1,21 @@
 <script lang="ts">
-	import { Plus } from 'svelte-heros';
 	import { goto } from '$app/navigation';
 	import type { CheckList } from '../../../types';
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
-	import Page from '../../../lib/Page.svelte';
 	import { getDecodeLinkToList } from '../../../utils/get-decode-link-to-list';
 	import { ToastService } from '../../../utils/toasts';
-	import { getUID } from '../../../utils/get-uid';
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
 	import { ChecklistMainListStore } from '../../../stores/checklist-main-list/checklist-main-list-store';
 	import { onDestroy } from 'svelte';
-	import { doubleTap } from '../../../utils/double-tap';
 	import { t } from '../../../stores/app/translate';
 	import { get } from 'svelte/store';
+	import { getUID } from '../../../utils/get-uid';
+	import Page from '../../../lib/Page.svelte';
+	import { Plus } from 'svelte-heros-v2';
+	import { doubleTap } from '../../../utils/double-tap';
 
 	const toastManager = ToastService.getInstance();
-	export let data;
-	const store: ChecklistMainListStore = data.store;
+	const store: ChecklistMainListStore = new ChecklistMainListStore();
 	const items = ChecklistMainListStore.items;
 
 	onDestroy(() => {
@@ -46,18 +45,18 @@
 		}
 	}
 
-	export function onCardClicked(id: string): void {
+	function onCardClicked(id: string): void {
 		goto(`/list-details/${id}`);
 	}
 
-	export function onAddButtonClicked(): void {
-		const listId = getUID();
-		goto(`/list-details/${listId}`);
+	function onAddButtonClicked() {
+		const id = getUID();
+		goto(`/list-details/${id}`);
 	}
 </script>
 
 <svelte:head>
-	<title>K-garoo - {$t('app.my_lists')}</title>
+	<title>Garoo - {$t('app.my_lists')}</title>
 </svelte:head>
 
 <div class="hidden md:block absolute top-8 right-8 z-10">
@@ -76,6 +75,7 @@
 		><Plus class="w-7 h-7" /></button
 	>
 </div>
+
 <Page>
 	<div class="flex items-start justify-center">
 		{#if !$items?.length}

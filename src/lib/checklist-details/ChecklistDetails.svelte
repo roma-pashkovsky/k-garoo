@@ -9,7 +9,7 @@
 	import DotMenu from '../DotMenu.svelte';
 	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
 	import { EyeOff } from 'svelte-heros';
-	import { Button, DropdownItem } from 'flowbite-svelte';
+	import { Badge, Button, Drawer, DropdownItem } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
@@ -36,23 +36,29 @@
 	import { getDecodeLinkToList } from '../../utils/get-decode-link-to-list';
 	import { darkEquivalents, pickColorForACategory } from '../../utils/category-colors';
 	import ColorSelector from '../ColorSelector.svelte';
-	import Palette from '../Palette.svelte';
 	import type { Readable, Writable } from 'svelte/store';
 	import { derived, get, writable } from 'svelte/store';
 	import { t } from '../../stores/app/translate';
 	import { p } from '../../stores/app/plurals';
 	import { getDefaultListName } from '../../utils/get-default-list-name';
+	import ShareList from './ShareList.svelte';
+	import { sineIn } from 'svelte/easing';
+	import { AuthStore } from '../../stores/login/auth.store';
+	import { AppSettingsStore } from '../../stores/app/app-settings';
 
 	export let listId: string;
-	export let store: ChecklistDetailsStore;
+	export let list: CheckList | null;
 	export let checklistSettings: ChecklistSettings;
 	export let propositions: Readable<Proposition[]>;
 
 	let categoryAutodetector: Readable<CategoryAutodetector>;
 	let toastManager: ToastManagerType = ToastService.getInstance();
-	let listName: string = getDefaultListName();
-	let items: CheckListItemEditModel[] = [];
+	let listName: string = list ? list.name : getDefaultListName();
+	let items: CheckListItemEditModel[] = list?.items
+		? list.items.map((it) => ({ ...it, selected: false, isEdited: false }))
+		: [];
 	let categoryOptions: Readable<CategoryOption[]>;
+	let store: ChecklistDetailsStore;
 
 	let isByCategoryView = false;
 	let isCheckboxView = false;
@@ -69,19 +75,26 @@
 	let previousItems: CheckListItemEditModel[];
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
-	let shouldCreateNewList = false;
-	let isAddedToUsersCollection: Writable<boolean>;
+	let shouldCreateNewList = !list;
+	// share drawer
+	let transitionParams = {
+		x: 320,
+		duration: 200,
+		easing: sineIn
+	};
+	let shareDrawerHidden = true;
+	let isShareEnabled = AuthStore.isLoggedIn;
 	const darkBG = darkEquivalents;
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: selectCategoryOptions = ($categoryOptions || []).map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: isAnyItemSelected = items.some((it) => it.selected);
-	$: isListReadOnly = !shouldCreateNewList && !$isAddedToUsersCollection;
+	$: isListReadOnly = !shouldCreateNewList && !list?.isMyList;
 	let propositionsFuzzySearch: Readable<FuzzySearch<Proposition>>;
 
 	onMount(() => {
+		store = new ChecklistDetailsStore(list, get(AppSettingsStore.lang));
 		isByCategoryView = checklistSettings?.isGroupByCategory || false;
-		isColorsForCategories = checklistSettings?.isColorsForCategories || false;
 		isFirstTimeUse = !checklistSettings?.hasSeenDemo;
 		isHideCrossedOut =
 			checklistSettings?.byList && checklistSettings.byList[listId]
@@ -90,21 +103,24 @@
 		categoryOptions = store.categoryOptions;
 		propositions = ChecklistDetailsStore.propositions;
 		categoryAutodetector = store.getCategoryAutoDetector();
-		setDataFromList(get(store.checklist));
+		setDataFromList(list);
 		propositionsFuzzySearch = derived(
 			[ChecklistDetailsStore.propositions, propositionsFuzzySearchTS],
 			([props, ts]) => getPropositionsFuzzySearch(props)
 		);
-		isAddedToUsersCollection = store.isAddedToUsersList;
 		checkListForDuplicates();
-		store.checklist.subscribe((list) => {
-			setDataFromList(list);
-		});
 	});
+
+	async function onAddListToMyCollectionClicked(): Promise<void> {
+		const id = await store.addListToMyCollection(list);
+		await goto(`/list-details/${id}`);
+		setTimeout(() => {
+			location.reload();
+		});
+	}
 
 	onDestroy(() => {
 		if (store) {
-			store.onDestroy();
 			store.setHasSeenDemo();
 		}
 		toastManager.clear();
@@ -174,27 +190,28 @@
 		store.updateByCategoryView(isByCategoryView);
 	}
 
-	function onToggleColorsForCategories(): void {
-		isColorsForCategories = !isColorsForCategories;
-		store.updateColorsForCategoriesView(isColorsForCategories);
-	}
-
 	async function onGenerateListLinkClicked(): Promise<void> {
-		const url = getDecodeLinkToList({
-			id: listId,
-			name: listName,
-			items: items.map((s, i) => {
-				return {
-					id: s.id,
-					itemDescription: s.itemDescription,
-					category: s.category,
-					checked: s.checked,
-					orderAdded: i
-				};
-			}),
-			created_utc: new Date().getTime(),
-			updated_utc: new Date().getTime()
-		});
+		let url: string;
+		if (get(AuthStore.isLoggedIn)) {
+			url = window.origin + '/list-details' + `/${listId}`;
+		} else {
+			url = getDecodeLinkToList({
+				id: listId,
+				name: listName,
+				items: items.map((s, i) => {
+					return {
+						id: s.id,
+						itemDescription: s.itemDescription,
+						category: s.category,
+						checked: s.checked,
+						orderAdded: i
+					};
+				}),
+				created_utc: new Date().getTime(),
+				updated_utc: new Date().getTime()
+			});
+		}
+
 		try {
 			await navigator.clipboard.writeText(url);
 			toastManager.push({
@@ -209,6 +226,10 @@
 				closePrevious: false
 			});
 		}
+	}
+
+	function onShareClicked(): void {
+		shareDrawerHidden = false;
 	}
 
 	function onShowMeAround() {
@@ -615,17 +636,24 @@
 						</div>
 					</DropdownItem>
 					<DropdownItem>
-						<div on:click={onToggleColorsForCategories} class="w-full flex items-center">
-							<Button class="!p-1.5 mr-2 w-7 h-7" color={isColorsForCategories ? 'blue' : 'light'}>
-								<div class="block dark:hidden">
-									<Palette color={isColorsForCategories ? 'white' : 'black'} />
-								</div>
-								<div class="hidden dark:block">
-									<Palette color="white" />
-								</div>
-							</Button>
-							<div class="whitespace-nowrap">{$t('lists.details.colors-for-categories')}</div>
-						</div>
+						{#if $isShareEnabled}
+							<div on:click={onShareClicked} class="w-full flex items-center">
+								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+									<Link size="15" />
+								</Button>
+								{$t('lists.details.share-list')}
+							</div>
+						{:else}
+							<div class="w-full flex items-center">
+								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+									<Link size="15" />
+								</Button>
+								{$t('lists.details.share-list')}
+								<Badge color="purple" class="ml-2">
+									{$t('lists.details.share-list-login')}
+								</Badge>
+							</div>
+						{/if}
 					</DropdownItem>
 					<DropdownItem>
 						<div on:click={onGenerateListLinkClicked} class="w-full flex items-center">
@@ -659,13 +687,13 @@
 			<!--			By category view-->
 			{#each byCategoryList as catItem, catIndex}
 				<div
-					class="relative rounded-md  bg-{isColorsForCategories && catItem.category.color
+					class="relative rounded-md  bg-{catItem.category.color
 						? catItem.category.color
 						: 'transparent'} dark:!bg-transparent {catIndex === 0 ? '' : 'mt-6'}"
 				>
 					<div
-						class="absolute top-0 bottom-0 left-0 right-0 hidden dark:block rounded-md -z-10 bg-{isColorsForCategories &&
-						catItem.category.color
+						class="absolute top-0 bottom-0 left-0 right-0 hidden dark:block rounded-md -z-10 bg-{catItem
+							.category.color
 							? darkBG[catItem.category.color]
 							: 'transparent'}"
 					/>
@@ -743,19 +771,21 @@
 					{/if}
 				</div>
 			{/if}
-		</svelte:fragment>
-		<!--Add list to user's collection-->
-		{#if isListReadOnly}
-			<div
-				class="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-end z-20"
-				onmousedown="event.stopPropagation(); event.preventDefault()"
-			>
-				<div class="w-full flex justify-end py-4 px-4">
-					<Button>Add to my lists</Button>
+			<!--Add list to user's collection-->
+			{#if isListReadOnly}
+				<div
+					class="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-end z-20"
+					onmousedown="event.stopPropagation(); event.preventDefault()"
+				>
+					<div class="w-full flex justify-end py-4 px-4">
+						<Button on:click={onAddListToMyCollectionClicked}
+							>{$t('lists.details.add-to-my-lists-button')}</Button
+						>
+					</div>
 				</div>
-			</div>
-		{/if}
-		<!--EOF Add list to user's collection-->
+			{/if}
+			<!--EOF Add list to user's collection-->
+		</svelte:fragment>
 	</DetailsBody>
 </DetailsPage>
 <!--        Bottom input-->
@@ -791,6 +821,19 @@
 	</BottomMenu>
 {/if}
 <!--		/Batch editing input-->
+
+<!--List Share-->
+<Drawer
+	transitionType="fly"
+	{transitionParams}
+	bind:hidden={shareDrawerHidden}
+	position="fixed"
+	placement="right"
+	class="w-80"
+	id="share-drawer"
+>
+	<ShareList {listId} on:close={() => (shareDrawerHidden = true)} />
+</Drawer>
 
 <ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />
 <ChecklistDetailsDemoBody

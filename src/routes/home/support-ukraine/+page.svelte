@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>K-garoo - {$t('app.sections.support-ua')}</title>
+	<title>Garoo - {$t('app.sections.support-ua')}</title>
 </svelte:head>
 
 <Page>

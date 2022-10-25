@@ -7,15 +7,20 @@
 	import { DocumentRemove } from 'svelte-heros';
 	import { Link } from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
+	import ListCardPreview from '../ListCardPreview.svelte';
+	import type { CheckList } from '../../types';
+	import { writable } from 'svelte/store';
+	import { getList } from '../../stores/checklist-details/checklist-details-data';
 
 	export let listId: string;
 
 	const dispatch = createEventDispatcher();
 	const store = new ChecklistMainListItemStore();
-	const card = store.checklist;
+	let card = writable<CheckList | null>(null);
 
-	onMount(() => {
-		store.init(listId);
+	onMount(async () => {
+		const list = await getList(listId, true);
+		card.set(list);
 	});
 
 	function onListRemove(id: string) {
@@ -66,40 +71,10 @@
 			>
 				{$card.name}
 			</h5>
-			<div class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
-				<ul>
-					{#if $card.items?.length}
-						<div>
-							<li
-								class="mb-1 whitespace-nowrap overflow-hidden text-ellipsis w-56 sm:w-64 {$card
-									.items[0]?.checked
-									? 'checked'
-									: ''}"
-							>
-								{$card.items[0].itemDescription}
-							</li>
-						</div>
-					{/if}
-					{#if $card.items?.length > 1}
-						<li
-							class="whitespace-nowrap overflow-hidden text-ellipsis w-56 sm:w-64 {$card.items[1]
-								?.checked
-								? 'checked'
-								: ''}"
-						>
-							{$card.items[1].itemDescription}
-						</li>
-					{/if}
-				</ul>
-			</div>
+			<ListCardPreview list={$card} />
 		{/if}
 	</Card>
 </div>
 
 <style>
-	.checked {
-		position: relative;
-		display: inline-block;
-		text-decoration: line-through;
-	}
 </style>

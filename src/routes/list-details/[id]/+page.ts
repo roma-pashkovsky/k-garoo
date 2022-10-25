@@ -1,21 +1,24 @@
 import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
 import type { LoadEvent } from '@sveltejs/kit';
-import { get } from 'svelte/store';
 import { browser } from '$app/environment';
-import { ChecklistDetailsStore } from '../../../stores/checklist-details/checklist-details-store';
-import { AppSettingsStore } from '../../../stores/app/app-settings';
+import { getList } from '../../../stores/checklist-details/checklist-details-data';
+import { getState } from '../../../utils/local-storage-state';
+import { loadUserFromSession } from '../../../stores/login/auth';
 
 export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData | undefined> {
 	const listId: string = event.params.id as string;
+	await loadUserFromSession(event.fetch);
+	const list = await getList(listId, browser, event.fetch);
 	if (browser) {
-		ChecklistDetailsStore.init();
-		const l: 'en' | 'ua' = get(AppSettingsStore.lang) as 'en' | 'ua';
-		const store = new ChecklistDetailsStore(listId, l);
-		const checklistSettings = await store.getChecklistSettings();
 		return {
 			listId,
-			store,
-			checklistSettings
+			list,
+			checklistSettings: getState().checklistSettings
+		};
+	} else {
+		return {
+			listId,
+			list
 		};
 	}
 }

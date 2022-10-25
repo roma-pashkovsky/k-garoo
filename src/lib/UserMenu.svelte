@@ -1,13 +1,23 @@
 <script lang="ts">
-	import { Avatar, Button, Chevron, Dropdown, DropdownHeader, DropdownItem } from 'flowbite-svelte';
+	import { Avatar, Badge, Dropdown, DropdownHeader, DropdownItem } from 'flowbite-svelte';
 	import { t } from '../stores/app/translate';
 	import { AuthStore } from '../stores/login/auth.store';
 	import { get } from 'svelte/store';
 	import { getRandomElementId } from '../utils/get-random-element-id';
+	import { sharedListCount } from '../stores/my-shared-lists/my-shared-list.store';
+	import { goto } from '$app/navigation';
 
 	const authStore = new AuthStore();
 	const user = AuthStore.user;
 	const id = getRandomElementId(8);
+
+	function onGoToRequests(): void {
+		goto('/home/requests');
+	}
+
+	function onGoToStopList(): void {
+		goto('/home/stop-list');
+	}
 
 	function onLogOutClicked(): void {
 		if (confirm(get(t)('app.basic-confirm'))) {
@@ -22,6 +32,13 @@
 		<DropdownHeader>
 			<span class="block text-sm">{$user.displayName}</span>
 		</DropdownHeader>
+		<DropdownItem on:click={onGoToRequests}
+			>{$t('share-list.requests.title')}
+			{#if $sharedListCount}
+				<Badge>{$sharedListCount}</Badge>
+			{/if}
+		</DropdownItem>
+		<DropdownItem on:click={onGoToStopList}>{$t('stop-list.page.title')}</DropdownItem>
 		<DropdownItem on:click={onLogOutClicked}>{$t('app.user-menu.logout')}</DropdownItem>
 	</Dropdown>
 {/if}

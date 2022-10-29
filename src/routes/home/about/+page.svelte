@@ -57,9 +57,8 @@
 				</P>
 				<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">
 					Налаштування сервера передбачають, що <strong
-						>будь-хто, маючи посилання на Ваш список, може читати і змінювати його</strong
-					>. Тож не варто включати в списки конфіденціну інформацію, і розміщувати посилання у
-					відкритому доступі.
+						>будь-хто, маючи посилання на Ваш список, може читати його</strong
+					>. Тож не варто включати в списки конфіденціну інформацію.
 				</P>
 			{/if}
 			{#if $l === 'en'}
@@ -79,9 +78,8 @@
 				</P>
 				<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">
 					Server settings are such that <strong
-						>anyone having a link to your list can read and change it</strong
-					>. So you shouldn't rely on the list to store your sensitive information. You also
-					shouldn't publish the links to your lists for general public.
+						>anyone having a link to your list can read it</strong
+					>. So you shouldn't rely on the list to store your sensitive information.
 				</P>
 			{/if}
 		</div>

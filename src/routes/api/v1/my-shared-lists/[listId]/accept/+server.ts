@@ -5,8 +5,11 @@ import { getTimestamp, setAdmin } from '../../../../../../utils/api/firebase-adm
 import {
 	listByMePath,
 	listSharedWithMePath,
+	userByListPath,
 	userBySharedListPath
 } from '../../../../../../utils/api/db-paths';
+import type { UsersByList } from '../../../../../../types/fb-database';
+import { UserByListStatus } from '../../../../../../types';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -29,6 +32,13 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 			{
 				path: userBySharedListPath(listId, user.uid),
 				value: null
+			},
+			{
+				path: userByListPath(listId, user.uid),
+				value: {
+					utc: getTimestamp(),
+					status: UserByListStatus.PARTICIPANT
+				} as UsersByList[string]
 			}
 		]);
 		return ok();

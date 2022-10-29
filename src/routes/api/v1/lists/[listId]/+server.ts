@@ -1,20 +1,31 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import type { CheckList, CheckListItem } from '../../../../../types';
-import type { CreateListRequest } from '../../../../../utils/api/client/create-update-list';
-import type { UpdateListRequest } from '../../../../../utils/api/client/create-update-list';
-import type { FirebaseSetItem } from '../../../../../types/firebase-utils';
 import { json } from '@sveltejs/kit';
-import { invalidAuth, serverError } from '../../../../../utils/api/responses';
-import { existsAdmin, getTimestamp, setAdmin } from '../../../../../utils/api/firebase-admin-utils';
+import type { CheckList, CheckListItem } from '../../../../../types';
+import { UserByListStatus } from '../../../../../types';
+import type {
+	CreateListRequest,
+	UpdateListRequest
+} from '../../../../../utils/api/client/create-update-list';
+import type { FirebaseSetItem } from '../../../../../types/firebase-utils';
+import { badRequest, invalidAuth, ok, serverError } from '../../../../../utils/api/responses';
+import {
+	existsAdmin,
+	getTimestamp,
+	readOnceAdmin,
+	setAdmin
+} from '../../../../../utils/api/firebase-admin-utils';
 import {
 	listByMePath,
 	listItemPropertyPath,
 	listPath,
-	listPropertyPath
+	listPropertyPath,
+	userByListPath
 } from '../../../../../utils/api/db-paths';
 import { getUserFromRequest } from '../../../../../utils/api/get-user-from-request';
 import { arrayToMap } from '../../../../../utils/array-to-map';
-import { getChecklistByUser } from '../../../../../utils/api/get-checklist-by-user';
+import { getChecklistByUserThroughCache } from '../../../../../utils/api/get-checklist-by-user-through-cache';
+import type { UsersByList } from '../../../../../types/fb-database';
+import { redisSet } from '../../../../../utils/api/redis';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -24,14 +35,10 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 	const listId: string = params.listId as string;
 	const list: CreateListRequest = await request.json();
 	if (!list?.items?.length) {
-		return new Response(JSON.stringify({ error: 'List should have at least one item' }), {
-			status: 401
-		});
+		return badRequest('List should have at least one item');
 	}
 	if (!list.id || list.id !== listId) {
-		return new Response(JSON.stringify({ error: 'Incorrect list id' }), {
-			status: 401
-		});
+		return badRequest('Incorrect list id');
 	}
 	try {
 		const exists = await existsAdmin(listPath(listId));
@@ -39,12 +46,22 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 			return new Response(JSON.stringify({ error: 'List already exists' }), { status: 401 });
 		} else {
 			const itemsMap = arrayToMap<CheckListItem>(list.items || [], 'id');
-			const target = { ...list, items: itemsMap };
+			const target = {
+				...list,
+				items: itemsMap,
+				createdById: user.uid,
+				created_utc: getTimestamp(),
+				updated_utc: getTimestamp()
+			};
 			await setAdmin([
 				{ path: listByMePath(user.uid, listId), value: { updated_ts: getTimestamp() } },
-				{ path: listPath(listId), value: target }
+				{ path: listPath(listId), value: target },
+				{
+					path: userByListPath(listId, user.uid),
+					value: { utc: getTimestamp(), status: UserByListStatus.AUTHOR } as UsersByList[string]
+				}
 			]);
-			const result = await getChecklistByUser(listId, user.uid);
+			const result = await getChecklistByUserThroughCache(listId, user.uid);
 			return json(result);
 		}
 	} catch (err) {
@@ -69,6 +86,8 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 	const listId: string = params.listId as string;
 	try {
 		const isMyList = await existsAdmin(listByMePath(user.uid, listId));
+		const createdBy = await readOnceAdmin<string>(listPropertyPath(listId, 'createdById'));
+		const isCreatedByMe = user.uid === createdBy;
 		if (!isMyList) {
 			return new Response(JSON.stringify({ error: 'Not your list' }), { status: 401 });
 		}
@@ -78,7 +97,7 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 			const castKey = updateKey as keyof UpdateListRequest;
 			if (updateKey === 'items') {
 				const itemsUpdate = editRequest[castKey] as UpdateListRequest['items'];
-				if (itemsUpdate.added) {
+				if (itemsUpdate?.added) {
 					itemsUpdate.added.forEach((addedItem) => {
 						updates.push({
 							path: `${listPropertyPath(listId, 'items')}/${addedItem.id}`,
@@ -86,9 +105,11 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 						});
 					});
 				}
-				if (itemsUpdate.updated) {
+				if (itemsUpdate?.updated) {
 					Object.keys(itemsUpdate.updated).forEach((updatedItemId) => {
-						const updatedItem = itemsUpdate.updated[updatedItemId] as Partial<CheckListItem>;
+						const updatedItem = (itemsUpdate.updated as any)[
+							updatedItemId
+						] as Partial<CheckListItem>;
 						Object.keys(updatedItem)
 							.filter((prop) => !!allowedItemUpdates[prop as keyof CheckListItem])
 							.forEach((updatedItemProp) => {
@@ -103,7 +124,7 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 							});
 					});
 				}
-				if (itemsUpdate.removed) {
+				if (itemsUpdate?.removed) {
 					itemsUpdate.removed.forEach((removedId) => {
 						updates.push({
 							path: `${listPath(listId)}/items/${removedId}`,
@@ -111,6 +132,11 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 						});
 					});
 				}
+			} else if (castKey === 'isGroupByCategory' && isCreatedByMe) {
+				updates.push({
+					path: listPropertyPath(listId, 'isGroupByCategory'),
+					value: editRequest[castKey]
+				});
 			} else if (allowedUpdates[castKey]) {
 				updates.push({
 					path: listPropertyPath(listId, updateKey as keyof CheckList),
@@ -119,7 +145,8 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 			}
 		}); // eof Object.keys
 		await setAdmin(updates);
-		const result = await getChecklistByUser(listId, user.uid);
+		await redisSet(listId, null);
+		const result = await getChecklistByUserThroughCache(listId, user.uid);
 		return json(result);
 	} catch (err) {
 		return serverError();
@@ -130,8 +157,26 @@ export const GET: RequestHandler = async ({ request, params }): Promise<Response
 	const listId: string = params.listId as string;
 	const user = await getUserFromRequest(request);
 	try {
-		const result = await getChecklistByUser(listId, user?.uid);
+		const result = await getChecklistByUserThroughCache(listId, user?.uid);
 		return json(result);
+	} catch (err) {
+		console.log(err);
+		return serverError();
+	}
+};
+
+export const DELETE: RequestHandler = async ({ request, params }): Promise<Response> => {
+	const user = await getUserFromRequest(request);
+	if (!user) {
+		return invalidAuth();
+	}
+	const listId: string = params.listId as string;
+	try {
+		await setAdmin([
+			{ path: listByMePath(user.uid, listId), value: null },
+			{ path: userByListPath(listId, user.uid), value: null }
+		]);
+		return ok();
 	} catch (err) {
 		return serverError();
 	}

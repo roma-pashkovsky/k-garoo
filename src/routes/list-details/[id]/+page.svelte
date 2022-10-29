@@ -3,11 +3,15 @@
 	import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
 	import { getDefaultListName } from '../../../utils/get-default-list-name';
 	import type { CheckList } from '../../../types';
+	import { derived } from 'svelte/store';
+	import { listDataStore } from '../../../stores/checklist-details/checklist-details-data';
 
 	export let data: ChecklistDetailsLoadData;
 
 	let listName = data.list?.name || getDefaultListName();
+	let list = derived(listDataStore, (listData) => listData[data.listId]);
 	let description = getDescription(data.list);
+	const url = 'https://k-garoo.fun/list-details/' + data.listId;
 
 	function getDescription(list: CheckList): string {
 		if (!list) {
@@ -27,10 +31,15 @@
 
 <svelte:head>
 	<title>Garoo - {listName}</title>
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content={url} />
 	<meta property="og:site_name" content="Garoo" />
 	<meta property="og:description" content={description} />
 	<meta property="og:title" content={listName} />
-	<meta property="og:image" content="https://www.garoo.fun/logo-blue.png" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:description" content={description} />
+	<meta name="twitter:site" content="@business" />
+	<meta name="twitter:title" content={listName} />
 </svelte:head>
 
 <ChecklistDetails

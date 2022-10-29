@@ -2,12 +2,12 @@ import type { CheckList, CheckListItem } from '../../../types';
 
 export type CreateListRequest = Partial<CheckList>;
 
-export type UpdateListRequest = Partial<CheckList> & {
-	items: {
+export type UpdateListRequest = Partial<Omit<CheckList, 'items'>> & {
+	items?: {
 		added?: CheckListItem[];
-		updated: {
+		updated?: {
 			[itemId: string]: Partial<CheckListItem>;
 		};
-		removed: string[];
+		removed?: string[];
 	};
 };

@@ -11,10 +11,18 @@ export class AuthStore {
 	public static user = derived(auth, (auth) => auth.user);
 	public static isLoggedIn = derived(this.user, (user) => !!user);
 
-	public async loginFacebook(): Promise<any> {
+	public static loginClickEvents = writable<number | null>(null);
+
+	public static triggerLoginClicked(): void {
+		this.loginClickEvents.set(new Date().getTime());
+	}
+
+	public async loginFacebook(sync: boolean): Promise<any> {
 		const user = await AuthStore.firebaseUtils.signInWithFacebook();
 		auth.set({ isResolved: true, user });
-		await new SyncStore().syncLocalDataToDb();
+		if (sync) {
+			await new SyncStore().syncLocalDataToDb();
+		}
 	}
 
 	public async signOut(): Promise<any> {

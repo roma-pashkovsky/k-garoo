@@ -4,12 +4,22 @@ import type { DbChecklist } from '../../types/db-checklist';
 import { listByMePath, listPath, listSharedWithMePath, userPath } from './db-paths';
 import type { ListsSharedWithMe } from '../../types/fb-database';
 import type { AppUser } from '../../types/auth';
+import { redisGet, redisSet } from './redis';
 
-export const getChecklistByUser = async (
+export const getChecklistByUserThroughCache = async (
 	listId: string,
 	userId: string | undefined
 ): Promise<CheckList | null> => {
-	const listData = await readOnceAdmin<DbChecklist>(listPath(listId));
+	let listData = await redisGet<DbChecklist>(listId);
+	if (!listData) {
+		console.log('fetched list data from db');
+		listData = await readOnceAdmin<DbChecklist>(listPath(listId));
+		if (listData) {
+			redisSet(listId, listData);
+		}
+	} else {
+		console.log('fetched list data from redis');
+	}
 	if (!listData) {
 		return null;
 	}

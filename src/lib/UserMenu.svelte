@@ -27,7 +27,14 @@
 </script>
 
 {#if $user}
-	<Avatar size="sm" {id} class="ml-3" src={$user.photoUrl} />
+	<div {id} class="relative">
+		<Avatar size="sm" class="ml-3" src={$user.photoUrl} />
+		{#if $sharedListCount}
+			<div class="absolute" style="right: 0; bottom: 5px">
+				<Badge rounded index>{$sharedListCount}</Badge>
+			</div>
+		{/if}
+	</div>
 	<Dropdown class="z-50" placement="bottom" triggeredBy={'#' + id} frameClass="z-30">
 		<DropdownHeader>
 			<span class="block text-sm">{$user.displayName}</span>

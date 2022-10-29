@@ -1,7 +1,10 @@
 import { get, writable } from 'svelte/store';
 import type { CategoryOption } from '../../types';
 import { auth } from '../login/auth';
-import { getState, setState } from '../../utils/local-storage-state';
+import {
+	getCategoryOptionsLocalStorage,
+	setCategoryOptionsLocalStorage
+} from '../../utils/local-storage-state';
 
 export const categoryOptionsByUser = writable<CategoryOption[]>([]);
 
@@ -12,8 +15,8 @@ export const loadCategoryOptions = async (browser: boolean, f = fetch): Promise<
 		const options = await res.json();
 		categoryOptionsByUser.set(options);
 	} else if (browser) {
-		const state = getState();
-		categoryOptionsByUser.set(state.categoryOptions);
+		const state = getCategoryOptionsLocalStorage();
+		categoryOptionsByUser.set(state);
 	}
 };
 
@@ -30,14 +33,9 @@ export const addCategoryOption = async (option: CategoryOption): Promise<void> =
 async function addCategoryOptionLocal(option: CategoryOption): Promise<void> {
 	return new Promise((resolve) => {
 		requestAnimationFrame(() => {
-			const state = getState();
-			const oldOptions = state.categoryOptions || [];
+			const oldOptions = getCategoryOptionsLocalStorage();
 			const newOptions = [option, ...oldOptions];
-			setState({
-				...state,
-				categoryOptions: newOptions
-			});
-			resolve();
+			setCategoryOptionsLocalStorage(newOptions);
 		});
 	});
 }

@@ -1,18 +1,19 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { AuthStore } from '../stores/login/auth.store';
-	import { Button } from 'flowbite-svelte';
+	import { Button, Checkbox } from 'flowbite-svelte';
 	import { processError } from '../utils/process-error';
 	import { t } from '../stores/app/translate';
 
 	const dispatch = createEventDispatcher();
 	const authStore = new AuthStore();
 	let isLoading = false;
+	let keepMyData = false;
 
 	async function onLoginWithFacebook(): Promise<void> {
 		isLoading = true;
 		try {
-			await authStore.loginFacebook();
+			await authStore.loginFacebook(keepMyData);
 			dispatch('success');
 		} catch (err) {
 			processError('Failed to session with facebook', err);
@@ -25,5 +26,9 @@
 <div>
 	<Button color="blue" on:click={onLoginWithFacebook}
 		>{$t('app.login-popup.facebook-button')}</Button
+	>
+
+	<Checkbox class="mt-6" bind:checked={keepMyData}
+		>{$t('app.login-popup.sync-data-checkbox')}</Checkbox
 	>
 </div>

@@ -1,24 +1,23 @@
 import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
 import type { LoadEvent } from '@sveltejs/kit';
 import { browser } from '$app/environment';
-import { getList } from '../../../stores/checklist-details/checklist-details-data';
-import { getState } from '../../../utils/local-storage-state';
-import { loadUserFromSession } from '../../../stores/login/auth';
+import { getList, listDataStore } from '../../../stores/checklist-details/checklist-details-data';
+import { getListSettings } from '../../../stores/checklist-details/checklist-settings';
+import { get } from 'svelte/store';
+import { loadUserIfNotResolved } from '../../../stores/login/auth';
 
 export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData | undefined> {
+	await loadUserIfNotResolved(event.fetch);
 	const listId: string = event.params.id as string;
-	await loadUserFromSession(event.fetch);
-	const list = await getList(listId, browser, event.fetch);
-	if (browser) {
-		return {
-			listId,
-			list,
-			checklistSettings: getState().checklistSettings
-		};
+	let list = get(listDataStore)[listId];
+	if (!list) {
+		list = await getList(listId, browser, event.fetch);
 	} else {
-		return {
-			listId,
-			list
-		};
+		console.log('fetched list from cache');
 	}
+	return {
+		listId,
+		list,
+		checklistSettings: await getListSettings(listId, browser, event.fetch)
+	};
 }

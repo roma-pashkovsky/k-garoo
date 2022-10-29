@@ -48,7 +48,8 @@ export function readOnceAdmin<T>(
 	path: string,
 	orderByChildPath?: string,
 	limitFirst?: number,
-	limitLast?: number
+	limitLast?: number,
+	equalTo?: string | number
 ): Promise<T> {
 	const db = getDB();
 	return new Promise<T>((resolve, reject) => {
@@ -56,6 +57,9 @@ export function readOnceAdmin<T>(
 		let readQuery;
 		if (orderByChildPath) {
 			readQuery = readRef.orderByChild(orderByChildPath);
+			if (equalTo) {
+				readQuery = readQuery.equalTo(equalTo);
+			}
 		}
 		if (limitFirst) {
 			readQuery = (readQuery || readRef).limitToFirst(limitFirst);

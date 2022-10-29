@@ -1,7 +1,5 @@
 import { get, writable } from 'svelte/store';
-import { ChecklistMainListDbPersistence } from './checklist-main-list-db-persistence';
-import { ChecklistMainListLocalStoragePersistence } from './checklist-main-list-local-storage-persistence';
-import { getListIds } from '../../utils/local-storage-state';
+import { getListIds, removeListData, setListIds } from '../../utils/local-storage-state';
 import type { PersistedList } from '../../types';
 import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-ids-from-persisted-list';
 import { auth } from '../login/auth';
@@ -26,23 +24,23 @@ export const loadListItems = async (browser: boolean, f = fetch): Promise<void> 
 	}
 };
 
-export class ChecklistMainListStore {
-	public static items = items;
-
-	private localPersistence = new ChecklistMainListLocalStoragePersistence();
-	private dbPersistence = new ChecklistMainListDbPersistence();
-
-	public destroy() {
-		this.dbPersistence.destroy();
+export const removeList = async (listId: string): Promise<void> => {
+	const user = get(auth).user;
+	if (user) {
+		await removeListAPI(listId);
+	} else {
+		await removeListLocal(listId);
 	}
+	await loadListItems(false);
+};
 
-	public async removeList(listId: string): Promise<void> {
-		ChecklistMainListStore.items.update((items) => {
-			return items.filter((id) => id !== listId);
-		});
-		await this.localPersistence.removeList(listId);
-		if (this.dbPersistence.isLoggedIn) {
-			await this.dbPersistence.removeList(listId);
-		}
-	}
+async function removeListAPI(listId: string): Promise<void> {
+	await fetch(`/api/v1/lists/${listId}`, { method: 'DELETE' });
+}
+
+async function removeListLocal(listId: string): Promise<void> {
+	const ids = getListIds();
+	delete ids[listId];
+	setListIds(ids);
+	removeListData(listId);
 }

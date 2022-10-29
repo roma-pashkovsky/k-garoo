@@ -5,6 +5,7 @@
 	import type { ShareListUser } from '../../types/share-list';
 	import { writable } from 'svelte/store';
 	import { t } from '../../stores/app/translate.js';
+	import { loadUsersByList } from '../../stores/checklist-details/users-by-list';
 
 	export let listId: string;
 	const dispatch = createEventDispatcher();
@@ -33,6 +34,7 @@
 		try {
 			await store.shareList(listId, userId);
 			setIsSharedStore(userId, true);
+			loadUsersByList(listId);
 		} catch (err) {
 			console.log(err);
 		}
@@ -42,6 +44,7 @@
 		try {
 			await store.unShareList(listId, userId);
 			setIsSharedStore(userId, false);
+			loadUsersByList(listId);
 		} catch (err) {
 			console.log(err);
 		}

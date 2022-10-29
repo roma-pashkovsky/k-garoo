@@ -6,12 +6,15 @@ import { getUserFromRequest } from '../../../../utils/api/get-user-from-request'
 import { invalidAuth, ok, serverError } from '../../../../utils/api/responses';
 import { getTimestamp, readOnceAdmin, setAdmin } from '../../../../utils/api/firebase-admin-utils';
 import {
+	listsSharedWithMePath,
 	stopListAgainstMeByUserPath,
 	stopListByMeByUserPath,
 	stopListByMePath,
+	userByListPath,
 	userPath
 } from '../../../../utils/api/db-paths';
 import { json } from '@sveltejs/kit';
+import type { FirebaseSetItem } from '../../../../types/firebase-utils';
 
 export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -21,13 +24,30 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	try {
 		const r: BlockUserRequest = await request.json();
 		if (r.userId) {
-			await setAdmin([
+			const updates = [
 				{
 					path: stopListByMeByUserPath(user.uid, r.userId),
 					value: { updated_utc: getTimestamp() }
 				},
 				{ path: stopListAgainstMeByUserPath(r.userId, user.uid), value: user.uid }
-			]);
+			];
+			const listsSharedByThisUser = await readOnceAdmin(
+				listsSharedWithMePath(user.uid),
+				'sharedById',
+				undefined,
+				undefined,
+				r.userId
+			);
+			if (listsSharedByThisUser && Object.keys(listsSharedByThisUser).length) {
+				const userByListUpdates = Object.keys(listsSharedByThisUser).map((listId) => {
+					return {
+						path: userByListPath(listId, user.uid),
+						value: null
+					} as FirebaseSetItem;
+				});
+				updates.push(...userByListUpdates);
+			}
+			await setAdmin(updates);
 		}
 		return ok();
 	} catch (e) {

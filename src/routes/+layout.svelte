@@ -6,22 +6,22 @@
 	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
 	import InitConfigPopup from '../lib/InitConfigPopup.svelte';
 	import { AppReloader } from '../stores/app/app-reloader';
-	import { Modal } from 'flowbite-svelte';
 	import { AuthStore } from '../stores/login/auth.store';
-	import Login from '../lib/Login.svelte';
 	import { AppSettingsStore } from '../stores/app/app-settings';
 	import { get } from 'svelte/store';
-	import { t } from '../stores/app/translate';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { loadListItems } from '../stores/checklist-main-list/checklist-main-list-store';
 	import { auth } from '../stores/login/auth';
 	import { loadCategoryOptions } from '../stores/checklist-details/category-options';
+	import LoginModal from '../lib/LoginModal.svelte';
+	import UsersByListDrawer from '../lib/UsersByListDrawer.svelte';
+	import { loadSharedListIds } from '../stores/my-shared-lists/my-shared-list.store';
+	import { t } from '../stores/app/translate';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
 	let isSetLocalePopupOpen = !get(AppSettingsStore.isLocaleSet);
-	const isLoginModalOpen = AuthStore.isLoginModalOpen;
 	const isResolved = AuthStore.isResolved;
 	const theme = AppSettingsStore.theme;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
@@ -29,15 +29,19 @@
 	$: isNavigating = !!$navigating;
 
 	onMount(() => {
-		auth.subscribe(() => {
-			loadListItems(true);
-			loadCategoryOptions(true);
+		let prevUserId = get(auth)?.user?.id;
+		auth.subscribe((a) => {
+			const newUserId = a?.user?.id;
+			if (newUserId !== prevUserId) {
+				loadListItems(true);
+				loadCategoryOptions(true);
+				if (a.user) {
+					loadSharedListIds();
+				}
+			}
+			prevUserId = newUserId;
 		});
 	});
-
-	function onSuccessfulLogin() {
-		AuthStore.isLoginModalOpen.set(false);
-	}
 
 	function onCloseSettingsPopup(): void {
 		AppSettingsStore.markIsLocaleSet();
@@ -90,22 +94,16 @@
 			{/each}
 		</div>
 	</div>
+	<InitConfigPopup
+		open={isSetLocalePopupOpen}
+		on:complete={onCloseSettingsPopup}
+		on:show-how-add-to-main={onShowHowAddToMain}
+	/>
+
+	<LoginModal />
+
+	<UsersByListDrawer />
 </div>
-
-<InitConfigPopup
-	open={isSetLocalePopupOpen}
-	on:complete={onCloseSettingsPopup}
-	on:show-how-add-to-main={onShowHowAddToMain}
-/>
-
-<Modal
-	class="z-50"
-	title={$t('app.login-popup.title')}
-	placement="center"
-	bind:open={$isLoginModalOpen}
->
-	<Login on:success={onSuccessfulLogin} />
-</Modal>
 
 <style>
 	.top-toast-wrapper {

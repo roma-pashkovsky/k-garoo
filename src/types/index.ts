@@ -1,5 +1,11 @@
 import type { AppUser } from './auth';
 
+export enum UserByListStatus {
+	AUTHOR = 'author',
+	SHARED_WITH = 'shared_with',
+	PARTICIPANT = 'participant'
+}
+
 export type CheckList = {
 	id: string;
 	created_utc: number;
@@ -7,7 +13,10 @@ export type CheckList = {
 	name: string;
 	items: CheckListItem[];
 	isMyList?: boolean;
+	// only for server Checklists
+	isGroupByCategory?: boolean;
 	sharedBy?: AppUser;
+	createdById?: string;
 };
 export type CheckListItem = {
 	id: string;
@@ -42,16 +51,8 @@ export type Proposition = {
 };
 
 export type ChecklistSettings = {
-	isGroupByCategory: boolean;
-	isColorsForCategories: boolean;
-	hasSeenDemo: boolean;
-	byList: {
-		[listId: string]: ByListSettings;
-	};
-};
-
-export type ByListSettings = {
-	hideCrossedOut: boolean;
+	isGroupByCategory?: boolean;
+	hideCrossedOut?: boolean;
 };
 
 export type Language = 'en' | 'ua';
@@ -61,28 +62,12 @@ export type AppSettings = {
 	version: number;
 	lang: Language | undefined;
 	isLocaleSet: boolean;
+	hasSeenDemo: boolean;
 	theme: Theme;
-};
-
-export type AppInstructions = {
-	isEditListFromDetailsViewed: boolean;
-	isAddFromPropositionsViewed: boolean;
 };
 
 export type PersistedList = {
 	[listId: string]: {
 		updated_ts: number;
 	};
-};
-
-export type KGarooState = {
-	listIds: PersistedList;
-	listData: {
-		[listId: string]: CheckList;
-	};
-	categoryOptions: CategoryOption[];
-	propositions: Proposition[];
-	checklistSettings: ChecklistSettings;
-	appSettings: AppSettings;
-	appInstructions: AppInstructions;
 };

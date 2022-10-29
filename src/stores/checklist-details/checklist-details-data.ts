@@ -1,6 +1,6 @@
 import type { CheckList } from '../../types';
 import type { CheckListItem } from '../../types';
-import { get } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { auth } from '../login/auth';
 import { getListData, getListIds, setListData, setListIds } from '../../utils/local-storage-state';
 import type {
@@ -8,13 +8,21 @@ import type {
 	UpdateListRequest
 } from '../../utils/api/client/create-update-list';
 
+export const listDataStore = writable<{ [listId: string]: CheckList | null }>({});
+
 export const getList = async (
 	listId: string,
 	browser: boolean,
 	f = fetch
 ): Promise<CheckList | null> => {
-	const user = get(auth).user;
-	return user ? getListAPIFirst(listId, f, browser) : getListBrowserFirst(listId, f, browser);
+	let list: CheckList | null;
+	if (get(auth)?.user) {
+		list = await getListAPIFirst(listId, f, browser);
+	} else {
+		list = await getListBrowserFirst(listId, f, browser);
+	}
+	listDataStore.update((prev) => ({ ...prev, [listId]: list }));
+	return list;
 };
 
 async function getListAPIFirst(
@@ -90,7 +98,7 @@ async function createListAPI(request: CreateListRequest): Promise<CheckList> {
 	return (await resp.json()) as CheckList;
 }
 
-async function createListLocal(request: CreateListRequest): Promise<CheckList> {
+export async function createListLocal(request: CreateListRequest): Promise<CheckList> {
 	const ts = new Date().getTime();
 	await addListToUserCollectionLocal(request.id as string, ts);
 	await saveListDataLocal(
@@ -138,16 +146,19 @@ async function addListToUserCollectionLocal(listId: string, ts: number): Promise
  * Update list
  */
 export const updateList = async (request: UpdateListRequest): Promise<CheckList> => {
+	let updated: CheckList;
 	if (get(auth).user) {
-		return updateListAPI(request);
+		updated = await updateListAPI(request);
 	} else {
-		return updateListLocal(request);
+		updated = await updateListLocal(request);
 	}
+	listDataStore.update((prev) => ({ ...prev, [request.id as string]: updated }));
+	return updated;
 };
 
 async function updateListAPI(request: UpdateListRequest): Promise<CheckList> {
 	const resp = await fetch(`/api/v1/lists/${request.id}`, {
-		method: 'POST',
+		method: 'PUT',
 		body: JSON.stringify(request)
 	});
 	return resp.json() as Promise<CheckList>;
@@ -162,12 +173,12 @@ async function updateListLocal(request: UpdateListRequest): Promise<CheckList> {
 	for (const prop in request) {
 		if (prop === 'items') {
 			const itemsUpdate = request['items'] as UpdateListRequest['items'];
-			if (itemsUpdate.added) {
+			if (itemsUpdate?.added) {
 				list.items.push(...itemsUpdate.added);
 			}
-			if (itemsUpdate.updated) {
+			if (itemsUpdate?.updated) {
 				Object.keys(itemsUpdate.updated).forEach((itemId) => {
-					const updatedItem = itemsUpdate.updated[itemId];
+					const updatedItem = (itemsUpdate.updated as any)[itemId];
 					list.items = list.items.map((src) => {
 						if (src.id === itemId) {
 							return { ...src, ...updatedItem };
@@ -177,7 +188,7 @@ async function updateListLocal(request: UpdateListRequest): Promise<CheckList> {
 					});
 				});
 			}
-			if (itemsUpdate.removed) {
+			if (itemsUpdate?.removed) {
 				const removedMap: { [id: string]: true } = itemsUpdate.removed.reduce(
 					(p, c) => ({ ...p, [c]: true }),
 					{}

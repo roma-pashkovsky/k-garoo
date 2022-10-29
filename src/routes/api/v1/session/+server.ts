@@ -10,6 +10,7 @@ import { getUserFromRequest } from '../../../../utils/api/get-user-from-request'
 import { userPath } from '../../../../utils/api/db-paths';
 import { json } from '@sveltejs/kit';
 import { serverError } from '../../../../utils/api/responses';
+import { UserSearchManager } from '../../../../utils/api/user-search-manager';
 
 const WEEK_SECONDS = 60 * 60 * 24 * 7;
 
@@ -55,9 +56,10 @@ export const GET: RequestHandler = async ({ request }): Promise<Response> => {
 		if (!user) {
 			return json(null);
 		}
-		const userDb = await readOnceAdmin(userPath(user.uid));
+		const userDb = await UserSearchManager.getUser(user.uid);
 		return json(userDb);
 	} catch (err) {
+		console.log(err);
 		return serverError();
 	}
 };

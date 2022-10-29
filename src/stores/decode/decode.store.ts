@@ -1,9 +1,8 @@
 import type { CheckList } from '../../types';
-import { CheckListDetailsLocalStoragePersistence } from '../checklist-details/check-list-details-local-storage-persistence';
+import { setListData } from '../../utils/local-storage-state';
 
 export class DecodeStore {
-	private persistence = new CheckListDetailsLocalStoragePersistence();
 	public async process(checklist: CheckList): Promise<void> {
-		await this.persistence.updateList(checklist);
+		setListData(checklist);
 	}
 }

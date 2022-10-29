@@ -17,6 +17,16 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	}
 };
 
+export const DELETE: RequestHandler = async ({ request }): Promise<Response> => {
+	try {
+		return new Response(JSON.stringify({ status: 'ok' }), {
+			headers: { 'Set-Cookie': `settings=; SameSite=Strict; path=/; HttpOnly; Max-Age=0` }
+		});
+	} catch (err) {
+		return serverError();
+	}
+};
+
 export const GET: RequestHandler = async ({ request }): Promise<Response> => {
 	try {
 		const cookie = request.headers.get('cookie');

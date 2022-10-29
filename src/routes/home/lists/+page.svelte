@@ -5,8 +5,7 @@
 	import { getDecodeLinkToList } from '../../../utils/get-decode-link-to-list';
 	import { ToastService } from '../../../utils/toasts';
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
-	import { ChecklistMainListStore } from '../../../stores/checklist-main-list/checklist-main-list-store';
-	import { onDestroy } from 'svelte';
+	import { items, removeList } from '../../../stores/checklist-main-list/checklist-main-list-store';
 	import { t } from '../../../stores/app/translate';
 	import { get } from 'svelte/store';
 	import { getUID } from '../../../utils/get-uid';
@@ -15,16 +14,11 @@
 	import { doubleTap } from '../../../utils/double-tap';
 
 	const toastManager = ToastService.getInstance();
-	const store: ChecklistMainListStore = new ChecklistMainListStore();
-	const items = ChecklistMainListStore.items;
-
-	onDestroy(() => {
-		store?.destroy();
-	});
+	const url = 'https://www.garoo.fun/home/lists';
 
 	function onListRemove(listId: string, list: CheckList): void {
 		if (confirm(get(t)('lists.remove-warning', { list: list.name }))) {
-			store.removeList(listId);
+			removeList(listId);
 		}
 	}
 
@@ -57,6 +51,20 @@
 
 <svelte:head>
 	<title>Garoo - {$t('app.my_lists')}</title>
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content={url} />
+	<meta property="og:site_name" content="Garoo" />
+	<meta property="og:description" content={$t('app.logo')} />
+	<meta property="og:title" content={$t('app.my_lists')} />
+	<meta property="og:image" content="https://www.garoo.fun/img/thumb.jpg" />
+	<meta property="og:image:secure_url" content="https://www.garoo.fun/img/thumb.jpg" />
+	<meta property="og:image:width" content="200" />
+	<meta property="og:image:height" content="200" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:description" content={$t('app.logo')} />
+	<meta name="twitter:site" content="@business" />
+	<meta name="twitter:title" content={$t('app.my_lists')} />
+	<meta name="twitter:image" content="https://www.garoo.fun/img/thumb.jpg" />
 </svelte:head>
 
 <div class="hidden md:block absolute top-8 right-8 z-10">

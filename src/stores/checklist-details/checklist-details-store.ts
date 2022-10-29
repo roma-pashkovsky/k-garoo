@@ -3,15 +3,11 @@ import type {
 	CheckList,
 	CheckListItem,
 	CheckListItemEditModel,
-	ChecklistSettings,
 	Language,
 	Proposition
 } from '../../types';
-import { CheckListDetailsLocalStoragePersistence } from './check-list-details-local-storage-persistence';
 import { CategoryOptionManager } from './category-option-manager';
 import { PropositionsManager } from './propositions-manager';
-import { FirebaseUtils } from '../../utils/firebase-utils';
-import { ChecklistDetailsDbPersistence } from './checklist-details-db-persistence';
 import type { Readable } from 'svelte/store';
 import { derived, get, writable } from 'svelte/store';
 import { AppSettingsStore } from '../app/app-settings';
@@ -19,6 +15,9 @@ import { CategoryAutodetector } from './category-autodetector';
 import { getUID } from '../../utils/get-uid';
 import { addCategoryOption, categoryOptionsByUser } from './category-options';
 import { auth } from '../login/auth';
+import { createList, createListLocal } from './checklist-details-data';
+import { acceptList } from '../my-shared-lists/my-shared-list.store';
+import { getPropositions, setPropositions } from '../../utils/local-storage-state';
 
 export class ChecklistDetailsStore {
 	private static customCategoryOptions = categoryOptionsByUser;
@@ -32,13 +31,10 @@ export class ChecklistDetailsStore {
 	);
 
 	private static isInit = false;
-	private static firebaseUtils = new FirebaseUtils();
-	private static persistence = new CheckListDetailsLocalStoragePersistence();
-	private dbPersistence = new ChecklistDetailsDbPersistence();
 	public static async init(): Promise<void> {
 		if (!ChecklistDetailsStore.isInit) {
 			// propositions
-			const props = await this.persistence.getPropositions();
+			const props = getPropositions();
 			this.savedPropositions.set(props || []);
 			ChecklistDetailsStore.isInit = true;
 		}
@@ -68,49 +64,13 @@ export class ChecklistDetailsStore {
 		});
 	}
 
-	// private async initList(): Promise<void> {
-	// 	let isInUserCollection = false;
-	// 	let list: CheckList | null = null;
-	// 	if (!this.dbPersistence.isDbAvailable) {
-	// 		isInUserCollection = await ChecklistDetailsStore.persistence.isListAddedToUserCollection(
-	// 			this.listId
-	// 		);
-	// 		list = await ChecklistDetailsStore.persistence.getList(this.listId);
-	// 	} else if (!this.dbPersistence.isLoggedIn) {
-	// 		// db available
-	// 		isInUserCollection = await ChecklistDetailsStore.persistence.isListAddedToUserCollection(
-	// 			this.listId
-	// 		);
-	// 		list = await this.readListCacheFirst(this.listId);
-	// 	} else {
-	// 		// user logged in
-	// 		isInUserCollection = await this.dbPersistence.isListAddedToUserCollection(
-	// 			this.listId
-	// 		);
-	// 		if (isInUserCollection) {
-	// 			list = await this.readListComparingVersions(this.listId);
-	// 		} else {
-	// 			list = await this.readListCacheFirst(this.listId);
-	// 		}
-	// 		if (isInUserCollection && !!list) {
-	// 			await ChecklistDetailsStore.persistence.addListToUserCollection(
-	// 				this.listId,
-	// 				list.created_utc
-	// 			);
-	// 		}
-	// 	}
-	// 	this.isAddedToUsersList.set(isInUserCollection);
-	// 	this.checklist.set(list);
-	// }
-
 	public async addListToMyCollection(list: CheckList): Promise<string | null> {
 		const ts = new Date().getTime();
 		if (list) {
-			if (this.dbPersistence.isDbAvailable && this.dbPersistence.isLoggedIn) {
+			if (get(auth)) {
 				const isSharedWithMe = !!list.sharedBy;
 				if (isSharedWithMe) {
-					await ChecklistDetailsStore.persistence.addListToUserCollection(list.id, ts);
-					await this.dbPersistence.addListToUserCollection(list.id, ts);
+					await acceptList(list.id);
 					return list.id;
 				} else {
 					const copy: CheckList = {
@@ -119,10 +79,7 @@ export class ChecklistDetailsStore {
 						created_utc: ts,
 						updated_utc: ts
 					};
-					await ChecklistDetailsStore.persistence.addListToUserCollection(copy.id, ts);
-					await this.dbPersistence.addListToUserCollection(copy.id, ts);
-					await ChecklistDetailsStore.persistence.updateList(copy);
-					await this.dbPersistence.updateList(copy);
+					await createList(copy);
 					return copy.id;
 				}
 			} else {
@@ -132,20 +89,11 @@ export class ChecklistDetailsStore {
 					created_utc: ts,
 					updated_utc: ts
 				};
-				await ChecklistDetailsStore.persistence.addListToUserCollection(copy.id, ts);
-				await ChecklistDetailsStore.persistence.updateList(copy);
+				await createListLocal(copy);
 				return copy.id;
 			}
 		}
 		return null;
-	}
-
-	public async getChecklistSettings(): Promise<ChecklistSettings> {
-		return ChecklistDetailsStore.persistence.getChecklistSettings();
-	}
-
-	public async setHideCrossedOut(listId: string, isHide: boolean): Promise<void> {
-		return ChecklistDetailsStore.persistence.setHideCrossedOut(listId, isHide);
 	}
 
 	public async createList(
@@ -155,62 +103,11 @@ export class ChecklistDetailsStore {
 	): Promise<void> {
 		const ts = new Date().getTime();
 		const items = this.editModelsToChecklistItems(editItems);
-		await ChecklistDetailsStore.persistence.createList(id, name, items, ts);
-		if (get(auth).user) {
-			await this.dbPersistence.upsertList(id, name, items, ts);
-		}
 		this.updatePropositionsWithItems(items);
-	}
-
-	public async saveListName(id: string, name: string): Promise<void> {
-		const ts = new Date().getTime();
-		await ChecklistDetailsStore.persistence.saveListName(id, name, ts);
-		if (this.isLoggedIn) {
-			await this.dbPersistence.saveListName(id, name, ts);
-		}
-	}
-
-	public async upsertListItems(id: string, editItems: CheckListItemEditModel[]): Promise<void> {
-		const ts = new Date().getTime();
-		const items = this.editModelsToChecklistItems(editItems);
-		await ChecklistDetailsStore.persistence.upsertListItems(id, items, ts);
-		this.updatePropositionsWithItems(items);
-		if (this.isLoggedIn) {
-			await this.dbPersistence.upsertListItems(id, items, ts);
-		}
-	}
-
-	public async removeListItems(id: string, itemIds: string[]): Promise<void> {
-		const ts = new Date().getTime();
-		await ChecklistDetailsStore.persistence.removeListItems(id, itemIds, ts);
-		if (this.isLoggedIn) {
-			await this.dbPersistence.removeListItems(id, itemIds, ts);
-		}
-	}
-
-	public async setListItems(id: string, editItems: CheckListItemEditModel[]): Promise<void> {
-		const ts = new Date().getTime();
-		const items = this.editModelsToChecklistItems(editItems);
-		await ChecklistDetailsStore.persistence.setListItems(id, items, ts);
-		if (this.isLoggedIn) {
-			return this.dbPersistence.setListItems(id, items, ts);
-		}
 	}
 
 	public async addCategoryOption(option: CategoryOption): Promise<void> {
 		return addCategoryOption(option);
-	}
-
-	public async updateByCategoryView(isByCategory: boolean): Promise<void> {
-		return ChecklistDetailsStore.persistence.updateByCategoryView(isByCategory);
-	}
-
-	public async updateColorsForCategoriesView(isColors: boolean): Promise<void> {
-		return ChecklistDetailsStore.persistence.updateIsColorsByCategories(isColors);
-	}
-
-	public setHasSeenDemo(): Promise<void> {
-		return ChecklistDetailsStore.persistence.setHasSeenDemo();
 	}
 
 	public async updateProposition(prop: Proposition): Promise<void> {
@@ -221,12 +118,10 @@ export class ChecklistDetailsStore {
 			}
 			return [...(oldProps || [])];
 		});
-		return ChecklistDetailsStore.persistence.setPropositions(
-			get(ChecklistDetailsStore.propositions)
-		);
+		return setPropositions(get(ChecklistDetailsStore.propositions));
 	}
 
-	private async updatePropositionsWithItems(items: CheckListItem[]): Promise<void> {
+	public async updatePropositionsWithItems(items: CheckListItem[]): Promise<void> {
 		ChecklistDetailsStore.savedPropositions.update((oldPropositions) => {
 			const utc = new Date().getTime();
 			const propsMap: { [desc: string]: Proposition } = (oldPropositions || []).reduce((p, c) => {
@@ -247,9 +142,7 @@ export class ChecklistDetailsStore {
 			}
 			return newPropositions;
 		});
-		await ChecklistDetailsStore.persistence.setPropositions(
-			get(ChecklistDetailsStore.savedPropositions)
-		);
+		setPropositions(get(ChecklistDetailsStore.savedPropositions));
 	}
 
 	private editModelsToChecklistItems(source: CheckListItemEditModel[]): CheckListItem[] {

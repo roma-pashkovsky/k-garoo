@@ -1,4 +1,4 @@
-import type { CheckList, CheckListItem } from '../../types';
+import type { CheckList, CheckListItem, ChecklistSettings } from '../../types';
 
 export const userPath = (userId: string) => `users/${userId}`;
 
@@ -26,6 +26,14 @@ export const listSharedWithMePath = (userId: string, listId: string) =>
 export const listsByMePath = (userId: string) => `listsByUsers/${userId}`;
 export const listByMePath = (userId: string, listId: string) => `listsByUsers/${userId}/${listId}`;
 
+export const listSettingsByMeByListPath = (userId: string, listId: string) =>
+	`listSettingsByUsers/${userId}/${listId}`;
+export const listSettingsByMeByListPropertyPath = (
+	userId: string,
+	listId: string,
+	prop: keyof ChecklistSettings
+) => `listSettingsByUsers/${userId}/${listId}/${prop}`;
+
 export const stopListByMePath = (userId: string) => `stopListByMe/${userId}`;
 export const stopListByMeByUserPath = (myId: string, userId: string) =>
 	`stopListByMe/${myId}/${userId}`;
@@ -37,3 +45,7 @@ export const stopListAgainstMeByUserPath = (myId: string, userId: string) =>
 export const categoryOptionsByUserPath = (userId: string) => `categoryOptionsByUsers/${userId}`;
 export const categoryOptionsByUserByOptionPath = (userId: string, optionId: string) =>
 	`categoryOptionsByUsers/${userId}/${optionId}`;
+
+export const usersByListPath = (listId: string) => `usersByLists/${listId}`;
+export const userByListPath = (listId: string, userId: string) =>
+	`usersByLists/${listId}/${userId}`;

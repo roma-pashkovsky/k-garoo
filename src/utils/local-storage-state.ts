@@ -1,52 +1,18 @@
-import { browser } from '$app/environment';
-import type { AppSettings, CheckList, KGarooState, PersistedList, Proposition } from '../types';
+import type {
+	AppSettings,
+	CategoryOption,
+	CheckList,
+	ChecklistSettings,
+	PersistedList,
+	Proposition
+} from '../types';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
 
 export { customCategoryId, otherCategoryId };
 
-export const getInitialState = (): KGarooState => {
-	return {
-		listData: {},
-		listIds: {},
-		checklistSettings: {
-			isGroupByCategory: false,
-			isColorsForCategories: false,
-			hasSeenDemo: false,
-			byList: {}
-		},
-		categoryOptions: [],
-		propositions: [],
-		appSettings: {
-			lang: undefined,
-			isLocaleSet: false,
-			theme: undefined,
-			version: 0
-		},
-		appInstructions: {
-			isAddFromPropositionsViewed: false,
-			isEditListFromDetailsViewed: false
-		}
-	};
-};
-
 export const specialCategories = {
 	[customCategoryId]: {},
 	[otherCategoryId]: {}
-};
-
-export const getState = (): KGarooState => {
-	if (!browser) {
-		return {} as KGarooState;
-	}
-	return JSON.parse(localStorage.getItem('k-garoo') || '{}');
-};
-
-export const setState = (state: KGarooState): void => {
-	if (!browser) {
-		return;
-	}
-	const str = JSON.stringify(state);
-	localStorage.setItem('k-garoo', str);
 };
 
 export const getAppSettings = (): AppSettings | null => {
@@ -102,6 +68,34 @@ export const getPropositions = (): Proposition[] => {
 export const setPropositions = (props: Proposition[]): void => {
 	const str = JSON.stringify(props || []);
 	localStorage.setItem('k-garoo/propositions', str);
+};
+
+export const getListSettingsLocalStorage = (listId: string): ChecklistSettings | null => {
+	const record = localStorage.getItem(`k-garoo/listSettings/${listId}`);
+	if (record) {
+		return JSON.parse(record) as ChecklistSettings;
+	} else {
+		return null;
+	}
+};
+
+export const setListSettingsLocalStorage = (listId: string, settings: ChecklistSettings): void => {
+	const str = JSON.stringify(settings);
+	localStorage.setItem(`k-garoo/listSettings/${listId}`, str);
+};
+
+export const getCategoryOptionsLocalStorage = (): CategoryOption[] => {
+	const record = localStorage.getItem('k-garoo/categoryOptions');
+	if (record) {
+		return JSON.parse(record);
+	} else {
+		return [];
+	}
+};
+
+export const setCategoryOptionsLocalStorage = (options: CategoryOption[]): void => {
+	const str = JSON.stringify(options);
+	localStorage.setItem('k-garoo/categoryOptions', str);
 };
 
 export const cleanAllLocalData = (): void => {

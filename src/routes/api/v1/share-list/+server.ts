@@ -1,17 +1,23 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { getUserFromRequest } from '../../../../utils/api/get-user-from-request';
 import { invalidAuth, ok, serverError } from '../../../../utils/api/responses';
-import { existsAdmin, getTimestamp, setAdmin } from '../../../../utils/api/firebase-admin-utils';
+import {
+	existsAdmin,
+	getTimestamp,
+	readOnceAdmin,
+	setAdmin
+} from '../../../../utils/api/firebase-admin-utils';
 import {
 	listByMePath,
 	listSharedWithMePath,
 	recentUserPath,
-	recentUsersPath,
 	stopListByMeByUserPath,
+	userByListPath,
 	userBySharedListPath
 } from '../../../../utils/api/db-paths';
 import type { ShareListRequest } from '../../../../utils/api/client/share-list';
-import type { ListsSharedWithMe, RecentUsers } from '../../../../types/fb-database';
+import type { ListsSharedWithMe, RecentUsers, UsersByList } from '../../../../types/fb-database';
+import { UserByListStatus } from '../../../../types';
 
 export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -45,6 +51,13 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 					value: {
 						updated_utc: getTimestamp()
 					} as RecentUsers[string]
+				},
+				{
+					path: userByListPath(body.listId, body.userId),
+					value: {
+						utc: getTimestamp(),
+						status: UserByListStatus.SHARED_WITH
+					} as UsersByList[string]
 				}
 			]);
 			return ok();
@@ -76,6 +89,17 @@ export const DELETE: RequestHandler = async ({ request }): Promise<Response> => 
 				value: null
 			}
 		]);
+		const status = await readOnceAdmin<UsersByList[string]>(
+			userByListPath(body.listId, body.userId)
+		);
+		if (status.status === UserByListStatus.SHARED_WITH) {
+			await setAdmin([
+				{
+					path: userByListPath(body.listId, body.userId),
+					value: null
+				}
+			]);
+		}
 		return ok();
 	} catch (err) {
 		console.log(err);

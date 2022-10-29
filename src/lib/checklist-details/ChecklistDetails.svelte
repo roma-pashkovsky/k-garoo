@@ -8,12 +8,20 @@
 	import ChecklistBatchEditor from './ChecklistBatchEditor.svelte';
 	import DotMenu from '../DotMenu.svelte';
 	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
-	import { EyeOff } from 'svelte-heros';
+	import { Duplicate, EyeOff } from 'svelte-heros';
 	import { Badge, Button, Drawer, DropdownItem } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
-	import { Briefcase, Eye, InformationCircle, Link, ListBullet, Plus } from 'svelte-heros-v2';
+	import {
+		Briefcase,
+		Eye,
+		InformationCircle,
+		Link,
+		Plus,
+		Share,
+		PencilSquare
+	} from 'svelte-heros-v2';
 	import { press } from 'svelte-gestures';
 	import { goto } from '$app/navigation';
 	import type { FuzzyOptions } from '../../utils/fuzzy-search';
@@ -44,11 +52,20 @@
 	import ShareList from './ShareList.svelte';
 	import { sineIn } from 'svelte/easing';
 	import { AuthStore } from '../../stores/login/auth.store';
-	import { AppSettingsStore } from '../../stores/app/app-settings';
+	import { AppSettingsStore, setHasSeenDemo } from '../../stores/app/app-settings';
+	import { createList, updateList } from '../../stores/checklist-details/checklist-details-data';
+	import { getChecklistItemFromEditItem } from '../../utils/get-checklist-item-from-edit-item';
+	import { addCategoryOption } from '../../stores/checklist-details/category-options';
+	import {
+		setHideCrossedOut,
+		setIsGroupedByCategory
+	} from '../../stores/checklist-details/checklist-settings';
+	import { objectValues } from '../../utils/object-values';
+	import UsersByListMini from '../UsersByListMini.svelte';
 
 	export let listId: string;
 	export let list: CheckList | null;
-	export let checklistSettings: ChecklistSettings;
+	export let checklistSettings: ChecklistSettings | null;
 	export let propositions: Readable<Proposition[]>;
 
 	let categoryAutodetector: Readable<CategoryAutodetector>;
@@ -60,9 +77,8 @@
 	let categoryOptions: Readable<CategoryOption[]>;
 	let store: ChecklistDetailsStore;
 
-	let isByCategoryView = false;
+	let isByCategoryView = checklistSettings?.isGroupByCategory ?? (list?.isGroupByCategory || false);
 	let isCheckboxView = false;
-	let isColorsForCategories = false;
 	let editedItem: CheckListItemEditModel;
 	let editedCategoryId: string;
 	let isAddToListMode: boolean;
@@ -70,9 +86,7 @@
 	let propositionsFuzzySearchTS: Writable<number> = writable(new Date().getTime());
 	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
-	let isHideCrossedOut = false;
-	// support undo for delete
-	let previousItems: CheckListItemEditModel[];
+	let isHideCrossedOut = checklistSettings?.hideCrossedOut || false;
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
 	let shouldCreateNewList = !list;
@@ -94,12 +108,7 @@
 
 	onMount(() => {
 		store = new ChecklistDetailsStore(list, get(AppSettingsStore.lang));
-		isByCategoryView = checklistSettings?.isGroupByCategory || false;
-		isFirstTimeUse = !checklistSettings?.hasSeenDemo;
-		isHideCrossedOut =
-			checklistSettings?.byList && checklistSettings.byList[listId]
-				? checklistSettings.byList[listId].hideCrossedOut
-				: false;
+		isFirstTimeUse = !get(AppSettingsStore.hasSeenListDemo) && list?.isMyList;
 		categoryOptions = store.categoryOptions;
 		propositions = ChecklistDetailsStore.propositions;
 		categoryAutodetector = store.getCategoryAutoDetector();
@@ -120,8 +129,8 @@
 	}
 
 	onDestroy(() => {
-		if (store) {
-			store.setHasSeenDemo();
+		if (store && isFirstTimeUse) {
+			setHasSeenDemo();
 		}
 		toastManager.clear();
 	});
@@ -151,10 +160,8 @@
 	}
 
 	function onListTitleSave(): void {
-		if (!listId) {
-			createNewList();
-		} else {
-			store.saveListName(listId, listName);
+		if (!shouldCreateNewList) {
+			updateList({ id: listId, name: listName });
 		}
 	}
 
@@ -187,7 +194,7 @@
 
 	function onToggleByCategoryViewClicked(): void {
 		isByCategoryView = !isByCategoryView;
-		store.updateByCategoryView(isByCategoryView);
+		setIsGroupedByCategory(listId, isByCategoryView, list?.createdById);
 	}
 
 	async function onGenerateListLinkClicked(): Promise<void> {
@@ -230,6 +237,29 @@
 
 	function onShareClicked(): void {
 		shareDrawerHidden = false;
+	}
+
+	function onDuplicateListClicked() {
+		if (confirm(get(t)('app.basic-confirm'))) {
+			duplicateList();
+		}
+	}
+
+	async function duplicateList(): Promise<void> {
+		const id = getUID();
+		const targetItems = items.map((it) => ({ ...it, checked: false } as ChecklistItem));
+		const copy = {
+			id,
+			name: listName,
+			items: targetItems
+		} as CheckList;
+		await createList(copy);
+		await goto(`/list-details/${id}`);
+		setTimeout(() => location.reload());
+	}
+
+	function onShareClickedNoAuth(): void {
+		AuthStore.triggerLoginClicked();
 	}
 
 	function onShowMeAround() {
@@ -289,7 +319,8 @@
 			}
 			return it;
 		});
-		store.upsertListItems(listId, group.items);
+		const updated = group.items.reduce((p, c) => ({ ...p, [c.id]: { category: c.category } }), {});
+		updateList({ id: listId, items: { updated } });
 	}
 
 	function onItemClick(item: CheckListItemEditModel): void {
@@ -298,7 +329,7 @@
 		}
 		item.checked = !item.checked;
 		updateItemInTheList(item);
-		store.upsertListItems(listId, [item]);
+		updateList({ id: listId, items: { updated: { [item.id]: { checked: item.checked } } } });
 	}
 
 	function onItemCheckboxChange(item: CheckListItemEditModel): void {
@@ -329,12 +360,13 @@
 		itemsToBeDeleted = itemIds.reduce((p, c) => ({ ...p, [c]: true }), {}) as {
 			[id: string]: true;
 		};
+		const previousItems = [...items];
 		setTimeout(() => {
-			previousItems = [...items];
 			items = items.filter((it) => !itemsToBeDeleted[it.id]);
-			store.removeListItems(listId, itemIds);
+			updateList({ id: listId, items: { removed: itemIds } });
 			updatePropositionsFuzzySearch();
 			checkListForDuplicates();
+			const wereDeleted = { ...itemsToBeDeleted };
 			toastManager.push({
 				text: ($t as any)('lists.details.removed-toast'),
 				closePrevious: true,
@@ -343,7 +375,10 @@
 				duration: 3000,
 				onCancel: () => {
 					items = [...previousItems];
-					store.setListItems(listId, items);
+					const toAdd = previousItems
+						.filter((it) => wereDeleted[it.id])
+						.map((s) => getChecklistItemFromEditItem(s));
+					updateList({ id: listId, items: { added: toAdd } });
 					updatePropositionsFuzzySearch();
 					checkListForDuplicates();
 				}
@@ -371,14 +406,14 @@
 	}
 
 	function onBatchChangeCategory(e: ChangeCategoryEvent): void {
-		previousItems = items.map((it) => ({ ...it, category: { ...it.category } }));
+		const previousItems = items.map((it) => ({ ...it, category: { ...it.category } }));
 		let category;
 		if (e.newCategory) {
 			const compareName = e.newCategory.name.toLowerCase();
 			const alreadyAdded = $categoryOptions.find((opt) => opt.name.toLowerCase() === compareName);
 			if (!alreadyAdded) {
 				e.newCategory.color = pickColorForACategory(items, $categoryOptions);
-				store.addCategoryOption(e.newCategory);
+				addCategoryOption(e.newCategory);
 				category = e.newCategory;
 			} else {
 				category = alreadyAdded;
@@ -387,14 +422,24 @@
 			category = $categoryOptions.find((c) => c.id === e.categoryId);
 		}
 		let count = 0;
+		const changed: any = {};
 		items = items.map((it) => {
 			if (it.selected) {
-				count++;
+				changed[it.id] = { category };
 				it.category = { ...category };
+				count++;
 			}
 			return it;
 		});
-		store.upsertListItems(listId, items);
+		updateList({
+			id: listId,
+			items: {
+				updated: {
+					...changed
+				}
+			}
+		});
+		store.updatePropositionsWithItems(objectValues(changed));
 		deselectAllCheckboxes();
 		toastManager.push({
 			text: ($t as any)('lists.details.changed-category-toast'),
@@ -403,8 +448,16 @@
 			type: 'details-top',
 			duration: 3000,
 			onCancel: () => {
+				const updated = {};
+				previousItems.forEach((pr) => {
+					if (changed[pr.id]) {
+						updated[pr.id] = {
+							category: pr.category
+						};
+					}
+				});
 				items = [...previousItems];
-				store.setListItems(listId, items);
+				updateList({ id: listId, items: { updated } });
 			}
 		});
 	}
@@ -414,7 +467,7 @@
 			const listId = getUID();
 			const newItems = items.filter((it) => it.selected);
 			const newName = listName + ' > ' + ($p as any)('item', newItems.length);
-			await store.createList(listId, newName, newItems);
+			await createList({ id: listId, name: newName, items: newItems });
 			await goto(`/list-details/${listId}`);
 			setTimeout(() => {
 				location.reload();
@@ -438,7 +491,7 @@
 			if (!alreadyAdded) {
 				categoryToAdd.color = pickColorForACategory(items, $categoryOptions);
 				editedCategoryId = categoryToAdd.id;
-				store.addCategoryOption(categoryToAdd);
+				addCategoryOption(categoryToAdd);
 				targetCategory = categoryToAdd;
 			} else {
 				targetCategory = alreadyAdded;
@@ -449,22 +502,41 @@
 		const updated = { ...editedItem, category: { ...targetCategory } };
 		if (addToCategoryId) {
 			items = [...items, updated];
+			if (!shouldCreateNewList) {
+				updateList({ id: listId, items: { added: [getChecklistItemFromEditItem(updated)] } });
+			}
 			addToCategoryId = targetCategory.id;
 			editedItem = getNewListItem(targetCategory);
 			editedCategoryId = editedItem.category.id;
 		} else if (isAddToListMode) {
 			items = [...items, updated];
+			if (!shouldCreateNewList) {
+				updateList({ id: listId, items: { added: [getChecklistItemFromEditItem(updated)] } });
+			}
 			editedItem = getNewListItem();
 			editedCategoryId = editedItem.category.id;
 		} else {
 			updateItemInTheList(updated);
+			if (!shouldCreateNewList) {
+				updateList({
+					id: listId,
+					items: {
+						updated: {
+							[updated.id]: {
+								id: updated.id,
+								itemDescription: updated.itemDescription,
+								category: updated.category
+							}
+						}
+					}
+				});
+			}
 			editedItem = undefined;
 		}
+		store.updatePropositionsWithItems([updated]);
 		if (shouldCreateNewList) {
 			createNewList();
 			shouldCreateNewList = false;
-		} else {
-			store.upsertListItems(listId, [updated]);
 		}
 		checkListForDuplicates();
 		if (items.find((it) => it.id === updated.id).isDuplicate) {
@@ -492,8 +564,11 @@
 		isFirstTimeAdded = isFirstTimeUse && items.length > 0;
 	}
 
-	function createNewList(): void {
-		store.createList(listId, listName, items);
+	async function createNewList(): Promise<void> {
+		list = await createList({ id: listId, name: listName, items });
+		listName = list.name;
+		items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
+		shouldCreateNewList = false;
 	}
 
 	function updateItemInTheList(item: CheckListItemEditModel) {
@@ -573,12 +648,7 @@
 
 	async function onToggleHideCrossedOut(): Promise<void> {
 		isHideCrossedOut = !isHideCrossedOut;
-		await store.setHideCrossedOut(listId, isHideCrossedOut);
-	}
-
-	async function onShowCrossedOut(): Promise<void> {
-		isHideCrossedOut = false;
-		await store.setHideCrossedOut(listId, isHideCrossedOut);
+		setHideCrossedOut(listId, isHideCrossedOut);
 	}
 </script>
 
@@ -587,44 +657,35 @@
 		<div slot="page-title">
 			<div class="flex items-center">
 				<TitleWithEdit bind:title={listName} on:title-submit={onListTitleSave} />
-				<div>
-					{#if isHideCrossedOut}
-						<EyeOff on:click={onShowCrossedOut} class="ml-3" size="15" />
-					{/if}
-				</div>
 			</div>
 		</div>
 		<div class="space-x-2 flex items-center" slot="right-content">
 			{#if !isListReadOnly}
+				<div class="hidden md:flex items-center">
+					<UsersByListMini {listId} position="horizontal" border="true" addWrapperClass="h-9" />
+				</div>
 				<Button
 					class="!p-1.5 w-9 h-9"
 					color={isCheckboxView ? 'blue' : 'light'}
 					on:click={onToggleCheckboxViewClicked}
 				>
-					<ListBullet size="23" />
+					<PencilSquare size="23" />
+				</Button>
+				<Button
+					on:click={onToggleHideCrossedOut}
+					class="!p-1.5 mr-2 w-9 h-9"
+					color={isHideCrossedOut ? 'blue' : 'light'}
+				>
+					{#if isHideCrossedOut}
+						<EyeOff size="15" />
+					{:else}
+						<Eye size="15" />
+					{/if}
 				</Button>
 			{/if}
 			<!--			Right menu-->
 			{#if !isListReadOnly}
 				<DotMenu widthClass="w-56">
-					<DropdownItem>
-						<div on:click={onToggleHideCrossedOut} class="w-full flex items-center">
-							<Button class="!p-1.5 mr-2 w-7 h-7" color={isHideCrossedOut ? 'blue' : 'light'}>
-								{#if isHideCrossedOut}
-									<EyeOff size="15" />
-								{:else}
-									<Eye size="15" />
-								{/if}
-							</Button>
-							<div class="whitespace-nowrap">
-								{#if isHideCrossedOut}
-									{$t('lists.details.show-crossed-out')}
-								{:else}
-									{$t('lists.details.hide-crossed-out')}
-								{/if}
-							</div>
-						</div>
-					</DropdownItem>
 					<DropdownItem>
 						<div on:click={onToggleByCategoryViewClicked} class="w-full flex items-center">
 							<Button class="!p-1.5 mr-2 w-7 h-7" color={isByCategoryView ? 'blue' : 'light'}>
@@ -639,14 +700,14 @@
 						{#if $isShareEnabled}
 							<div on:click={onShareClicked} class="w-full flex items-center">
 								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
-									<Link size="15" />
+									<Share size="15" />
 								</Button>
 								{$t('lists.details.share-list')}
 							</div>
 						{:else}
-							<div class="w-full flex items-center">
+							<div on:click={onShareClickedNoAuth} class="w-full flex items-center">
 								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
-									<Link size="15" />
+									<Share size="15" />
 								</Button>
 								{$t('lists.details.share-list')}
 								<Badge color="purple" class="ml-2">
@@ -661,6 +722,14 @@
 								<Link size="15" />
 							</Button>
 							{$t('lists.details.link-to-list')}
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onDuplicateListClicked} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+								<Duplicate size="15" />
+							</Button>
+							{$t('lists.details.duplicate')}
 						</div>
 					</DropdownItem>
 					<DropdownItem>
@@ -706,7 +775,7 @@
 							>
 								{catItem.category.name}
 							</span>
-							{#if isColorsForCategories && isCheckboxView}
+							{#if isByCategoryView && isCheckboxView}
 								<ColorSelector
 									id={catItem.category.id}
 									selected={catItem.category.color}
@@ -785,6 +854,10 @@
 				</div>
 			{/if}
 			<!--EOF Add list to user's collection-->
+			<!--			Users by list for mini screens-->
+			<div class="absolute top-4 right-4 md:hidden">
+				<UsersByListMini {listId} border="true" />
+			</div>
 		</svelte:fragment>
 	</DetailsBody>
 </DetailsPage>

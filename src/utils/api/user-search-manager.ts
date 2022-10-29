@@ -1,17 +1,41 @@
-import { getDB } from './firebase-admin-utils';
+import { getDB, readOnceAdmin } from './firebase-admin-utils';
 import type { AppUser } from '../../types/auth';
+import { userPath } from './db-paths';
 
 export class UserSearchManager {
 	private static users: AppUser[] = [];
+	private static userMap: { [userId: string]: AppUser } = {};
 
 	public static init(): void {
 		if (!this.isInit) {
 			const db = getDB();
 			db.ref('/users').on('value', (snap) => {
-				this.users = Object.values(snap.val());
+				const v = snap.val();
+				this.users = Object.values(v);
+				this.userMap = v || {};
 			});
 			this.isInit = true;
 		}
+	}
+
+	public static async getUser(userId: string): Promise<AppUser | null> {
+		if (this.userMap[userId]) {
+			return this.userMap[userId];
+		}
+		try {
+			const user = await readOnceAdmin<AppUser>(userPath(userId));
+			this.userMap[userId] = user;
+			return this.userMap[userId];
+		} catch (err) {
+			console.log('Error getting user: ', err);
+			return null;
+		}
+	}
+
+	public static async getNonNullUsers(userIds: string[]): Promise<AppUser[]> {
+		const proms = userIds.map((id) => this.getUser(id));
+		const resp = await Promise.all(proms);
+		return resp.filter((u) => !!u) as AppUser[];
 	}
 
 	public static search(query: string): AppUser[] {

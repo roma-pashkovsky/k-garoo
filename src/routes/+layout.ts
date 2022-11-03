@@ -8,6 +8,7 @@ export const load: LayoutLoad = async ({ fetch }): Promise<any> => {
 	await loadUserFromSession(fetch);
 	await loadAppSettings(fetch);
 	await loadCategoryOptions(browser, fetch);
+
 	if (browser) {
 		await AppSettingsStore.init();
 	}

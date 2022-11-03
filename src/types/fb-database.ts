@@ -31,6 +31,7 @@ export type RecentUsers = {
 export type ListsByUser = {
 	[listId: string]: {
 		updated_ts: number;
+		order: number;
 	};
 };
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { press, swipe } from 'svelte-gestures';
+	import { swipe } from 'svelte-gestures';
 	import { Checkbox } from 'flowbite-svelte';
 	import type { CheckListItemEditModel } from '../../types/index';
 	import { createEventDispatcher } from 'svelte';
@@ -66,7 +66,7 @@
 					</div>
 					<div class="text-base font-normal {item?.checked ? 'line-through' : ''}">
 						{item?.itemDescription}
-						<DuplicateBadge class="ml-3" show={item.isDuplicate} />
+						<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
 					</div>
 				</div>
 			</div>
@@ -84,7 +84,7 @@
 					onmousedown="event.preventDefault(); event.stopPropagation();"
 					ondblclick="event.stopPropagation();"
 				>
-					{item?.itemDescription}<DuplicateBadge class="ml-3" show={item.isDuplicate} />
+					{item?.itemDescription}<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
 				</div>
 			</div>
 		{/if}

@@ -19,13 +19,16 @@ import {
 	listItemPropertyPath,
 	listPath,
 	listPropertyPath,
+	listsByMePath,
 	userByListPath
 } from '../../../../../utils/api/db-paths';
 import { getUserFromRequest } from '../../../../../utils/api/get-user-from-request';
 import { arrayToMap } from '../../../../../utils/array-to-map';
 import { getChecklistByUserThroughCache } from '../../../../../utils/api/get-checklist-by-user-through-cache';
-import type { UsersByList } from '../../../../../types/fb-database';
+import type { ListsByUser, UsersByList } from '../../../../../types/fb-database';
 import { redisSet } from '../../../../../utils/api/redis';
+import { ORDERING_GAP } from '../../../../../utils/api/ordering-gap';
+import type { DbChecklist } from '../../../../../types/db-checklist';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -45,6 +48,13 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 		if (exists) {
 			return new Response(JSON.stringify({ error: 'List already exists' }), { status: 401 });
 		} else {
+			const lastList = await readOnceAdmin<ListsByUser>(
+				listsByMePath(user.uid),
+				'order',
+				undefined,
+				1
+			);
+			const insertOrder = lastList ? lastList[Object.keys(lastList)[0]].order + ORDERING_GAP : 0;
 			const itemsMap = arrayToMap<CheckListItem>(list.items || [], 'id');
 			const target = {
 				...list,
@@ -54,7 +64,10 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 				updated_utc: getTimestamp()
 			};
 			await setAdmin([
-				{ path: listByMePath(user.uid, listId), value: { updated_ts: getTimestamp() } },
+				{
+					path: listByMePath(user.uid, listId),
+					value: { updated_ts: getTimestamp(), order: insertOrder }
+				},
 				{ path: listPath(listId), value: target },
 				{
 					path: userByListPath(listId, user.uid),
@@ -86,13 +99,16 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 	const listId: string = params.listId as string;
 	try {
 		const isMyList = await existsAdmin(listByMePath(user.uid, listId));
-		const createdBy = await readOnceAdmin<string>(listPropertyPath(listId, 'createdById'));
-		const isCreatedByMe = user.uid === createdBy;
 		if (!isMyList) {
 			return new Response(JSON.stringify({ error: 'Not your list' }), { status: 401 });
 		}
 		const editRequest: UpdateListRequest = await request.json();
-		const updates: FirebaseSetItem[] = [];
+		const updates: FirebaseSetItem[] = [
+			{
+				path: `${listByMePath(user.uid, listId)}/updated_ts`,
+				value: getTimestamp()
+			}
+		];
 		Object.keys(editRequest).forEach((updateKey: string) => {
 			const castKey = updateKey as keyof UpdateListRequest;
 			if (updateKey === 'items') {
@@ -132,14 +148,9 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 						});
 					});
 				}
-			} else if (castKey === 'isGroupByCategory' && isCreatedByMe) {
-				updates.push({
-					path: listPropertyPath(listId, 'isGroupByCategory'),
-					value: editRequest[castKey]
-				});
 			} else if (allowedUpdates[castKey]) {
 				updates.push({
-					path: listPropertyPath(listId, updateKey as keyof CheckList),
+					path: listPropertyPath(listId, updateKey as keyof DbChecklist),
 					value: editRequest[castKey]
 				});
 			}

@@ -63,11 +63,16 @@ export default {
 		'lists.details.duplicate': 'Duplicate list',
 		'lists.details.share-list': 'Share list',
 		'lists.details.share-list-login': 'Login',
+		'lists.details.add-as-text': 'Add from text...',
 		'lists.details.show-me-around': 'Show me around',
 		'lists.details.duplicate-item-badge': 'Duplicate item',
 		'lists.details.add-item-placeholder': 'Add item',
 		'lists.details.added-toast': 'Added item',
 		'lists.details.add-to-my-lists-button': 'Add to my lists',
+		// add from text
+		'lists.details.add-from-text.title-prefix': 'Add items to',
+		'lists.details.add-from-text.placeholder': 'Type or paste your list here',
+		'lists.details.add-from-text.add-button': 'Add',
 		// batch edit
 		'lists.details.batch-remove-button': 'Remove',
 		'lists.details.move-to-new-list': 'Add to new list',
@@ -172,11 +177,16 @@ export default {
 		'lists.details.duplicate': 'Дублювати список',
 		'lists.details.share-list': 'Поділитись',
 		'lists.details.share-list-login': 'Увійти',
+		'lists.details.add-as-text': 'Додати як текст...',
 		'lists.details.show-me-around': 'Що тут де?',
 		'lists.details.duplicate-item-badge': 'Пункт дублюється',
 		'lists.details.added-toast': 'Додано',
 		'lists.details.add-item-placeholder': 'Додати пункт',
 		'lists.details.add-to-my-lists-button': 'Додати у свої списки',
+		// add from text
+		'lists.details.add-from-text.title-prefix': 'Додати пункти в',
+		'lists.details.add-from-text.placeholder': 'Наберіть або вставте список сюди',
+		'lists.details.add-from-text.add-button': 'Додати',
 		// batch edit
 		'lists.details.batch-remove-button': 'Видалити',
 		'lists.details.move-to-new-list': 'У новий список',

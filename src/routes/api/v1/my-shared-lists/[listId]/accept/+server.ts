@@ -1,14 +1,19 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { getUserFromRequest } from '../../../../../../utils/api/get-user-from-request';
 import { invalidAuth, ok, serverError } from '../../../../../../utils/api/responses';
-import { getTimestamp, setAdmin } from '../../../../../../utils/api/firebase-admin-utils';
+import {
+	getTimestamp,
+	readOnceAdmin,
+	setAdmin
+} from '../../../../../../utils/api/firebase-admin-utils';
 import {
 	listByMePath,
+	listsByMePath,
 	listSharedWithMePath,
 	userByListPath,
 	userBySharedListPath
 } from '../../../../../../utils/api/db-paths';
-import type { UsersByList } from '../../../../../../types/fb-database';
+import type { ListsByUser, UsersByList } from '../../../../../../types/fb-database';
 import { UserByListStatus } from '../../../../../../types';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
@@ -18,12 +23,20 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 	}
 	const listId: string = params.listId as string;
 	try {
+		const lastList = await readOnceAdmin<ListsByUser>(
+			listsByMePath(user.uid),
+			'order',
+			undefined,
+			1
+		);
+		const insertOrder = lastList ? lastList[Object.keys(lastList)[0]].order + 1000 : 0;
 		await setAdmin([
 			{
 				path: listByMePath(user.uid, listId),
 				value: {
-					updated_ts: getTimestamp()
-				}
+					updated_ts: getTimestamp(),
+					order: insertOrder
+				} as ListsByUser[string]
 			},
 			{
 				path: listSharedWithMePath(user.uid, listId),

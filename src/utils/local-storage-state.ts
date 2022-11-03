@@ -1,8 +1,8 @@
 import type {
 	AppSettings,
 	CategoryOption,
-	CheckList,
 	ChecklistSettings,
+	ChecklistWithSettings,
 	PersistedList,
 	Proposition
 } from '../types';
@@ -39,7 +39,7 @@ export const setListIds = (list: PersistedList): void => {
 	localStorage.setItem('k-garoo/list', raw);
 };
 
-export const getListData = (id: string): CheckList | null => {
+export const getListData = (id: string): ChecklistWithSettings | null => {
 	const raw = localStorage.getItem(`k-garoo/listData/${id}`);
 	if (raw) {
 		return JSON.parse(raw);
@@ -51,7 +51,7 @@ export const removeListData = (id: string): void => {
 	localStorage.removeItem(`k-garoo/listData/${id}`);
 };
 
-export const setListData = (list: CheckList): void => {
+export const setListData = (list: ChecklistWithSettings): void => {
 	const raw = JSON.stringify(list);
 	localStorage.setItem(`k-garoo/listData/${list.id}`, raw);
 };

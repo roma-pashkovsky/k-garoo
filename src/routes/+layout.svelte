@@ -6,7 +6,6 @@
 	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
 	import InitConfigPopup from '../lib/InitConfigPopup.svelte';
 	import { AppReloader } from '../stores/app/app-reloader';
-	import { AuthStore } from '../stores/login/auth.store';
 	import { AppSettingsStore } from '../stores/app/app-settings';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
@@ -17,18 +16,20 @@
 	import LoginModal from '../lib/LoginModal.svelte';
 	import UsersByListDrawer from '../lib/UsersByListDrawer.svelte';
 	import { loadSharedListIds } from '../stores/my-shared-lists/my-shared-list.store';
+	import { resolveLZString } from '../utils/string-compressor';
+	import { initPropositions } from '../stores/checklist-details/propositions';
 	import { t } from '../stores/app/translate';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
 	let isSetLocalePopupOpen = !get(AppSettingsStore.isLocaleSet);
-	const isResolved = AuthStore.isResolved;
 	const theme = AppSettingsStore.theme;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
-	$: isNavigating = !!$navigating;
 
 	onMount(() => {
+		resolveLZString();
+		initPropositions();
 		let prevUserId = get(auth)?.user?.id;
 		auth.subscribe((a) => {
 			const newUserId = a?.user?.id;

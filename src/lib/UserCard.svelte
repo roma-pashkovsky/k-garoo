@@ -7,7 +7,7 @@
 </script>
 
 <div class="flex items-center space-x-4  py-2">
-	<Avatar {size} src={user?.photoUrl} alt="user image" class="flex-shrink-0" />
+	<Avatar {size} src={user?.photoUrl || null} alt="user image" class="flex-shrink-0" />
 	<div class="flex-1 min-w-0">
 		<p
 			class="{size === 'xs'

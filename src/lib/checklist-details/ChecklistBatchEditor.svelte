@@ -11,6 +11,7 @@
 	import { throttler } from '../../utils/throttler';
 	import { fly } from 'svelte/transition';
 	import { t } from '../../stores/app/translate';
+	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
@@ -54,7 +55,7 @@
 		if (data.newCategory) {
 			changeCategoryId = data.newCategory.id;
 		} else {
-			changeCategoryId = data.categoryId;
+			changeCategoryId = data.categoryId as string;
 		}
 	}
 
@@ -69,7 +70,7 @@
 	in:fly={{ y: 100 }}
 	out:fly={{ y: 100 }}
 	class="grid grid-cols-2 sm:grid-cols-3 grid-rows-2 sm:grid-rows-1"
-	onclick="event.stopPropagation()"
+	onclick={stopMouseEvent}
 >
 	<button
 		on:click={onRemoveClicked}

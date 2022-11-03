@@ -1,17 +1,10 @@
 <script lang="ts">
 	import { swipe } from 'svelte-gestures';
 	import { createEventDispatcher } from 'svelte';
-	import { ToastService } from '../utils/toasts';
 	import { doubleTap } from '../utils/double-tap';
 
-	const toastStore = ToastService.getInstance().toasts;
-	$: toasts = $toastStore.filter((t) => t.type === 'details-top');
 	export let noTopPadding = false;
 	const dispatch = createEventDispatcher();
-
-	function onBodyLongPress(): void {
-		dispatch('body-long-press');
-	}
 
 	function onBodyClick(): void {
 		dispatch('body-click');

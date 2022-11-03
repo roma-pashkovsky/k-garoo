@@ -36,6 +36,7 @@ async function addCategoryOptionLocal(option: CategoryOption): Promise<void> {
 			const oldOptions = getCategoryOptionsLocalStorage();
 			const newOptions = [option, ...oldOptions];
 			setCategoryOptionsLocalStorage(newOptions);
+			resolve();
 		});
 	});
 }

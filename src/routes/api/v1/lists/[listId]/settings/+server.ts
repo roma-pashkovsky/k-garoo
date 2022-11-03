@@ -4,6 +4,7 @@ import { getUserFromRequest } from '../../../../../../utils/api/get-user-from-re
 import { invalidAuth, ok, serverError } from '../../../../../../utils/api/responses';
 import type { FirebaseSetItem } from '../../../../../../types/firebase-utils';
 import {
+	listPropertyPath,
 	listSettingsByMeByListPath,
 	listSettingsByMeByListPropertyPath
 } from '../../../../../../utils/api/db-paths';
@@ -34,10 +35,18 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 	try {
 		const listId: string = params.listId as string;
 		const editRequest: UpdateChecklistSettingsRequest = await request.json();
+		const createdBy = await readOnceAdmin<string>(listPropertyPath(listId, 'createdById'));
+		const isCreatedByMe = user.uid === createdBy;
 		if (editRequest) {
 			const updated: FirebaseSetItem[] = [];
 			for (const key in editRequest) {
 				const value = (editRequest as any)[key];
+				if (key === 'isGroupByCategory' && isCreatedByMe) {
+					updated.push({
+						path: listPropertyPath(listId, 'isGroupByCategory'),
+						value
+					});
+				}
 				const path = listSettingsByMeByListPropertyPath(
 					user.uid,
 					listId,

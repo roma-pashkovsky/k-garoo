@@ -6,8 +6,8 @@
 	import { getDefaultListName } from '../utils/get-default-list-name';
 
 	export let title: string;
+	export let isFocused: boolean;
 	let isEditListName = false;
-	let isFocused: boolean;
 	const dispatch = createEventDispatcher();
 
 	function onEditListNameOpen(): void {

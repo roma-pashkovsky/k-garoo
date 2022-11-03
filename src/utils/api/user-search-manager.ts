@@ -8,6 +8,7 @@ export class UserSearchManager {
 
 	public static init(): void {
 		if (!this.isInit) {
+			console.log('initializing user search');
 			const db = getDB();
 			db.ref('/users').on('value', (snap) => {
 				const v = snap.val();

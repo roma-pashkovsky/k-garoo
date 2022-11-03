@@ -1,9 +1,10 @@
-import type { CheckList, CheckListItem, ChecklistSettings } from '../../types';
+import type { CheckListItem, ChecklistSettings } from '../../types';
+import type { DbChecklist } from '../../types/db-checklist';
 
 export const userPath = (userId: string) => `users/${userId}`;
 
 export const listPath = (listId: string) => `listData/${listId}`;
-export const listPropertyPath = (listId: string, propertyName: keyof CheckList) =>
+export const listPropertyPath = (listId: string, propertyName: keyof DbChecklist) =>
 	`listData/${listId}/${propertyName}`;
 export const listItemPropertyPath = (
 	listId: string,

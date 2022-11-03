@@ -1,17 +1,12 @@
 import type { RequestHandler } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import type { CheckList } from '../../../../../types';
-import type { ListsSharedWithMe, StopListByMe } from '../../../../../types/fb-database';
+import type { ListsSharedWithMe } from '../../../../../types/fb-database';
 import type { AppUser } from '../../../../../types/auth';
 import { getUserFromRequest } from '../../../../../utils/api/get-user-from-request';
 import { invalidAuth, serverError } from '../../../../../utils/api/responses';
 import { readOnceAdmin } from '../../../../../utils/api/firebase-admin-utils';
-import {
-	listPath,
-	listSharedWithMePath,
-	stopListByMePath,
-	userPath
-} from '../../../../../utils/api/db-paths';
-import { json } from '@sveltejs/kit';
+import { listPath, listSharedWithMePath, userPath } from '../../../../../utils/api/db-paths';
 
 export const GET: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);

@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { Select } from 'flowbite-svelte';
-	import { AppReloader } from '../stores/app/app-reloader';
 	import { AppSettingsStore } from '../stores/app/app-settings';
 	import { get } from 'svelte/store';
 	import { t } from '../stores/app/translate';
 	import type { Language } from '../types';
 
-	let lang: Language = get(AppSettingsStore.lang);
+	let lang: Language = get(AppSettingsStore.lang) as Language;
 
 	const localeOptions = [
 		{
@@ -18,10 +17,9 @@
 			name: 'Українська'
 		}
 	];
-	const appReloader = new AppReloader();
 
 	function onLocaleChange(): void {
-		AppSettingsStore.setLanguage(lang);
+		AppSettingsStore.setLanguage(lang as Language);
 	}
 </script>
 

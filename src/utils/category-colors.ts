@@ -44,7 +44,6 @@ export const pickColorForACategory = (
 	items: CheckListItem[],
 	categoryOptions: CategoryOption[]
 ): string => {
-	console.log(categoryOptions);
 	const busyColors: any = {};
 	items.forEach((it) => (busyColors[it?.category?.color || ''] = true));
 	const resultForItems = categoryColors.find((c) => !busyColors[c]);

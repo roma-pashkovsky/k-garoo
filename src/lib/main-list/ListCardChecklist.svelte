@@ -7,94 +7,114 @@
 	import { Link } from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
 	import ListCardPreview from '../ListCardPreview.svelte';
-	import type { CheckList } from '../../types';
-	import { writable } from 'svelte/store';
+	import type { MainListItem } from '../../types';
 	import type { Readable } from 'svelte/store';
-	import { getList } from '../../stores/checklist-details/checklist-details-data';
+	import { derived } from 'svelte/store';
+	import { getList, listDataStore } from '../../stores/checklist-details/checklist-details-data';
 	import UsersByListMini from '../UsersByListMini.svelte';
 	import type { AppUser } from '../../types/auth';
+	import { slide } from 'svelte/transition';
 
-	export let listId: string;
+	export let listItem: MainListItem;
+	export let lastVisitedId: string | null;
+	export let draggingItemId: string | null;
+	export let hoverItemId: string | null;
 
+	let listId: string = listItem?.id;
+	let listName: string | null = listItem?.name;
+	let cardDiv: HTMLDivElement;
 	const dispatch = createEventDispatcher();
-	let card = writable<CheckList | null>(null);
-	let users: Readable<AppUser[]>;
-	let isDraggable = false;
+	let card = derived(listDataStore, ($listDataStore) => {
+		return $listDataStore[listId];
+	});
+	$: isDraggedOver = hoverItemId === listId;
+	$: isDragged = draggingItemId === listId;
+	$: isLastVisited = lastVisitedId === listId;
 
 	onMount(async () => {
-		const list = await getList(listId, true);
-		card.set(list);
+		listId = listItem?.id;
+		listName = listItem?.name || null;
+		if (lastVisitedId === listId && !!cardDiv) {
+			cardDiv.scrollIntoView({ block: 'center' });
+		}
+		getList(listId, true);
 	});
 
-	function onListRemove(id: string) {
+	function onListRemove() {
 		dispatch('remove', { card: $card });
 	}
 
-	function onCardClicked(id: string) {
+	function onCardClicked() {
 		dispatch('card-click');
 	}
 
 	function onListGetLink() {
 		dispatch('get-link', { card: $card });
 	}
-
-	function onDragHandleMouseDown(): void {
-		isDraggable = true;
-	}
-
-	function onDragHandleMouseUp(): void {
-		isDraggable = false;
-	}
 </script>
 
+{#if isDraggedOver && !isDragged}
+	<div
+		class="overflow-hidden"
+		ondragover="event.preventDefault()"
+		ondragenter="event.preventDefault()"
+		on:drop
+		in:slide
+	>
+		<Card
+			class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 sm:w-80 relative"
+		>
+			<div style="min-height: 112px;" />
+		</Card>
+	</div>
+{/if}
 <div
+	bind:this={cardDiv}
 	use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-left pan-y' }}
-	on:swipe={() => onListRemove(card.id)}
-	on:click={() => onCardClicked(card.id)}
-	draggable={isDraggable}
+	on:swipe={() => onListRemove()}
+	on:click={() => onCardClicked()}
+	draggable="true"
+	on:dragstart
 	on:drag
+	on:dragend
+	on:dragover
 >
 	<Card
-		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 sm:w-80 relative"
+		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 sm:w-80 relative {isLastVisited
+			? 'bg-gray-100 dark:bg-gray-700'
+			: ''}"
 	>
 		<div style="min-height: 112px;">
+			<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
+				<DotMenu>
+					<DropdownItem>
+						<div class="flex items-center" on:click={() => onListRemove()}>
+							<Button class="!p-2 mr-2" color="light">
+								<DocumentRemove size="15" />
+							</Button>
+							{$t('lists.remove-list')}
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div class="flex items-center" on:click={() => onListGetLink()}>
+							<Button class="!p-2 mr-2" color="light">
+								<Link size="15" />
+							</Button>
+							{$t('lists.details.link-to-list')}
+						</div>
+					</DropdownItem>
+				</DotMenu>
+			</div>
+			<h5
+				class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis"
+				style="min-height: 30px"
+			>
+				{$card?.name || listName || ''}
+			</h5>
 			{#if $card}
-				<div
-					class="drag-handle absolute top-1 left-1 w-8 h-8"
-					on:mousedown|stopPropagation|preventDefault={onDragHandleMouseDown}
-					on:mouseup|stopPropagation|preventDefault={onDragHandleMouseUp}
-				>
-					D
-				</div>
-				<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
-					<DotMenu>
-						<DropdownItem>
-							<div class="flex items-center" on:click={() => onListRemove(card.id)}>
-								<Button class="!p-2 mr-2" color="light">
-									<DocumentRemove size="15" />
-								</Button>
-								{$t('lists.remove-list')}
-							</div>
-						</DropdownItem>
-						<DropdownItem>
-							<div class="flex items-center" on:click={() => onListGetLink(card)}>
-								<Button class="!p-2 mr-2" color="light">
-									<Link size="15" />
-								</Button>
-								{$t('lists.details.link-to-list')}
-							</div>
-						</DropdownItem>
-					</DotMenu>
-				</div>
-				<h5
-					class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis"
-					style="min-height: 30px"
-				>
-					{$card.name}
-				</h5>
 				<ListCardPreview list={$card} />
 				<div class="absolute" style="bottom: 0.5rem; right: 0.3rem">
-					<UsersByListMini bind:users listId={$card.id} />
+					<UsersByListMini {listId} />
 				</div>
 			{/if}
 		</div>

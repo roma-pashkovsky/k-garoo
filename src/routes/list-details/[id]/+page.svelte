@@ -2,18 +2,15 @@
 	import ChecklistDetails from '$lib/checklist-details/ChecklistDetails.svelte';
 	import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
 	import { getDefaultListName } from '../../../utils/get-default-list-name';
-	import type { CheckList } from '../../../types';
-	import { derived } from 'svelte/store';
-	import { listDataStore } from '../../../stores/checklist-details/checklist-details-data';
+	import type { ChecklistWithSettings } from '../../../types';
 
 	export let data: ChecklistDetailsLoadData;
 
 	let listName = data.list?.name || getDefaultListName();
-	let list = derived(listDataStore, (listData) => listData[data.listId]);
-	let description = getDescription(data.list);
+	let description = getDescription(data.list || undefined);
 	const url = 'https://k-garoo.fun/list-details/' + data.listId;
 
-	function getDescription(list: CheckList): string {
+	function getDescription(list: ChecklistWithSettings | undefined): string {
 		if (!list) {
 			return 'My checklist';
 		} else {
@@ -42,8 +39,4 @@
 	<meta name="twitter:title" content={listName} />
 </svelte:head>
 
-<ChecklistDetails
-	listId={data.listId}
-	list={data.list}
-	checklistSettings={data.checklistSettings}
-/>
+<ChecklistDetails listId={data.listId} list={data.list} />

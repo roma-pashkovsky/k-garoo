@@ -1,20 +1,14 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { Drawer } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
-	export let hidden;
-	let initialized = false;
+
+	export let hidden: boolean;
 	let transitionParams = {
 		x: 300,
 		duration: 200,
 		easing: sineIn
 	};
-
-	onMount(() => {
-		setTimeout(() => {
-			initialized = true;
-		}, 200);
-	});
 
 	const dispatch = createEventDispatcher();
 </script>

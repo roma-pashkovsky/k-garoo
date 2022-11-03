@@ -6,7 +6,7 @@
 	import type { Theme } from '../types';
 	import { translate } from '../utils/i18n';
 
-	let theme: Theme = get(AppSettingsStore.theme);
+	let theme: Theme = get(AppSettingsStore.theme) as Theme;
 	const themeOptions = derived(AppSettingsStore.lang, () => {
 		return [
 			{

@@ -1,5 +1,4 @@
-import type { CheckList } from '../../types';
-import type { CheckListItem } from '../../types';
+import type { CheckList, CheckListItem, ChecklistWithSettings, PersistedList } from '../../types';
 import { get, writable } from 'svelte/store';
 import { auth } from '../login/auth';
 import { getListData, getListIds, setListData, setListIds } from '../../utils/local-storage-state';
@@ -7,8 +6,9 @@ import type {
 	CreateListRequest,
 	UpdateListRequest
 } from '../../utils/api/client/create-update-list';
+import type { UpdateChecklistSettingsRequest } from '../../utils/api/client/checklist-settings';
 
-export const listDataStore = writable<{ [listId: string]: CheckList | null }>({});
+export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
 
 export const getList = async (
 	listId: string,
@@ -133,13 +133,26 @@ async function addListToUserCollectionLocal(listId: string, ts: number): Promise
 			const newLists = {
 				...listIds,
 				[listId]: {
-					updated_ts: ts
+					updated_ts: ts,
+					order: getNewListInsertOrder(listIds)
 				}
 			};
 			setListIds(newLists);
 			resolve();
 		});
 	});
+}
+
+function getNewListInsertOrder(listIds: PersistedList): number {
+	if (!listIds || !Object.keys(listIds).length) {
+		return 0;
+	}
+	const idArr = Object.keys(listIds);
+	idArr.sort((a, b) => {
+		return (listIds[b].order || 0) - (listIds[a].order || 0);
+	});
+	const lastListId = idArr[idArr.length - 1];
+	return (listIds[lastListId].order || 0) + 1000;
 }
 
 /**
@@ -201,4 +214,87 @@ async function updateListLocal(request: UpdateListRequest): Promise<CheckList> {
 	}
 	setListData(list);
 	return getListLocal(listId) as Promise<CheckList>;
+}
+
+/**
+ * Group by category
+ */
+export const setIsGroupedByCategory = async (
+	listId: string,
+	isByCategory: boolean
+): Promise<void> => {
+	listDataStore.update((prev) => {
+		return {
+			...prev,
+			[listId]: {
+				...(prev[listId] as ChecklistWithSettings),
+				isGroupByCategory: isByCategory
+			}
+		};
+	});
+	const authUser = get(auth)?.user;
+	if (authUser) {
+		await setIsGroupedByCategorySettingsAPI(listId, isByCategory);
+	} else {
+		setIsGroupedByCategoryLocal(listId, isByCategory);
+	}
+};
+
+async function setIsGroupedByCategorySettingsAPI(
+	listId: string,
+	isByCategory: boolean
+): Promise<void> {
+	const request: UpdateChecklistSettingsRequest = {
+		isGroupByCategory: isByCategory
+	};
+	await fetch(`/api/v1/lists/${listId}/settings`, {
+		method: 'PUT',
+		body: JSON.stringify(request)
+	});
+}
+
+function setIsGroupedByCategoryLocal(listId: string, isByCategory: boolean): void {
+	const listData = getListData(listId);
+	setListData({ ...(listData as ChecklistWithSettings), isGroupByCategory: isByCategory });
+}
+
+/**
+ * Hide crossed out
+ */
+export const setHideCrossedOut = async (
+	listId: string,
+	isHideCrossedOut: boolean
+): Promise<void> => {
+	listDataStore.update((prev) => {
+		return {
+			...prev,
+			[listId]: {
+				...(prev[listId] as ChecklistWithSettings),
+				hideCrossedOut: isHideCrossedOut
+			}
+		};
+	});
+	if (get(auth).user) {
+		await setIsHideCrossedOutSettingsAPI(listId, isHideCrossedOut);
+	} else {
+		await setIsHideCrossedOutLocal(listId, isHideCrossedOut);
+	}
+};
+
+async function setIsHideCrossedOutSettingsAPI(
+	listId: string,
+	isHideCrossedOut: boolean
+): Promise<void> {
+	const request: UpdateChecklistSettingsRequest = {
+		hideCrossedOut: isHideCrossedOut
+	};
+	await fetch(`/api/v1/lists/${listId}/settings`, {
+		method: 'PUT',
+		body: JSON.stringify(request)
+	});
+}
+
+async function setIsHideCrossedOutLocal(listId: string, isHideCrossedOut: boolean): Promise<void> {
+	const listData = getListData(listId);
+	setListData({ ...(listData as ChecklistWithSettings), hideCrossedOut: isHideCrossedOut });
 }

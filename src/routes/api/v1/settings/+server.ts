@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	}
 };
 
-export const DELETE: RequestHandler = async ({ request }): Promise<Response> => {
+export const DELETE: RequestHandler = async (): Promise<Response> => {
 	try {
 		return new Response(JSON.stringify({ status: 'ok' }), {
 			headers: { 'Set-Cookie': `settings=; SameSite=Strict; path=/; HttpOnly; Max-Age=0` }

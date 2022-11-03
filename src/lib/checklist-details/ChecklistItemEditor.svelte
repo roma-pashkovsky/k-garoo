@@ -1,30 +1,30 @@
 <script lang="ts">
 	import type { CategoryOption, CheckListItem, Proposition } from '../../types';
+	import type { FuzzySearch } from '../../utils/fuzzy-search';
 	import { ArrowRight } from 'svelte-heros';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { customCategoryId, otherCategoryId } from '../../utils/local-storage-state';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
-	import { FuzzySearch } from '../../utils/fuzzy-search';
 	import { fade } from 'svelte/transition';
-	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
 	import { getUID } from '../../utils/get-uid';
-	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
+	import type { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
 	import { debouncer } from '../../utils/debouncer';
 	import { isEnter, Keycodes } from '../../utils/keycodes';
 	import ChecklistEditorDemo from '../checklist-details-demo/ChecklistEditorDemo.svelte';
 	import { t } from '../../stores/app/translate';
+	import { updateProposition } from '../../stores/checklist-details/propositions';
+	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
 	export let propositionsFuzzySearch: FuzzySearch<Proposition>;
-	export let store: ChecklistDetailsStore;
 	export let categoryAutodetector: CategoryAutodetector;
 	export let isFirstTimeUse: boolean;
 
 	const dispatch = createEventDispatcher();
-	let inputEl: HTMLInputElement;
+	let inputEl: HTMLTextAreaElement;
 	let customCategoryInput: string;
 	let prevEditedItemId: string;
 	let propositions: Proposition[] = [];
@@ -44,7 +44,6 @@
 	}
 
 	$: displayPropositions = propositions.slice(1);
-	$: resetIdForInput = editedItem?.id + selectedPropositionTS;
 	$: isValidInput =
 		editedItem.itemDescription?.length > 0 &&
 		!(editedCategoryId === customCategoryId && !customCategoryInput?.length);
@@ -81,7 +80,7 @@
 		return (text.match(/[\n\r]/g) || []).length + 1;
 	}
 
-	function onInput(event): void {
+	function onInput(event: InputEvent): void {
 		const val = editedItem.itemDescription;
 		if (getLineCount(val) > 1) {
 			event.preventDefault();
@@ -103,7 +102,7 @@
 
 	function onInputChange() {
 		propositions = [
-			{ ...editedItem } as Proposition,
+			{ ...editedItem } as any as Proposition,
 			...getFilteredPropositions(editedItem.itemDescription)
 		];
 		propositionsHighlightIndex = 0;
@@ -140,7 +139,7 @@
 		if (!isValidInput) {
 			return;
 		}
-		let addCategory: CategoryOption;
+		let addCategory: CategoryOption = undefined;
 		if (editedCategoryId === customCategoryId) {
 			addCategory = {
 				id: getUID(),
@@ -174,20 +173,12 @@
 		focus();
 		// update proposition last used utc
 		prop.lastUsedUTC = new Date().getTime();
-		store.updateProposition(prop);
-	}
-
-	function onFormSwipe(event) {
-		if (event.detail.direction === 'right') {
-			onAddFormSubmit();
-		}
+		updateProposition(prop);
 	}
 </script>
 
-<!--use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}-->
-<!--on:swipe={onFormSwipe}-->
 <form
-	onclick="event.stopPropagation()"
+	onclick={stopMouseEvent}
 	on:submit|preventDefault={onAddFormSubmit}
 	on:swiped-right={onAddFormSubmit}
 	class="relative flex items-start w-full"
@@ -245,9 +236,9 @@
 							: displayPropositions.length === 2
 							? 'two-fold'
 							: ''}"
-						transition:fade
+						in:fade
 						on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
-						onmousedown="event.stopPropagation()"
+						onmousedown={stopMouseEvent}
 						onmouseup="event.stopPropagation()"
 						onclick="event.stopPropagation()"
 					>

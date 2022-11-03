@@ -11,6 +11,13 @@
 	const store = new DecodeStore();
 
 	onMount(async () => {
+		// wait for lz-string to load
+		setTimeout(() => {
+			doProcess();
+		}, 3000);
+	});
+
+	async function doProcess() {
 		const compressor = new StringCompressor();
 		const uri = $page.params.uri;
 		if (!uri) {
@@ -24,7 +31,7 @@
 		} else {
 			throw new Error('Unable to parse url');
 		}
-	});
+	}
 </script>
 
 <svelte:head>

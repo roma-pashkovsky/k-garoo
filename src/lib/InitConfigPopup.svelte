@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { Button, Drawer, Modal } from 'flowbite-svelte';
+	import { Button, Drawer } from 'flowbite-svelte';
 	import LocaleSelector from './LocaleSelector.svelte';
 	import ThemeSelector from './ThemeSelector.svelte';
 	import { t } from '../stores/app/translate';
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { get } from 'svelte/store';
-	import { AppSettingsStore } from '../stores/app/app-settings';
 	import { sineIn } from 'svelte/easing';
 	import { click_outside } from '../utils/click-outside';
+	import { stopMouseEvent } from '../utils/stop-mouse-event.js';
 
 	export let open: boolean;
 
@@ -16,7 +15,6 @@
 
 	let step = 1;
 	const dispatch = createEventDispatcher();
-	const lang = get(AppSettingsStore.lang);
 	let transitionParams = {
 		x: 320,
 		duration: 200,
@@ -90,7 +88,7 @@
 				<p class="text-sm text-gray-600 dark:text-gray-400 py-3">
 					{$t('app.initial-popup.settings-disclaimer')}
 				</p>
-				<div onclick="event.stopPropagation()" class="flex justify-end">
+				<div onclick={stopMouseEvent} class="flex justify-end">
 					<Button on:click={onStep1Submit} type="submit" class="w-50">{$t('app.ok.long')}</Button>
 				</div>
 			</div>
@@ -99,11 +97,16 @@
 				<div>{$t('app.initial-popup.add-to-main-recommend')}</div>
 
 				<div class="flex justify-center my-4">
-					<img src="/img/add-to-main.png" class="rounded" width="120" />
+					<img
+						src="/img/add-to-main.png"
+						class="rounded"
+						width="120"
+						alt="Add app to main screen"
+					/>
 				</div>
 
 				<div class="flex justify-end space-x-2">
-					<Button class="w-50" on:click={onStep2Submit} color="white">{$t('app.later')}</Button>
+					<Button class="w-50" on:click={onStep2Submit} color="light">{$t('app.later')}</Button>
 					<Button class="w-50" on:click={onShowHowAddToMain}>{$t('app.show-me-how')}</Button>
 				</div>
 			</div>

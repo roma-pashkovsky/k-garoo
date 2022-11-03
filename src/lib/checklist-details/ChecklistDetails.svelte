@@ -14,13 +14,14 @@
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 	import {
+		BarsArrowUp,
 		Briefcase,
 		Eye,
 		InformationCircle,
 		Link,
+		PencilSquare,
 		Plus,
-		Share,
-		PencilSquare
+		Share
 	} from 'svelte-heros-v2';
 	import { press } from 'svelte-gestures';
 	import { goto } from '$app/navigation';
@@ -30,7 +31,7 @@
 		CategoryOption,
 		CheckList,
 		CheckListItemEditModel,
-		ChecklistSettings,
+		ChecklistWithSettings,
 		GroupedByCategoryItem,
 		Proposition
 	} from '../../types';
@@ -53,19 +54,24 @@
 	import { sineIn } from 'svelte/easing';
 	import { AuthStore } from '../../stores/login/auth.store';
 	import { AppSettingsStore, setHasSeenDemo } from '../../stores/app/app-settings';
-	import { createList, updateList } from '../../stores/checklist-details/checklist-details-data';
+	import {
+		createList,
+		setHideCrossedOut,
+		setIsGroupedByCategory,
+		updateList
+	} from '../../stores/checklist-details/checklist-details-data';
 	import { getChecklistItemFromEditItem } from '../../utils/get-checklist-item-from-edit-item';
 	import { addCategoryOption } from '../../stores/checklist-details/category-options';
-	import {
-		setHideCrossedOut,
-		setIsGroupedByCategory
-	} from '../../stores/checklist-details/checklist-settings';
 	import { objectValues } from '../../utils/object-values';
 	import UsersByListMini from '../UsersByListMini.svelte';
+	import {
+		propositionStore,
+		updatePropositionsWithItems
+	} from '../../stores/checklist-details/propositions';
+	import { fade } from 'svelte/transition';
 
 	export let listId: string;
-	export let list: CheckList | null;
-	export let checklistSettings: ChecklistSettings | null;
+	export let list: ChecklistWithSettings | null;
 	export let propositions: Readable<Proposition[]>;
 
 	let categoryAutodetector: Readable<CategoryAutodetector>;
@@ -77,16 +83,16 @@
 	let categoryOptions: Readable<CategoryOption[]>;
 	let store: ChecklistDetailsStore;
 
-	let isByCategoryView = checklistSettings?.isGroupByCategory ?? (list?.isGroupByCategory || false);
+	let isByCategoryView = list?.isGroupByCategory || false;
 	let isCheckboxView = false;
-	let editedItem: CheckListItemEditModel;
+	let editedItem: CheckListItemEditModel | undefined;
 	let editedCategoryId: string;
 	let isAddToListMode: boolean;
 	let addToCategoryId: string;
 	let propositionsFuzzySearchTS: Writable<number> = writable(new Date().getTime());
 	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
-	let isHideCrossedOut = checklistSettings?.hideCrossedOut || false;
+	let isHideCrossedOut = list?.hideCrossedOut || false;
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
 	let shouldCreateNewList = !list;
@@ -108,14 +114,13 @@
 
 	onMount(() => {
 		store = new ChecklistDetailsStore(list, get(AppSettingsStore.lang));
-		isFirstTimeUse = !get(AppSettingsStore.hasSeenListDemo) && list?.isMyList;
+		isFirstTimeUse = !get(AppSettingsStore.hasSeenListDemo) && (!list || list?.isMyList);
 		categoryOptions = store.categoryOptions;
-		propositions = ChecklistDetailsStore.propositions;
+		propositions = propositionStore;
 		categoryAutodetector = store.getCategoryAutoDetector();
 		setDataFromList(list);
-		propositionsFuzzySearch = derived(
-			[ChecklistDetailsStore.propositions, propositionsFuzzySearchTS],
-			([props, ts]) => getPropositionsFuzzySearch(props)
+		propositionsFuzzySearch = derived([propositions, propositionsFuzzySearchTS], ([props, ts]) =>
+			getPropositionsFuzzySearch(props)
 		);
 		checkListForDuplicates();
 	});
@@ -166,7 +171,7 @@
 	}
 
 	function onBackClick(): void {
-		goto('/home/lists');
+		goto(`/home/lists?lastVisitedId=${listId}`);
 	}
 
 	function onBodySwipeLeft(): void {
@@ -194,7 +199,7 @@
 
 	function onToggleByCategoryViewClicked(): void {
 		isByCategoryView = !isByCategoryView;
-		setIsGroupedByCategory(listId, isByCategoryView, list?.createdById);
+		setIsGroupedByCategory(listId, isByCategoryView);
 	}
 
 	async function onGenerateListLinkClicked(): Promise<void> {
@@ -260,6 +265,10 @@
 
 	function onShareClickedNoAuth(): void {
 		AuthStore.triggerLoginClicked();
+	}
+
+	function onAddAsTextClicked(): void {
+		goto(`/list-details/${listId}/add-from-text`);
 	}
 
 	function onShowMeAround() {
@@ -407,7 +416,7 @@
 
 	function onBatchChangeCategory(e: ChangeCategoryEvent): void {
 		const previousItems = items.map((it) => ({ ...it, category: { ...it.category } }));
-		let category;
+		let category: CategoryOption;
 		if (e.newCategory) {
 			const compareName = e.newCategory.name.toLowerCase();
 			const alreadyAdded = $categoryOptions.find((opt) => opt.name.toLowerCase() === compareName);
@@ -420,6 +429,9 @@
 			}
 		} else {
 			category = $categoryOptions.find((c) => c.id === e.categoryId);
+		}
+		if (!category.color) {
+			category.color = pickColorForACategory(items, $categoryOptions);
 		}
 		let count = 0;
 		const changed: any = {};
@@ -439,7 +451,7 @@
 				}
 			}
 		});
-		store.updatePropositionsWithItems(objectValues(changed));
+		updatePropositionsWithItems(objectValues(changed));
 		deselectAllCheckboxes();
 		toastManager.push({
 			text: ($t as any)('lists.details.changed-category-toast'),
@@ -499,6 +511,9 @@
 		} else {
 			targetCategory = $categoryOptions.find((c) => c.id === editedCategoryId);
 		}
+		if (!targetCategory.color) {
+			targetCategory.color = pickColorForACategory(items, $categoryOptions);
+		}
 		const updated = { ...editedItem, category: { ...targetCategory } };
 		if (addToCategoryId) {
 			items = [...items, updated];
@@ -533,13 +548,14 @@
 			}
 			editedItem = undefined;
 		}
-		store.updatePropositionsWithItems([updated]);
+		updatePropositionsWithItems([updated]);
 		if (shouldCreateNewList) {
 			createNewList();
+			updatePropositionsWithItems(items);
 			shouldCreateNewList = false;
 		}
 		checkListForDuplicates();
-		if (items.find((it) => it.id === updated.id).isDuplicate) {
+		if (items.find((it) => it.id === updated.id)?.isDuplicate) {
 			toastManager.push({
 				text: ($t as any)('lists.details.duplicate-item-badge'),
 				duration: 2000,
@@ -660,28 +676,30 @@
 			</div>
 		</div>
 		<div class="space-x-2 flex items-center" slot="right-content">
-			{#if !isListReadOnly}
-				<div class="hidden md:flex items-center">
-					<UsersByListMini {listId} position="horizontal" border="true" addWrapperClass="h-9" />
+			{#if !isListReadOnly && items?.length}
+				<div in:fade class="space-x-2 flex items-center">
+					<div class="hidden md:flex items-center">
+						<UsersByListMini {listId} position="horizontal" border="true" addWrapperClass="h-9" />
+					</div>
+					<Button
+						class="!p-1.5 w-9 h-9"
+						color={isCheckboxView ? 'blue' : 'light'}
+						on:click={onToggleCheckboxViewClicked}
+					>
+						<PencilSquare size="23" />
+					</Button>
+					<Button
+						on:click={onToggleHideCrossedOut}
+						class="!p-1.5 mr-2 w-9 h-9"
+						color={isHideCrossedOut ? 'blue' : 'light'}
+					>
+						{#if isHideCrossedOut}
+							<EyeOff size="15" />
+						{:else}
+							<Eye size="15" />
+						{/if}
+					</Button>
 				</div>
-				<Button
-					class="!p-1.5 w-9 h-9"
-					color={isCheckboxView ? 'blue' : 'light'}
-					on:click={onToggleCheckboxViewClicked}
-				>
-					<PencilSquare size="23" />
-				</Button>
-				<Button
-					on:click={onToggleHideCrossedOut}
-					class="!p-1.5 mr-2 w-9 h-9"
-					color={isHideCrossedOut ? 'blue' : 'light'}
-				>
-					{#if isHideCrossedOut}
-						<EyeOff size="15" />
-					{:else}
-						<Eye size="15" />
-					{/if}
-				</Button>
 			{/if}
 			<!--			Right menu-->
 			{#if !isListReadOnly}
@@ -730,6 +748,14 @@
 								<Duplicate size="15" />
 							</Button>
 							{$t('lists.details.duplicate')}
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onAddAsTextClicked} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+								<BarsArrowUp size="15" />
+							</Button>
+							{$t('lists.details.add-as-text')}
 						</div>
 					</DropdownItem>
 					<DropdownItem>
@@ -869,7 +895,6 @@
 			{isByCategoryView}
 			categoryOptions={$categoryOptions}
 			propositionsFuzzySearch={$propositionsFuzzySearch}
-			{store}
 			categoryAutodetector={$categoryAutodetector}
 			{isFirstTimeUse}
 			on:form-submit={(e) => onAddFormSubmit(e)}

@@ -2,7 +2,6 @@
 	import { Button } from 'flowbite-svelte';
 	import { ArrowLeft } from 'svelte-heros';
 	import { createEventDispatcher } from 'svelte';
-	export let noBottomPadding = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -17,8 +16,8 @@
 >
 	<div class="top flex justify-between items-center">
 		<div class="flex items-center">
-			<Button color="white" class="!p-1.5">
-				<ArrowLeft size="24" on:click={onBackClicked} />
+			<Button on:click={onBackClicked} color="light" class="!p-1.5 !border-none">
+				<ArrowLeft size="24" />
 			</Button>
 		</div>
 		<div class="flex items-center left flex-1 mx-2 sm:mx-4">

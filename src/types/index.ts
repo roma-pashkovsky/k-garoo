@@ -6,6 +6,11 @@ export enum UserByListStatus {
 	PARTICIPANT = 'participant'
 }
 
+export type MainListItem = {
+	id: string;
+	name?: string;
+};
+
 export type CheckList = {
 	id: string;
 	created_utc: number;
@@ -13,11 +18,12 @@ export type CheckList = {
 	name: string;
 	items: CheckListItem[];
 	isMyList?: boolean;
-	// only for server Checklists
-	isGroupByCategory?: boolean;
 	sharedBy?: AppUser;
 	createdById?: string;
 };
+
+export type ChecklistWithSettings = CheckList & ChecklistSettings;
+
 export type CheckListItem = {
 	id: string;
 	itemDescription: string;
@@ -69,5 +75,8 @@ export type AppSettings = {
 export type PersistedList = {
 	[listId: string]: {
 		updated_ts: number;
+		order: number;
+		// only when getting list from API, might be absent
+		name?: string;
 	};
 };

@@ -10,6 +10,11 @@ export class FuzzySearch<T> {
 	private _fuze: any;
 	constructor(items: T[], options: FuzzyOptions<T>) {
 		this._fuze = new (window as any).Fuse(items, options);
+		if (!this._fuze) {
+			setTimeout(() => {
+				this._fuze = new (window as any).Fuse(items, options);
+			}, 4000);
+		}
 	}
 
 	public search(t: string): { item: T; score?: number }[] {

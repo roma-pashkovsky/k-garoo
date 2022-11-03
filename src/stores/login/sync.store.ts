@@ -2,8 +2,7 @@ import {
 	getCategoryOptionsLocalStorage,
 	getListData,
 	getListIds,
-	getListSettingsLocalStorage,
-	removeListData
+	getListSettingsLocalStorage
 } from '../../utils/local-storage-state';
 import type { CheckList, ChecklistSettings } from '../../types';
 import type { SyncRequest } from '../../utils/api/client/sync';

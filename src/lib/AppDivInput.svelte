@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Keycodes } from '../utils/keycodes';
-	import { createEventDispatcher } from 'svelte';
 
 	export let id: string;
 	export let value = '';
 	export let div: HTMLDivElement;
-	const dispatch = createEventDispatcher();
 
 	let prevId: string;
 
@@ -23,22 +20,21 @@
 		setCaretToEnd(div);
 	});
 
-	function onKeyDown({ keyCode }: KeyboardEvent): void {
-		if (keyCode === Keycodes.ENTER) {
-			dispatch('submit');
-		}
-	}
-
 	function setCaretToEnd(target: HTMLDivElement) {
 		if (!target) {
 			return;
 		}
 		const range = document.createRange();
 		const sel = window.getSelection();
-		range.selectNodeContents(target);
-		range.collapse(false);
-		sel.removeAllRanges();
-		sel.addRange(range);
+		if (range) {
+			range.selectNodeContents(target);
+			range.collapse(false);
+		}
+		if (sel) {
+			sel.removeAllRanges();
+			sel.addRange(range);
+		}
+
 		target.focus();
 		range.detach(); // optimization
 	}

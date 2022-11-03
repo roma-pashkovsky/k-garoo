@@ -1,14 +1,13 @@
 import type { RequestHandler } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import {
 	createSessionCookie,
 	existsAdmin,
-	readOnceAdmin,
 	setAdmin,
 	verifyIdToken
 } from '../../../../utils/api/firebase-admin-utils';
 import { getUserFromRequest } from '../../../../utils/api/get-user-from-request';
 import { userPath } from '../../../../utils/api/db-paths';
-import { json } from '@sveltejs/kit';
 import { serverError } from '../../../../utils/api/responses';
 import { UserSearchManager } from '../../../../utils/api/user-search-manager';
 
@@ -42,7 +41,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	});
 };
 
-export const DELETE: RequestHandler = async ({ request }): Promise<Response> => {
+export const DELETE: RequestHandler = async (): Promise<Response> => {
 	return new Response('ok', {
 		headers: {
 			'Set-Cookie': 'session=; SameSite=Strict; Path=/; Secure; HttpOnly; Max-Age=0'

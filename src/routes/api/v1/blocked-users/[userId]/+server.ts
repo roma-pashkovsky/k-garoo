@@ -4,7 +4,6 @@ import { invalidAuth, ok, serverError } from '../../../../../utils/api/responses
 import { setAdmin } from '../../../../../utils/api/firebase-admin-utils';
 import {
 	stopListAgainstMeByUserPath,
-	stopListAgainstMePath,
 	stopListByMeByUserPath
 } from '../../../../../utils/api/db-paths';
 

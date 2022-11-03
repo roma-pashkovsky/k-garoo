@@ -3,9 +3,6 @@
  * Copyright (c)2012 Stephen M. McKamey.
  * Licensed under The MIT License.
  *
- * @param {number} speed max delay between multi-clicks in milliseconds (optional, default: 500ms)
- * @param {number} distance max distance between multi-clicks in pixels (optional, default: 40px)
- * @return {function(Event)} touchend/mouseup event handler
  */
 export const doubleTapHandler = function (speed: number, distance: number) {
 	'use strict';

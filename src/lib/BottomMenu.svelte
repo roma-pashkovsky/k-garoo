@@ -1,18 +1,8 @@
 <script lang="ts">
-	import { swipe } from 'svelte-gestures';
 	import { createEventDispatcher } from 'svelte';
 
-	export let hidden: boolean;
+	export let hidden = false;
 	const dispatch = createEventDispatcher();
-
-	function onSwipe(event) {
-		if (event.detail.direction === 'left') {
-			dispatch('swipe-left');
-		}
-		if (event.detail.direction === 'right') {
-			dispatch('swipe-right');
-		}
-	}
 
 	function onSwipedLeft(): void {
 		dispatch('swipe-left');

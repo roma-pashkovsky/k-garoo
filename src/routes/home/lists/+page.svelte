@@ -5,7 +5,11 @@
 	import { getDecodeLinkToList } from '../../../utils/get-decode-link-to-list';
 	import { ToastService } from '../../../utils/toasts';
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
-	import { items, removeList } from '../../../stores/checklist-main-list/checklist-main-list-store';
+	import {
+		items,
+		removeList,
+		reorderList
+	} from '../../../stores/checklist-main-list/checklist-main-list-store';
 	import { t } from '../../../stores/app/translate';
 	import { get } from 'svelte/store';
 	import { getUID } from '../../../utils/get-uid';
@@ -15,6 +19,11 @@
 
 	const toastManager = ToastService.getInstance();
 	const url = 'https://www.garoo.fun/home/lists';
+
+	let draggingItemId: string | null = null;
+	let hoverItemId: string | null = null;
+	let lastVisitedId: string | null = null;
+	// $page?.url?.searchParams?.get('lastVisitedId');
 
 	function onListRemove(listId: string, list: CheckList): void {
 		if (confirm(get(t)('lists.remove-warning', { list: list.name }))) {
@@ -46,6 +55,21 @@
 	function onAddButtonClicked() {
 		const id = getUID();
 		goto(`/list-details/${id}`);
+	}
+
+	function onDragItemDropped(): void {
+		const currList = get(items);
+		const hoverItemIndex = currList.findIndex(({ id }) => id === hoverItemId);
+		const dragItemIndex = currList.findIndex(({ id }) => id === draggingItemId);
+		if (hoverItemIndex === undefined || dragItemIndex === undefined) {
+			return;
+		}
+		const temp = currList[hoverItemIndex];
+		currList[hoverItemIndex] = currList[dragItemIndex];
+		currList[dragItemIndex] = temp;
+		reorderList(currList);
+		draggingItemId = null;
+		hoverItemId = null;
 	}
 </script>
 
@@ -97,12 +121,24 @@
 			</EmptyPage>
 		{/if}
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-			{#each $items as id (id)}
+			{#each $items as item (item.id)}
 				<ListCardChecklist
-					listId={id}
-					on:remove={(event) => onListRemove(id, event.detail.card)}
-					on:card-click={() => onCardClicked(id)}
+					listItem={item}
+					{draggingItemId}
+					{hoverItemId}
+					{lastVisitedId}
+					on:remove={(event) => onListRemove(item.id, event.detail.card)}
+					on:card-click={() => onCardClicked(item.id)}
 					on:get-link={(event) => onListGetLink(event.detail.card)}
+					on:dragstart={() => {
+						draggingItemId = item.id;
+					}}
+					on:dragover={() => (hoverItemId = item.id)}
+					on:dragend={() => {
+						draggingItemId = null;
+						hoverItemId = null;
+					}}
+					on:drop={onDragItemDropped}
 				/>
 			{/each}
 		</div>

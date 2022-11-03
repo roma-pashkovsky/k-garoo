@@ -12,11 +12,12 @@
 
 	export let listId: string;
 	export let position: 'vertical' | 'horizontal' = 'vertical';
-	export let border;
-	export let bg;
+	export let border: boolean;
+	export let bg: boolean;
 	export let addWrapperClass = '';
 
 	onMount(() => {
+		console.log('loading users by ', listId);
 		loadUsersByList(listId);
 	});
 
@@ -41,7 +42,7 @@
 	>
 		{#each $displayUsers as user}
 			<div class="rounded p-1">
-				<Avatar rounded="true" src={user.photoUrl} size="xs" />
+				<Avatar rounded={true} src={user.photoUrl || null} size="xs" />
 			</div>
 		{/each}
 		<div class="text-gray-500 dark:text-gray-200 flex items-center justify-center text-xs p-1">

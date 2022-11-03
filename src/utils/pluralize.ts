@@ -1,5 +1,3 @@
-import { derived } from 'svelte/store';
-
 const pluralizations: {
 	[locale: string]: { [word: string]: { default: string; special: { [count: number]: string } } };
 } = {

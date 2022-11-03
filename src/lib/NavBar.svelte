@@ -4,7 +4,6 @@
 	import { page } from '$app/stores';
 	import { AuthStore } from '../stores/login/auth.store';
 	import { t } from '../stores/app/translate';
-	import { click_outside } from '../utils/click-outside';
 
 	let hidden = true;
 	const user = AuthStore.user;
@@ -57,9 +56,10 @@
 			<a href="/home/support-ukraine"
 				><img
 					src="/flag-Ukraine.png"
-					height="15"
+					height="24"
 					alt="support Ukraine"
 					class="h-6 inline-block"
+					width="40"
 				/></a
 			>
 		</span>

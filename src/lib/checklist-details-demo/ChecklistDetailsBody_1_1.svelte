@@ -19,7 +19,7 @@
 		</div>
 		{$t('lists.details.demo.edit-item')}
 		<div class="flex space-x-2 justify-end mt-3">
-			<Button color="default" on:click={onForward} class="text-blue-600"
+			<Button color="light" on:click={onForward} class="text-blue-600"
 				>{$t('lists.details.demo.got-it')}</Button
 			>
 		</div>

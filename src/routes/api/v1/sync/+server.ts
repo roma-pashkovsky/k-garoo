@@ -10,7 +10,7 @@ import {
 } from '../../../../utils/api/firebase-admin-utils';
 import { categoryOptionsByUserPath, listByMePath, listPath } from '../../../../utils/api/db-paths';
 import { arrayToMap } from '../../../../utils/array-to-map';
-import type { CheckList, CheckListItem } from '../../../../types';
+import type { CheckListItem } from '../../../../types';
 import type { CategoryOptionsByUser } from '../../../../types/fb-database';
 import type { FirebaseSetItem } from '../../../../types/firebase-utils';
 

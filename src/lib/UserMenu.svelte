@@ -28,7 +28,7 @@
 
 {#if $user}
 	<div {id} class="relative">
-		<Avatar size="sm" class="ml-3" src={$user.photoUrl} />
+		<Avatar size="sm" class="ml-3" src={$user.photoUrl || null} />
 		{#if $sharedListCount}
 			<div class="absolute" style="right: 0; bottom: 5px">
 				<Badge rounded index>{$sharedListCount}</Badge>

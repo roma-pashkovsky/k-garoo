@@ -37,7 +37,7 @@ export async function redisGet<T>(key: string): Promise<T | null> {
 		}) as Promise<T | null>;
 }
 
-export async function redisSet<T>(key: string, val: any): Promise<void> {
+export async function redisSet(key: string, val: any): Promise<void> {
 	return getRedis()
 		.then((client) => client.set(key, JSON.stringify(val)))
 		.catch((err) => {

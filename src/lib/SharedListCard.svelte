@@ -73,7 +73,10 @@
 		}
 	}
 
-	function onBlockUser(userId: string): void {
+	function onBlockUser(userId: string | null): void {
+		if (!userId) {
+			return;
+		}
 		if (confirm(get(t)('app.basic-confirm'))) {
 			doBlockUser(userId);
 		}
@@ -132,8 +135,10 @@
 				class="w-24"
 				outline
 				color="red"
-				on:click={() => onBlockUser($list.sharedBy.id)}
-				>{$t('share-list.requests.block-user-button')}</Button
+				on:click={() => onBlockUser($list?.sharedBy?.id)}
+				>{#if isBlocking}
+					<Spinner class="mr-3" size="4" />
+				{/if}{$t('share-list.requests.block-user-button')}</Button
 			>
 		</div>
 	{/if}

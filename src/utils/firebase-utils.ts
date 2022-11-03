@@ -1,4 +1,3 @@
-import type { FirebaseApp } from 'firebase/app';
 import { initializeApp } from 'firebase/app';
 import type { User, UserCredential } from 'firebase/auth';
 import { FacebookAuthProvider, getAuth, signInWithPopup, signOut } from 'firebase/auth';
@@ -10,12 +9,10 @@ import type { AppUser } from '../types/auth';
 export class FirebaseUtils {
 	private static isInitialized = false;
 
-	private static app: FirebaseApp;
-
 	private static initializeApp(): void {
 		if (!this.isInitialized) {
 			try {
-				this.app = initializeApp({
+				initializeApp({
 					appId: variables.FIREBASE_APP_ID,
 					apiKey: variables.FIREBASE_API_KEY,
 					authDomain: variables.FIREBASE_AUTH_DOMAIN,

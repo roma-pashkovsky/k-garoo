@@ -16,14 +16,14 @@
 	import Page from '../../../lib/Page.svelte';
 	import { Plus } from 'svelte-heros-v2';
 	import { doubleTap } from '../../../utils/double-tap';
+	import { page } from '$app/stores';
 
 	const toastManager = ToastService.getInstance();
 	const url = 'https://www.garoo.fun/home/lists';
 
 	let draggingItemId: string | null = null;
 	let hoverItemId: string | null = null;
-	let lastVisitedId: string | null = null;
-	// $page?.url?.searchParams?.get('lastVisitedId');
+	let lastVisitedId: string | null = $page?.url?.searchParams?.get('lastVisitedId');
 
 	function onListRemove(listId: string, list: CheckList): void {
 		if (confirm(get(t)('lists.remove-warning', { list: list.name }))) {

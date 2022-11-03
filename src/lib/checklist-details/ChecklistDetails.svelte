@@ -134,7 +134,7 @@
 	}
 
 	onDestroy(() => {
-		if (store && isFirstTimeUse) {
+		if (!get(AppSettingsStore.hasSeenListDemo)) {
 			setHasSeenDemo();
 		}
 		toastManager.clear();
@@ -362,6 +362,12 @@
 			if (!isCheckboxView) {
 				doRemoveItems([item.id]);
 			}
+		}
+	}
+
+	function onItemSwipeLeft(item: CheckListItemEditModel): void {
+		if (!isCheckboxView) {
+			doRemoveItems([item.id]);
 		}
 	}
 
@@ -819,7 +825,7 @@
 								{item}
 								{isCheckboxView}
 								toBeDeleted={itemsToBeDeleted[item.id]}
-								on:swipe={(event) => onItemSwipe(item, event)}
+								on:swiped-left={() => onItemSwipeLeft(item)}
 								on:item-click={() => onItemClick(item)}
 								on:item-long-press={() => onItemLongPress(item)}
 								on:checkbox-change={() => onItemCheckboxChange(item)}
@@ -837,7 +843,7 @@
 					{item}
 					{isCheckboxView}
 					toBeDeleted={itemsToBeDeleted[item.id]}
-					on:swipe={(event) => onItemSwipe(item, event)}
+					on:swiped-left={() => onItemSwipeLeft(item)}
 					on:item-click={() => onItemClick(item)}
 					on:item-long-press={() => onItemLongPress(item)}
 					on:checkbox-change={() => onItemCheckboxChange(item)}

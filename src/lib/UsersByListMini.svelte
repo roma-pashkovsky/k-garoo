@@ -17,7 +17,6 @@
 	export let addWrapperClass = '';
 
 	onMount(() => {
-		console.log('loading users by ', listId);
 		loadUsersByList(listId);
 	});
 

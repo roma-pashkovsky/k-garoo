@@ -75,7 +75,8 @@
 				<!--				use:press={{ timeframe: 400, triggerBeforeFinished: true }}-->
 				<div
 					use:swipe={{ timeframe: 300, minSwipeDistance: 70, touchAction: 'pan-y' }}
-					on:swipe
+					on:swiped-left
+					on:swiped-right
 					on:long-press={onItemLongPress}
 					class="item py-1.5 px-2 my-2 rounded {addClass} {item?.checked ? 'line-through' : ''}"
 					on:mouseup|preventDefault|stopPropagation={onItemMouseDown}

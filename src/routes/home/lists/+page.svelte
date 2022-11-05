@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { CheckList } from '../../../types';
+	import type { CheckList, MainListItem } from '../../../types';
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
 	import { getDecodeLinkToList } from '../../../utils/get-decode-link-to-list';
 	import { ToastService } from '../../../utils/toasts';
@@ -17,6 +17,7 @@
 	import { Plus } from 'svelte-heros-v2';
 	import { doubleTap } from '../../../utils/double-tap';
 	import { page } from '$app/stores';
+	import MoveCheckListBottomDrawer from '../../../lib/main-list/MoveCheckListBottomDrawer.svelte';
 
 	const toastManager = ToastService.getInstance();
 	const url = 'https://www.garoo.fun/home/lists';
@@ -24,6 +25,8 @@
 	let draggingItemId: string | null = null;
 	let hoverItemId: string | null = null;
 	let lastVisitedId: string | null = $page?.url?.searchParams?.get('lastVisitedId');
+	let movedChecklist: MainListItem | null = null;
+	let movedIndex = -1;
 
 	function onListRemove(listId: string, list: CheckList): void {
 		if (confirm(get(t)('lists.remove-warning', { list: list.name }))) {
@@ -71,6 +74,52 @@
 		draggingItemId = null;
 		hoverItemId = null;
 	}
+
+	function onListInsertAfter(afterId: string): void {
+		const currList = [...get(items)];
+		const newList = [];
+		currList.forEach((it) => {
+			if (it.id !== movedChecklist.id) {
+				newList.push(it);
+			}
+			if (it.id === afterId) {
+				newList.push({ id: movedChecklist.id, name: movedChecklist.name });
+			}
+		});
+		reorderList(newList);
+		movedChecklist = null;
+		movedIndex = -1;
+		toastManager.push({
+			text: get(t)('app.toasts.success'),
+			color: 'success',
+			type: 'page-bottom',
+			onCancel: () => {
+				reorderList(currList);
+			}
+		});
+	}
+
+	// means moving to the top of the list
+	function onListInsertBefore(beforeId: string): void {
+		const currList = [...get(items)];
+		const newList: MainListItem[] = [{ id: movedChecklist.id, name: movedChecklist.name }];
+		currList.forEach((it) => {
+			if (it.id !== movedChecklist.id) {
+				newList.push(it);
+			}
+		});
+		reorderList(newList);
+		movedChecklist = null;
+		movedIndex = -1;
+		toastManager.push({
+			text: get(t)('app.toasts.success'),
+			color: 'success',
+			type: 'page-bottom',
+			onCancel: () => {
+				reorderList(currList);
+			}
+		});
+	}
 </script>
 
 <svelte:head>
@@ -109,7 +158,13 @@
 </div>
 
 <Page>
-	<div class="flex items-start justify-center">
+	<div
+		class="flex items-start justify-center"
+		on:dblclick={() => {
+			movedChecklist = null;
+			movedIndex = -1;
+		}}
+	>
 		{#if !$items?.length}
 			<EmptyPage class="pt-6">
 				{$t('lists.no_lists')}
@@ -120,13 +175,15 @@
 				>
 			</EmptyPage>
 		{/if}
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-			{#each $items as item (item.id)}
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-36">
+			{#each $items as item, index (item.id)}
 				<ListCardChecklist
 					listItem={item}
 					{draggingItemId}
 					{hoverItemId}
 					{lastVisitedId}
+					{index}
+					{movedIndex}
 					on:remove={(event) => onListRemove(item.id, event.detail.card)}
 					on:card-click={() => onCardClicked(item.id)}
 					on:get-link={(event) => onListGetLink(event.detail.card)}
@@ -139,8 +196,21 @@
 						hoverItemId = null;
 					}}
 					on:drop={onDragItemDropped}
+					on:move={() => {
+						movedChecklist = item;
+						movedIndex = index;
+					}}
+					on:insert-after={() => onListInsertAfter(item.id)}
+					on:insert-before={() => onListInsertBefore(item.id)}
 				/>
 			{/each}
 		</div>
 	</div>
 </Page>
+<MoveCheckListBottomDrawer
+	{movedChecklist}
+	on:drawer-close={() => {
+		movedChecklist = null;
+		movedIndex = -1;
+	}}
+/>

@@ -26,17 +26,21 @@ export const initPropositions = () => {
 export const updatePropositionsWithItems = (items: CheckListItem[]): void => {
 	savedPropositions.update((oldPropositions) => {
 		const utc = new Date().getTime();
-		const propsMap: { [desc: string]: Proposition } = (oldPropositions || []).reduce((p, c) => {
-			return { ...p, [c.itemDescription.toLowerCase().trim()]: c };
-		}, {});
-		items.forEach((item) => {
-			propsMap[item.itemDescription.toLowerCase().trim()] = {
-				id: item.id,
-				itemDescription: item.itemDescription,
-				category: item.category,
-				lastUsedUTC: utc
-			};
-		});
+		const propsMap: { [desc: string]: Proposition } = (oldPropositions || [])
+			.filter((p) => !!p.itemDescription)
+			.reduce((p, c) => {
+				return { ...p, [c.itemDescription.toLowerCase().trim()]: c };
+			}, {});
+		items
+			.filter((it) => !!it.itemDescription)
+			.forEach((item) => {
+				propsMap[item.itemDescription.toLowerCase().trim()] = {
+					id: item.id,
+					itemDescription: item.itemDescription,
+					category: item.category,
+					lastUsedUTC: utc
+				};
+			});
 		let newPropositions = Object.keys(propsMap).map((propKey) => propsMap[propKey]);
 		newPropositions.sort((a, b) => b.lastUsedUTC - a.lastUsedUTC);
 		if (newPropositions.length > 100) {

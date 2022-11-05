@@ -1,26 +1,6 @@
-let lzString: any;
+import * as LZString from 'lz-string';
 
-export const resolveLZString = () => {
-	console.log('resolving lz string');
-	const limit = 10000;
-	const start = new Date().getTime();
-	let handle: any;
-	const fn = () => {
-		handle = setTimeout(() => {
-			lzString = (window as any)?.LZString as any;
-			const elapsed = new Date().getTime() - start;
-			if (lzString || elapsed > limit) {
-				if (lzString) {
-					console.log('resolved lz-string');
-				}
-				clearTimeout(handle);
-			} else {
-				fn();
-			}
-		}, 200);
-	};
-	fn();
-};
+const lzString = LZString;
 
 export class StringCompressor {
 	public compressToEncodedURIComponent(source: string): string {
@@ -34,6 +14,6 @@ export class StringCompressor {
 		if (!lzString) {
 			console.warn('No lzstring');
 		}
-		return lzString.decompressFromEncodedURIComponent(source);
+		return lzString.decompressFromEncodedURIComponent(source) as string;
 	}
 }

@@ -151,7 +151,7 @@ function getNewListInsertOrder(listIds: PersistedList): number {
 	idArr.sort((a, b) => {
 		return (listIds[b].order || 0) - (listIds[a].order || 0);
 	});
-	const lastListId = idArr[idArr.length - 1];
+	const lastListId = idArr[0];
 	return (listIds[lastListId].order || 0) + 1000;
 }
 

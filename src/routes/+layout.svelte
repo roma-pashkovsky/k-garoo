@@ -16,7 +16,6 @@
 	import LoginModal from '../lib/LoginModal.svelte';
 	import UsersByListDrawer from '../lib/UsersByListDrawer.svelte';
 	import { loadSharedListIds } from '../stores/my-shared-lists/my-shared-list.store';
-	import { resolveLZString } from '../utils/string-compressor';
 	import { initPropositions } from '../stores/checklist-details/propositions';
 	import { t } from '../stores/app/translate';
 
@@ -28,7 +27,6 @@
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 
 	onMount(() => {
-		resolveLZString();
 		initPropositions();
 		let prevUserId = get(auth)?.user?.id;
 		auth.subscribe((a) => {

@@ -2,6 +2,7 @@
 	import { Dropdown, ToolbarButton } from 'flowbite-svelte';
 	import { getRandomElementId } from '../utils/get-random-element-id';
 	export let id = 'trigger-id' + getRandomElementId(6);
+	export let open: boolean;
 	export let widthClass = 'w-44';
 </script>
 
@@ -25,6 +26,6 @@
 	</ToolbarButton>
 </div>
 
-<Dropdown class={widthClass} triggeredBy="#{id}">
+<Dropdown bind:open class={widthClass} triggeredBy="#{id}">
 	<slot />
 </Dropdown>

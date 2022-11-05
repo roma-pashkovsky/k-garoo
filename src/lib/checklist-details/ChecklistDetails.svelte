@@ -210,6 +210,7 @@
 			url = getDecodeLinkToList({
 				id: listId,
 				name: listName,
+				isGroupByCategory: isByCategoryView,
 				items: items.map((s, i) => {
 					return {
 						id: s.id,
@@ -228,6 +229,7 @@
 			await navigator.clipboard.writeText(url);
 			toastManager.push({
 				text: ($t as any)('lists.details.link-created'),
+				color: 'success',
 				closePrevious: false
 			});
 		} catch (err) {
@@ -356,15 +358,6 @@
 		}
 	}
 
-	function onItemSwipe(item: CheckListItemEditModel, event: any): void {
-		const direction = event.detail.direction;
-		if (direction === 'left') {
-			if (!isCheckboxView) {
-				doRemoveItems([item.id]);
-			}
-		}
-	}
-
 	function onItemSwipeLeft(item: CheckListItemEditModel): void {
 		if (!isCheckboxView) {
 			doRemoveItems([item.id]);
@@ -489,6 +482,27 @@
 			await goto(`/list-details/${listId}`);
 			setTimeout(() => {
 				location.reload();
+			});
+		}
+	}
+
+	async function onBatchCopyItems(): Promise<void> {
+		const selected = items.filter((it) => it.selected);
+		const text = selected.map((it) => `■  ${it.itemDescription}`).join('\n');
+		try {
+			await navigator.clipboard.writeText(text);
+			toastManager.push({
+				text: ($t as any)('lists.details.items-copies'),
+				color: 'success',
+				closePrevious: false,
+				type: 'details-top'
+			});
+		} catch (err) {
+			toastManager.push({
+				text: ($t as any)('app.toasts.failed'),
+				color: 'warning',
+				closePrevious: false,
+				type: 'details-top'
 			});
 		}
 	}
@@ -920,6 +934,7 @@
 			on:batch-remove={onBatchRemove}
 			on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
 			on:batch-save-new-list={onBatchSaveAsNewList}
+			on:batch-copy-items={onBatchCopyItems}
 			on:dismiss={onBodyClick}
 		/>
 	</BottomMenu>

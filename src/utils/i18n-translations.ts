@@ -32,11 +32,15 @@ export default {
 		'app.login-popup.title': 'Login',
 		'app.login-popup.facebook-button': 'Login with Facebook',
 		'app.login-popup.sync-data-checkbox': 'Sync lists to my account',
+		// Main list page
 		'lists.no_lists': 'No lists.',
 		'lists.no_lists_cta_1': "Let's",
 		'lists.no_lists_cta_link': 'add one.',
 		'lists.remove-list': 'Remove',
 		'lists.remove-warning': '{{list}} will be removed. Are you sure?',
+		// move list
+		'list.move.menu': 'Move list...',
+		'list.move.drawer-label': 'Moving list',
 		'lists.create_new_list.header': 'New list',
 		'lists.create_new_list.other-category': 'Other',
 		'lists.create_new_list.create-category': 'Add category',
@@ -51,6 +55,7 @@ export default {
 			'Selected items will be removed. Are you sure?',
 		// list details
 		'lists.details.link-created': 'Link copied to clipboard',
+		'lists.details.items-copies': 'Copied items',
 		'lists.details.edit-instruction': 'Press and hold to edit the list',
 		'lists.details.remove-warning': 'Will remove list. Are you sure?',
 		'lists.details.save-as-new-list-warning':
@@ -76,6 +81,7 @@ export default {
 		// batch edit
 		'lists.details.batch-remove-button': 'Remove',
 		'lists.details.move-to-new-list': 'Add to new list',
+		'lists.details.copy-items': 'Copy items',
 		'lists.details.removed-toast': 'Removed',
 		'lists.details.changed-category-toast': 'Changed category',
 		'lists.details.demo.add': 'Double click to start adding items',
@@ -147,13 +153,16 @@ export default {
 		'app.login-popup.title': 'Вхід',
 		'app.login-popup.facebook-button': 'Вхід через Facebook',
 		'app.login-popup.sync-data-checkbox': 'Завантажити списки у мій акаунт',
+		// Main list
 		'lists.no_lists': 'Поки що тут немає списків.',
 		'lists.no_lists_cta_1': 'Нумо',
 		'lists.no_lists_cta_link': 'створимо список.',
 		'lists.remove-list': 'Видалити',
 		'lists.remove-warning': 'Видаляємо {{list}}. Впевнені?',
-		'lists.details.save-as-new-list-warning':
-			'Зберігаємо виділені пункти в новий список і переходимо до нього. Цей список залишиться без змін. Гаразд?',
+		// move list
+		'list.move.menu': 'Перемістити...',
+		'list.move.drawer-label': 'Переміщуємо список',
+
 		'lists.create_new_list.header': 'Новий список',
 		'lists.create_new_list.other-category': 'Інше',
 		'lists.create_new_list.create-category': 'Створити...',
@@ -167,7 +176,10 @@ export default {
 		'lists.create_new_list.remove-selected-warning': 'Видаляємо обрані пункти?',
 		// list details
 		'lists.details.link-created': 'Посилання скопійовано',
+		'lists.details.items-copies': 'Пункти скопійовано',
 		'lists.details.edit-instruction': 'Натисніть і утримуйте, щоб відредагувати список',
+		'lists.details.save-as-new-list-warning':
+			'Зберігаємо виділені пункти в новий список і переходимо до нього. Цей список залишиться без змін. Гаразд?',
 		'lists.details.remove-warning': 'Видаляємо список. Впевнені?',
 		'lists.details.by-category': 'За категоріями',
 		'lists.details.hide-crossed-out': 'Сховати закреслені',
@@ -190,6 +202,7 @@ export default {
 		// batch edit
 		'lists.details.batch-remove-button': 'Видалити',
 		'lists.details.move-to-new-list': 'У новий список',
+		'lists.details.copy-items': 'Копіювати пункти',
 		'lists.details.removed-toast': 'Видалено',
 		'lists.details.changed-category-toast': 'Категорію змінено',
 		'lists.details.demo.add': 'Клацніть двічі, щоб додати пункт',

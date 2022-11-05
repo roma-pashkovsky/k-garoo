@@ -11,10 +11,7 @@
 	const store = new DecodeStore();
 
 	onMount(async () => {
-		// wait for lz-string to load
-		setTimeout(() => {
-			doProcess();
-		}, 3000);
+		doProcess();
 	});
 
 	async function doProcess() {

@@ -1,3 +1,5 @@
+import Fuse from 'fuse.js';
+
 export interface FuzzyOptions<T> {
 	includeScore?: boolean;
 	keys?: (keyof T)[];
@@ -8,8 +10,8 @@ export interface FuzzyOptions<T> {
 
 export class FuzzySearch<T> {
 	private _fuze: any;
-	constructor(items: T[], options: FuzzyOptions<T>) {
-		this._fuze = new (window as any).Fuse(items, options);
+	constructor(private items: T[], options: FuzzyOptions<T>) {
+		this._fuze = new Fuse(items, options as any as Fuse.IFuseOptions<any>);
 		if (!this._fuze) {
 			setTimeout(() => {
 				this._fuze = new (window as any).Fuse(items, options);

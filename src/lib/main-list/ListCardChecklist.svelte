@@ -4,17 +4,18 @@
 	import { Button, Card, DropdownItem } from 'flowbite-svelte';
 	import DotMenu from '../DotMenu.svelte';
 	import { DocumentRemove } from 'svelte-heros';
-	import { Link } from 'svelte-heros-v2';
+	import { ArrowDown, ArrowLeft, ArrowsUpDown, Link } from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
 	import ListCardPreview from '../ListCardPreview.svelte';
 	import type { MainListItem } from '../../types';
-	import type { Readable } from 'svelte/store';
 	import { derived } from 'svelte/store';
 	import { getList, listDataStore } from '../../stores/checklist-details/checklist-details-data';
 	import UsersByListMini from '../UsersByListMini.svelte';
-	import type { AppUser } from '../../types/auth';
 	import { slide } from 'svelte/transition';
+	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 
+	export let index: number;
+	export let movedIndex: number;
 	export let listItem: MainListItem;
 	export let lastVisitedId: string | null;
 	export let draggingItemId: string | null;
@@ -27,9 +28,14 @@
 	let card = derived(listDataStore, ($listDataStore) => {
 		return $listDataStore[listId];
 	});
+	let dotMenuOpen: boolean;
 	$: isDraggedOver = hoverItemId === listId;
 	$: isDragged = draggingItemId === listId;
 	$: isLastVisited = lastVisitedId === listId;
+	$: isMoving = movedIndex >= 0;
+	$: isMovingMe = movedIndex === index;
+	$: isFirst = index === 0;
+	$: isMovedAfterMe = movedIndex === index + 1;
 
 	onMount(async () => {
 		listId = listItem?.id;
@@ -44,12 +50,25 @@
 		dispatch('remove', { card: $card });
 	}
 
+	function onListMove() {
+		dotMenuOpen = false;
+		dispatch('move');
+	}
+
 	function onCardClicked() {
 		dispatch('card-click');
 	}
 
 	function onListGetLink() {
 		dispatch('get-link', { card: $card });
+	}
+
+	function onInsertAfter() {
+		dispatch('insert-after');
+	}
+
+	function onInsertBefore() {
+		dispatch('insert-before');
 	}
 </script>
 
@@ -82,17 +101,25 @@
 	<Card
 		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 sm:w-80 relative {isLastVisited
 			? 'bg-gray-100 dark:bg-gray-700'
-			: ''}"
+			: ''} {isMovingMe ? '!border-blue-600' : ''}"
 	>
 		<div style="min-height: 112px;">
 			<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
-				<DotMenu>
+				<DotMenu bind:open={dotMenuOpen}>
 					<DropdownItem>
 						<div class="flex items-center" on:click={() => onListRemove()}>
 							<Button class="!p-2 mr-2" color="light">
 								<DocumentRemove size="15" />
 							</Button>
 							{$t('lists.remove-list')}
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div class="flex items-center" on:click={onListMove}>
+							<Button class="!p-2 mr-2" color="light">
+								<ArrowsUpDown size="15" />
+							</Button>
+							{$t('list.move.menu')}
 						</div>
 					</DropdownItem>
 					<DropdownItem>
@@ -118,6 +145,46 @@
 				</div>
 			{/if}
 		</div>
+		{#if isMoving && !isMovedAfterMe && !isMovingMe}
+			<div
+				class="insert-after mobile absolute -bottom-7 -right-4 md:hidden"
+				on:click={stopMouseEvent}
+				on:mousedown={stopMouseEvent}
+			>
+				<div on:click|stopPropagation|preventDefault={onInsertAfter}>
+					<ArrowLeft color="#1a56db" />
+				</div>
+			</div>
+			<div
+				class="insert-after desktop absolute -top-4 -right-7 hidden md:block"
+				on:click={stopMouseEvent}
+				on:mousedown={stopMouseEvent}
+			>
+				<div on:click|stopPropagation|preventDefault={onInsertAfter}>
+					<ArrowDown color="#1a56db" />
+				</div>
+			</div>
+		{/if}
+		{#if isMoving && !isMovingMe && isFirst}
+			<div
+				class="insert-before mobile md:hidden absolute -top-6 -right-4 "
+				on:click={stopMouseEvent}
+				on:mousedown={stopMouseEvent}
+			>
+				<div on:click|stopPropagation|preventDefault={onInsertBefore}>
+					<ArrowLeft color="#1a56db" />
+				</div>
+			</div>
+			<div
+				class="insert-before desktop hidden md:block absolute -top-4 -left-7 "
+				on:click={stopMouseEvent}
+				on:mousedown={stopMouseEvent}
+			>
+				<div on:click|stopPropagation|preventDefault={onInsertBefore}>
+					<ArrowDown color="#1a56db" />
+				</div>
+			</div>
+		{/if}
 	</Card>
 </div>
 

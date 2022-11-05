@@ -30,6 +30,7 @@
 	import type {
 		CategoryOption,
 		CheckList,
+		CheckListItem as CheckListItemType,
 		CheckListItemEditModel,
 		ChecklistWithSettings,
 		GroupedByCategoryItem,
@@ -69,6 +70,8 @@
 		updatePropositionsWithItems
 	} from '../../stores/checklist-details/propositions';
 	import { fade } from 'svelte/transition';
+	import PasteListener from '../PasteListener.svelte';
+	import { parseListFromText } from '../../utils/parse-list-from-text';
 
 	export let listId: string;
 	export let list: ChecklistWithSettings | null;
@@ -105,6 +108,8 @@
 	let shareDrawerHidden = true;
 	let isShareEnabled = AuthStore.isLoggedIn;
 	const darkBG = darkEquivalents;
+	// paste list functionality
+	let pasteDiv: HTMLDivElement;
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: selectCategoryOptions = ($categoryOptions || []).map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
@@ -269,8 +274,27 @@
 		AuthStore.triggerLoginClicked();
 	}
 
-	function onAddAsTextClicked(): void {
-		goto(`/list-details/${listId}/add-from-text`);
+	async function onAddAsTextClicked(): Promise<void> {
+		try {
+			const text = await navigator.clipboard.readText();
+			if (text?.length) {
+				const parsed = parseListFromText(text);
+				await addListItems(parsed);
+			} else {
+				toastManager.push({
+					text: get(t)('lists.details.warning-no-list-in-clipboard'),
+					color: 'warning',
+					type: 'page-bottom'
+				});
+			}
+		} catch (err) {
+			toastManager.push({
+				text: get(t)('app.toasts.failed'),
+				color: 'warning',
+				type: 'page-bottom'
+			});
+			console.error(err);
+		}
 	}
 
 	function onShowMeAround() {
@@ -507,6 +531,59 @@
 		}
 	}
 
+	function onBodyFocus(): void {
+		console.log('Body focused');
+		if (pasteDiv) {
+			pasteDiv.focus();
+		}
+	}
+
+	async function onPasteText(event): Promise<void> {
+		const pasteEvent = event?.detail as ClipboardEvent;
+		if (pasteEvent && pasteEvent.clipboardData) {
+			const text = pasteEvent.clipboardData.getData('text/plain');
+			if (text && text.length) {
+				try {
+					const parsed = parseListFromText(text);
+					await addListItems(parsed);
+				} catch (err) {
+					toastManager.push({
+						text: get(t)('app.toasts.failed'),
+						color: 'warning',
+						type: 'page-bottom'
+					});
+					console.error(err);
+				}
+			}
+		}
+	}
+
+	async function addListItems(addItems: CheckListItemType[]): Promise<void> {
+		const prevLen = items.length;
+		addItems.forEach((it, ind) => (it.orderAdded = (prevLen + ind) * 1000));
+		if (addItems.length) {
+			if (list) {
+				list = await updateList({ id: listId, items: { added: addItems } });
+			} else {
+				const prev = items.map((s) => getChecklistItemFromEditItem(s));
+				list = await createList({ id: listId, name: listName, items: [...prev, ...addItems] });
+			}
+			setDataFromList(list);
+			checkListForDuplicates();
+			toastManager.push({
+				text: get(t)('app.toasts.success'),
+				color: 'success',
+				type: 'page-bottom',
+				duration: 5000,
+				onCancel: async () => {
+					list = await updateList({ id: listId, items: { removed: addItems.map((s) => s.id) } });
+					setDataFromList(list);
+					checkListForDuplicates();
+				}
+			});
+		}
+	}
+
 	function onAddFormSubmit(e?: any): void {
 		if (!editedItem?.itemDescription?.length) {
 			editedItem = undefined;
@@ -698,9 +775,9 @@
 		<div class="space-x-2 flex items-center" slot="right-content">
 			{#if !isListReadOnly && items?.length}
 				<div in:fade class="space-x-2 flex items-center">
-					<div class="hidden md:flex items-center">
-						<UsersByListMini {listId} position="horizontal" border="true" addWrapperClass="h-9" />
-					</div>
+					<!--					<div class="hidden md:flex items-center">-->
+					<!--						<UsersByListMini {listId} position="horizontal" border="true" addWrapperClass="h-9" />-->
+					<!--					</div>-->
 					<Button
 						class="!p-1.5 w-9 h-9"
 						color={isCheckboxView ? 'blue' : 'light'}
@@ -796,6 +873,8 @@
 		on:body-swipe-left={onBodySwipeLeft}
 		on:body-swipe-right={onBodySwipeRight}
 		on:dbltap={onListBodyDoubleClick}
+		on:paste={onPasteText}
+		on:focus={onBodyFocus}
 	>
 		<!--        List-->
 		{#if isByCategoryView}
@@ -901,7 +980,7 @@
 			{/if}
 			<!--EOF Add list to user's collection-->
 			<!--			Users by list for mini screens-->
-			<div class="absolute top-4 right-4 md:hidden">
+			<div class="absolute top-4 right-4 md:right-8 md:top-24">
 				<UsersByListMini {listId} border="true" />
 			</div>
 		</svelte:fragment>
@@ -960,3 +1039,5 @@
 	isShown={isFirstTimeAdded}
 	on:complete={() => (isFirstTimeUse = false)}
 />
+
+<PasteListener bind:pasteDiv on:paste={onPasteText} />

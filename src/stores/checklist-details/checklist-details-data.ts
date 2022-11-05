@@ -7,6 +7,7 @@ import type {
 	UpdateListRequest
 } from '../../utils/api/client/create-update-list';
 import type { UpdateChecklistSettingsRequest } from '../../utils/api/client/checklist-settings';
+import { appFetch } from '../../utils/app-fetch';
 
 export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
 
@@ -60,8 +61,7 @@ async function getListBrowserFirst(
 }
 
 async function getListFromApi(listId: string, f: any): Promise<CheckList | null> {
-	const listResp = await f(`/api/v1/lists/${listId}`);
-	return listResp.json();
+	return appFetch<CheckList | null>(`/lists/${listId}`, { method: 'GET' }, f);
 }
 
 async function getListLocal(listId: string): Promise<CheckList | null> {
@@ -91,11 +91,10 @@ export const createList = async (request: CreateListRequest): Promise<CheckList>
 };
 
 async function createListAPI(request: CreateListRequest): Promise<CheckList> {
-	const resp = await fetch(`/api/v1/lists/${request.id}`, {
+	return appFetch<CheckList>(`/lists/${request.id}`, {
 		method: 'POST',
 		body: JSON.stringify(request)
 	});
-	return (await resp.json()) as CheckList;
 }
 
 export async function createListLocal(request: CreateListRequest): Promise<CheckList> {
@@ -174,6 +173,11 @@ async function updateListAPI(request: UpdateListRequest): Promise<CheckList> {
 		method: 'PUT',
 		body: JSON.stringify(request)
 	});
+	if (!resp.ok) {
+		const body = await resp.json();
+		console.log(body);
+		throw new Error(body?.error);
+	}
 	return resp.json() as Promise<CheckList>;
 }
 

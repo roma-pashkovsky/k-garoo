@@ -55,6 +55,7 @@ export default {
 			'Selected items will be removed. Are you sure?',
 		// list details
 		'lists.details.link-created': 'Link copied to clipboard',
+		'lists.details.warning-no-list-in-clipboard': 'You should copy the list first',
 		'lists.details.items-copies': 'Copied items',
 		'lists.details.edit-instruction': 'Press and hold to edit the list',
 		'lists.details.remove-warning': 'Will remove list. Are you sure?',
@@ -68,7 +69,7 @@ export default {
 		'lists.details.duplicate': 'Duplicate list',
 		'lists.details.share-list': 'Share list',
 		'lists.details.share-list-login': 'Login',
-		'lists.details.add-as-text': 'Add from text...',
+		'lists.details.add-as-text': 'Paste text...',
 		'lists.details.show-me-around': 'Show me around',
 		'lists.details.duplicate-item-badge': 'Duplicate item',
 		'lists.details.add-item-placeholder': 'Add item',
@@ -176,6 +177,7 @@ export default {
 		'lists.create_new_list.remove-selected-warning': 'Видаляємо обрані пункти?',
 		// list details
 		'lists.details.link-created': 'Посилання скопійовано',
+		'lists.details.warning-no-list-in-clipboard': 'Спершу скопіюйте список',
 		'lists.details.items-copies': 'Пункти скопійовано',
 		'lists.details.edit-instruction': 'Натисніть і утримуйте, щоб відредагувати список',
 		'lists.details.save-as-new-list-warning':
@@ -189,7 +191,7 @@ export default {
 		'lists.details.duplicate': 'Дублювати список',
 		'lists.details.share-list': 'Поділитись',
 		'lists.details.share-list-login': 'Увійти',
-		'lists.details.add-as-text': 'Додати як текст...',
+		'lists.details.add-as-text': 'Вставити як текст...',
 		'lists.details.show-me-around': 'Що тут де?',
 		'lists.details.duplicate-item-badge': 'Пункт дублюється',
 		'lists.details.added-toast': 'Додано',

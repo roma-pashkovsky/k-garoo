@@ -46,7 +46,7 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 	try {
 		const exists = await existsAdmin(listPath(listId));
 		if (exists) {
-			return new Response(JSON.stringify({ error: 'List already exists' }), { status: 401 });
+			return badRequest('List already exists');
 		} else {
 			const lastList = await readOnceAdmin<ListsByUser>(
 				listsByMePath(user.uid),

@@ -21,14 +21,16 @@
 
 <!--use:press={{ timeframe: 500, triggerBeforeFinished: true }}-->
 <!--on:press={onBodyLongPress}-->
-<div on:click={onBodyClick} class="flex-1 relative">
+<div on:click={onBodyClick} class="flex-1 relative" on:paste>
 	<div
+		tabindex="0"
 		use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
 		on:swipe={onBodySwipe}
 		on:dblclick
 		use:doubleTap
 		on:dbltap
-		class="select-none absolute top-0 bottom-0 left-0 right-0 px-4 md:px-8 pb-36 overflow-y-auto {noTopPadding
+		on:focus
+		class="absolute top-0 bottom-0 left-0 right-0 px-4 md:px-8 pb-36 overflow-y-auto {noTopPadding
 			? 'pt-0'
 			: 'pt-4'}"
 	>

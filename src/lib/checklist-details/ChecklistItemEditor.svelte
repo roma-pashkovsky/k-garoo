@@ -84,7 +84,8 @@
 		const val = editedItem.itemDescription;
 		if (getLineCount(val) > 1) {
 			event.preventDefault();
-			editedItem.itemDescription = getLines(val)[0];
+			const lines = getLines(val);
+			editedItem.itemDescription = lines[0] + lines[1];
 			onAddFormSubmit();
 		}
 	}

@@ -73,34 +73,34 @@
 <div
 	in:fly={{ y: 100 }}
 	out:fly={{ y: 100 }}
-	class="grid grid-cols-2 md:grid-cols-4 grid-rows-2 sm:grid-rows-1"
+	class="grid grid-cols-3 md:grid-cols-4 grid-rows-2 sm:grid-rows-1"
 	onclick={stopMouseEvent}
 >
 	<button
 		on:click={onRemoveClicked}
-		class="mr-2 !p-1.5 text-sm flex-1 sm:flex-auto  flex flex-col items-center mb-2 rounded"
+		class="mr-2 !p-1.5 text-xs flex-1 sm:flex-auto  flex flex-col items-center mb-2 rounded"
 	>
 		<DocumentRemove />
-		<span class="whitespace-nowrap">{$t('lists.details.batch-remove-button')}</span>
+		<span>{$t('lists.details.batch-remove-button')}</span>
 	</button>
 	<button
 		on:click={onSaveAsNewList}
-		class="sm:mr-2 action !p-1.5 text-sm flex-1 sm:flex-auto flex flex-col items-center mb-2 rounded"
+		class="sm:mr-2 action !p-1.5 text-xs flex-1 sm:flex-auto flex flex-col items-center mb-2 rounded"
 	>
 		<DocumentPlus />
-		<span class="whitespace-nowrap">{$t('lists.details.move-to-new-list')}</span>
+		<span>{$t('lists.details.move-to-new-list')}</span>
 	</button>
 	<button
 		on:click={onCopyItems}
-		class="sm:mr-2 action !p-1.5 text-sm flex-1 sm:flex-auto flex flex-col items-center mb-2 rounded"
+		class="sm:mr-2 action !p-1.5 text-xs flex-1 sm:flex-auto flex flex-col items-center mb-2 rounded"
 	>
 		<DocumentDuplicate />
-		<span class="whitespace-nowrap">{$t('lists.details.copy-items')}</span>
+		<span>{$t('lists.details.copy-items')}</span>
 	</button>
 	{#if isByCategoryView}
 		<form
 			on:submit|preventDefault={onChangeCategoryThrottled}
-			class="col-span-1 flex items-center justify-center mb-2 rounded px-2"
+			class="col-span-3 md:col-span-1 flex items-center justify-center mb-2 rounded px-2"
 			style="height: 56px;"
 			use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
 			on:swipe={onCategorySwipe}

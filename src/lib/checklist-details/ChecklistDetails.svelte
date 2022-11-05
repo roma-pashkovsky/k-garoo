@@ -532,7 +532,6 @@
 	}
 
 	function onBodyFocus(): void {
-		console.log('Body focused');
 		if (pasteDiv) {
 			pasteDiv.focus();
 		}
@@ -873,7 +872,6 @@
 		on:body-swipe-left={onBodySwipeLeft}
 		on:body-swipe-right={onBodySwipeRight}
 		on:dbltap={onListBodyDoubleClick}
-		on:paste={onPasteText}
 		on:focus={onBodyFocus}
 	>
 		<!--        List-->
@@ -1040,4 +1038,7 @@
 	on:complete={() => (isFirstTimeUse = false)}
 />
 
-<PasteListener bind:pasteDiv on:paste={onPasteText} />
+<!--Paste event listener. Enables CTRL+V paste items, Hide for mobile -->
+<div class="hidden md:block">
+	<PasteListener bind:pasteDiv on:paste={onPasteText} />
+</div>

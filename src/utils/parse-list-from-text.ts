@@ -45,19 +45,20 @@ function getAlphaNumStr(s: string): string | null {
 	return res;
 }
 
-const alphaNum = /[A-Za-z0-9]/;
+const alphaNumBase = /[A-Za-z0-9]/;
+const alphaNum = () => new RegExp(alphaNumBase);
 function getFirstAndLastAlphaNumeric(s: string): [number, number] {
 	const l = s.length;
 	let first = 0,
 		last = l - 1;
 	for (let i = 0; i < l; i++) {
-		if (alphaNum.test(s[i])) {
+		if (new RegExp(/[A-Za-z0-9]/).test(s[i])) {
 			first = i;
 			break;
 		}
 	}
 	for (let i = 1; i <= l; i++) {
-		if (alphaNum.test(s[l - i])) {
+		if (new RegExp(/[A-Za-z0-9]/).test(s[l - i])) {
 			last = l - i;
 			break;
 		}

@@ -30,3 +30,17 @@
 <div id="paste-capture-parent">
 	<div bind:this={pasteDiv} id="paste-capture-area" contenteditable="true" />
 </div>
+
+<style>
+	/* invisible paste capture element */
+	#paste-capture-parent {
+		z-index: -500;
+		width: 0;
+		height: 0;
+		overflow: hidden;
+		position: fixed;
+	}
+	#paste-capture-area {
+		-webkit-user-select: auto !important;
+	}
+</style>

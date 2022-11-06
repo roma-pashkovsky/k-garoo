@@ -18,6 +18,7 @@
 	import { loadSharedListIds } from '../stores/my-shared-lists/my-shared-list.store';
 	import { initPropositions } from '../stores/checklist-details/propositions';
 	import { t } from '../stores/app/translate';
+	import { startOfflineListener } from '../stores/offline-mode/offline-mode.store';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
@@ -28,6 +29,7 @@
 
 	onMount(() => {
 		initPropositions();
+		startOfflineListener();
 		let prevUserId = get(auth)?.user?.id;
 		auth.subscribe((a) => {
 			const newUserId = a?.user?.id;
@@ -72,7 +74,6 @@
 
 <div class="fixed top-0 bottom-0 left-0 right-0 root {$theme}">
 	<div class="fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
-		<div>No Internet connection</div>
 		{#if $isAppReloading || $navigating}
 			<FullPageSpinner />
 		{/if}

@@ -1,13 +1,20 @@
 import type { CheckList, CheckListItem, ChecklistWithSettings, PersistedList } from '../../types';
 import { get, writable } from 'svelte/store';
 import { auth } from '../login/auth';
-import { getListData, getListIds, setListData, setListIds } from '../../utils/local-storage-state';
+import {
+	addSyncTask,
+	getListData,
+	getListIds,
+	setListData,
+	setListIds
+} from '../../utils/local-storage-state';
 import type {
 	CreateListRequest,
 	UpdateListRequest
 } from '../../utils/api/client/create-update-list';
 import type { UpdateChecklistSettingsRequest } from '../../utils/api/client/checklist-settings';
-import { appFetch } from '../../utils/app-fetch';
+import { appFetch, TimeoutError } from '../../utils/app-fetch';
+import { offline } from '../offline-mode/offline-mode.store';
 
 export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
 
@@ -15,54 +22,34 @@ export const getList = async (
 	listId: string,
 	browser: boolean,
 	f = fetch
-): Promise<CheckList | null> => {
-	let list: CheckList | null;
-	if (get(auth)?.user) {
-		list = await getListAPIFirst(listId, f, browser);
-	} else {
-		list = await getListBrowserFirst(listId, f, browser);
+): Promise<ChecklistWithSettings | null> => {
+	let list: ChecklistWithSettings | null = null;
+	if (browser) {
+		list = await getListLocal(listId);
+		listDataStore.update((prev) => ({ ...prev, [listId]: list }));
 	}
-	listDataStore.update((prev) => ({ ...prev, [listId]: list }));
+	try {
+		const fromApi = await appFetch<ChecklistWithSettings | null>(
+			`/lists/${listId}`,
+			{ method: 'GET' },
+			f,
+			10000
+		);
+		if (fromApi) {
+			list = fromApi;
+			listDataStore.update((prev) => ({ ...prev, [listId]: list }));
+			setListData(list);
+		}
+	} catch (err) {
+		if (err instanceof TimeoutError) {
+			// do nothing
+			console.log(err);
+		} else {
+			console.error(err);
+		}
+	}
 	return list;
 };
-
-async function getListAPIFirst(
-	listId: string,
-	f: any,
-	browser: boolean
-): Promise<CheckList | null> {
-	console.log('getting list api first');
-	const listAPI = await getListFromApi(listId, f);
-	if (listAPI) {
-		return listAPI;
-	} else if (browser) {
-		return getListLocal(listId);
-	} else {
-		return null;
-	}
-}
-
-async function getListBrowserFirst(
-	listId: string,
-	f: any,
-	browser: boolean
-): Promise<CheckList | null> {
-	console.log('getting list browser first');
-	if (browser) {
-		const local = await getListLocal(listId);
-		if (local) {
-			return local;
-		} else {
-			return getListFromApi(listId, f);
-		}
-	} else {
-		return getListFromApi(listId, f);
-	}
-}
-
-async function getListFromApi(listId: string, f: any): Promise<CheckList | null> {
-	return appFetch<CheckList | null>(`/lists/${listId}`, { method: 'GET' }, f);
-}
 
 async function getListLocal(listId: string): Promise<CheckList | null> {
 	return new Promise<CheckList | null>((resolve) => {
@@ -83,17 +70,44 @@ async function getListLocal(listId: string): Promise<CheckList | null> {
  * Create list
  */
 export const createList = async (request: CreateListRequest): Promise<CheckList> => {
+	const list = await createListLocal(request);
 	if (get(auth).user) {
-		return createListAPI(request);
-	} else {
-		return createListLocal(request);
+		if (!get(offline)) {
+			createListAPI(request);
+		} else {
+			addSyncTask({
+				groupId: request.id as string,
+				method: 'POST',
+				urlPath: `/lists/${request.id}`,
+				body: JSON.stringify(request),
+				ts: new Date().getTime()
+			});
+		}
 	}
+	return list;
 };
 
-async function createListAPI(request: CreateListRequest): Promise<CheckList> {
-	return appFetch<CheckList>(`/lists/${request.id}`, {
-		method: 'POST',
-		body: JSON.stringify(request)
+async function createListAPI(request: CreateListRequest): Promise<CheckList | null> {
+	return appFetch<CheckList>(
+		`/lists/${request.id}`,
+		{
+			method: 'POST',
+			body: JSON.stringify(request)
+		},
+		undefined,
+		10000
+	).catch((err) => {
+		console.error(err);
+		if (err instanceof TimeoutError) {
+			addSyncTask({
+				groupId: request.id as string,
+				method: 'POST',
+				urlPath: `/lists/${request.id}`,
+				body: JSON.stringify(request),
+				ts: new Date().getTime()
+			});
+		}
+		return null;
 	});
 }
 
@@ -158,27 +172,47 @@ function getNewListInsertOrder(listIds: PersistedList): number {
  * Update list
  */
 export const updateList = async (request: UpdateListRequest): Promise<CheckList> => {
-	let updated: CheckList;
-	if (get(auth).user) {
-		updated = await updateListAPI(request);
-	} else {
-		updated = await updateListLocal(request);
-	}
+	const updated: CheckList = await updateListLocal(request);
 	listDataStore.update((prev) => ({ ...prev, [request.id as string]: updated }));
+	if (get(auth).user) {
+		if (!get(offline)) {
+			updateListAPI(request);
+		} else {
+			addSyncTask({
+				groupId: request.id as string,
+				urlPath: `/lists/${request.id}`,
+				method: 'PUT',
+				body: JSON.stringify(request),
+				ts: new Date().getTime()
+			});
+		}
+	}
 	return updated;
 };
 
-async function updateListAPI(request: UpdateListRequest): Promise<CheckList> {
-	const resp = await fetch(`/api/v1/lists/${request.id}`, {
-		method: 'PUT',
-		body: JSON.stringify(request)
+async function updateListAPI(request: UpdateListRequest): Promise<CheckList | null> {
+	return appFetch<CheckList>(
+		`/lists/${request.id}`,
+		{
+			method: 'PUT',
+			body: JSON.stringify(request)
+		},
+		undefined,
+		10000
+	).catch((err) => {
+		if (err instanceof TimeoutError) {
+			addSyncTask({
+				groupId: request.id as string,
+				urlPath: `/lists/${request.id}`,
+				method: 'PUT',
+				body: JSON.stringify(request),
+				ts: new Date().getTime()
+			});
+		} else {
+			console.error(err);
+		}
+		return null;
 	});
-	if (!resp.ok) {
-		const body = await resp.json();
-		console.log(body);
-		throw new Error(body?.error);
-	}
-	return resp.json() as Promise<CheckList>;
 }
 
 async function updateListLocal(request: UpdateListRequest): Promise<CheckList> {

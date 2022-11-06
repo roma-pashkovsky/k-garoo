@@ -7,6 +7,7 @@ import type {
 	Proposition
 } from '../types';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
+import type { ApiSyncTask } from '../types/api-sync-task';
 
 export { customCategoryId, otherCategoryId };
 
@@ -34,7 +35,7 @@ export const getListIds = (): PersistedList => {
 	return JSON.parse(raw || '{}') as PersistedList;
 };
 
-export const setListIds = (list: PersistedList): void => {
+export const setListIds = (list: PersistedList | null): void => {
 	const raw = JSON.stringify(list || {});
 	localStorage.setItem('k-garoo/list', raw);
 };
@@ -79,11 +80,6 @@ export const getListSettingsLocalStorage = (listId: string): ChecklistSettings |
 	}
 };
 
-export const setListSettingsLocalStorage = (listId: string, settings: ChecklistSettings): void => {
-	const str = JSON.stringify(settings);
-	localStorage.setItem(`k-garoo/listSettings/${listId}`, str);
-};
-
 export const getCategoryOptionsLocalStorage = (): CategoryOption[] => {
 	const record = localStorage.getItem('k-garoo/categoryOptions');
 	if (record) {
@@ -98,6 +94,35 @@ export const setCategoryOptionsLocalStorage = (options: CategoryOption[]): void 
 	localStorage.setItem('k-garoo/categoryOptions', str);
 };
 
+export const addSyncTask = async (task: ApiSyncTask): Promise<void> => {
+	return new Promise((resolve) => {
+		requestAnimationFrame(() => {
+			localStorage.setItem(`k-garoo/syncTasks/${task.groupId}%${task.ts}`, JSON.stringify(task));
+			resolve();
+		});
+	});
+};
+
+export const getSyncTasks = (): Promise<ApiSyncTask[]> => {
+	return new Promise<ApiSyncTask[]>((resolve) => {
+		requestAnimationFrame(() => {
+			const l = localStorage.length;
+			const syncTaskKeys: string[] = [];
+			for (let i = 0; i < l; i++) {
+				const key = localStorage.key(i);
+				if (key && key.startsWith('k-garoo') && key.includes('syncTasks')) {
+					syncTaskKeys.push(key);
+				}
+			}
+			const tasks = syncTaskKeys
+				.map((k) => localStorage.getItem(k))
+				.map((str) => JSON.parse(str || ''));
+			syncTaskKeys.forEach((k) => localStorage.removeItem(k));
+			resolve(tasks);
+		});
+	});
+};
+
 export const cleanAllLocalData = (): void => {
 	console.log(localStorage.length);
 	const forRemove: string[] = [];
@@ -105,6 +130,25 @@ export const cleanAllLocalData = (): void => {
 	for (let i = 0; i < l; i++) {
 		const key = localStorage.key(i);
 		if (key && key.startsWith('k-garoo')) {
+			forRemove.push(key);
+		}
+	}
+	forRemove.forEach((key) => {
+		localStorage.removeItem(key);
+	});
+};
+
+export const cleanLocalDataOnLogout = (): void => {
+	console.log(localStorage.length);
+	const forRemove: string[] = [];
+	const l = localStorage.length;
+	for (let i = 0; i < l; i++) {
+		const key = localStorage.key(i);
+		if (
+			key &&
+			key.startsWith('k-garoo') &&
+			(key.includes('list') || key.includes('categoryOptions') || key.includes('syncTasks'))
+		) {
 			forRemove.push(key);
 		}
 	}

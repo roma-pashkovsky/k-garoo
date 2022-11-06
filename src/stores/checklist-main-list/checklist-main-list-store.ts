@@ -3,24 +3,26 @@ import { get, writable } from 'svelte/store';
 import { getListIds, removeListData, setListIds } from '../../utils/local-storage-state';
 import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-ids-from-persisted-list';
 import { auth } from '../login/auth';
+import { appFetch, TimeoutError } from '../../utils/app-fetch';
 
 export const items = writable<MainListItem[]>([]);
 
 export const loadListItems = async (browser: boolean, f = fetch): Promise<void> => {
-	let list: PersistedList | null;
 	const user = get(auth).user;
-	if (user) {
-		const listIdsResp = await f(`/api/v1/lists`);
-		list = await listIdsResp.json();
-	} else {
-		if (browser) {
-			list = getListIds();
-		} else {
-			list = null;
-		}
+	if (browser) {
+		items.set(getSortedListIdsFromPersistedList(getListIds()));
 	}
-	if (list) {
-		items.set(getSortedListIdsFromPersistedList(list));
+	if (user) {
+		appFetch<PersistedList | null>(`/lists`, { method: 'GET' }, f, 5000)
+			.then((list) => {
+				if (browser) {
+					setListIds(list);
+				}
+				items.set(getSortedListIdsFromPersistedList(list));
+			})
+			.catch((err) => {
+				console.error(err);
+			});
 	}
 };
 

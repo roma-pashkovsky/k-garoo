@@ -1,6 +1,6 @@
 import type { MainListItem, PersistedList } from '../types';
 
-export const getSortedListIdsFromPersistedList = (list: PersistedList): MainListItem[] => {
+export const getSortedListIdsFromPersistedList = (list: PersistedList | null): MainListItem[] => {
 	if (!list) {
 		return [];
 	}

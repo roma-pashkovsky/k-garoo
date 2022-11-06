@@ -94,7 +94,9 @@
 			</div>
 		{:else}
 			<div class="max-w-md w-full py-2 px-4">
-				<div>{$t('app.initial-popup.add-to-main-recommend')}</div>
+				<div class="text-gray-600 dark:text-gray-400">
+					{$t('app.initial-popup.add-to-main-recommend')}
+				</div>
 
 				<div class="flex justify-center my-4">
 					<img

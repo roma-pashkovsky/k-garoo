@@ -72,6 +72,7 @@
 
 <div class="fixed top-0 bottom-0 left-0 right-0 root {$theme}">
 	<div class="fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
+		<div>No Internet connection</div>
 		{#if $isAppReloading || $navigating}
 			<FullPageSpinner />
 		{/if}

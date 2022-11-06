@@ -17,7 +17,10 @@ export class CategoryAutodetector {
 		});
 	}
 
-	public detect(description: string): CategoryOption {
+	public detect(description: string): CategoryOption | null {
+		if (description.length < 4) {
+			return null;
+		}
 		const searchRes = this.propositionsFuzzy.search(description.toLowerCase());
 		if (searchRes?.length) {
 			const topMatch = searchRes[0];
@@ -33,12 +36,7 @@ export class CategoryAutodetector {
 				return topMatch.item.category;
 			}
 		} else {
-			const result = reservedCategories[otherCategoryId];
-			return {
-				id: result.id,
-				color: result.color,
-				name: result[this.locale]
-			};
+			return null;
 		}
 	}
 }

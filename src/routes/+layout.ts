@@ -10,6 +10,6 @@ export const load: LayoutLoad = async ({ fetch }): Promise<any> => {
 	await loadCategoryOptions(browser, fetch);
 
 	if (browser) {
-		await AppSettingsStore.init();
+		await AppSettingsStore.init(fetch);
 	}
 };

@@ -22,6 +22,7 @@
 	export let propositionsFuzzySearch: FuzzySearch<Proposition>;
 	export let categoryAutodetector: CategoryAutodetector;
 	export let isFirstTimeUse: boolean;
+	export let shouldAutodetectCategory = true;
 
 	const dispatch = createEventDispatcher();
 	let inputEl: HTMLTextAreaElement;
@@ -30,13 +31,13 @@
 	let propositions: Proposition[] = [];
 	let propositionsHighlightIndex = 0;
 	let selectedPropositionTS: number;
-	let shouldAutodetectCategory = true;
+	let initialCategoryId: string;
 	let submittedOnEnterPressed = false;
 	const debounce = debouncer(300);
 
 	$: {
 		if (editedItem?.id !== prevEditedItemId) {
-			shouldAutodetectCategory = editedCategoryId === otherCategoryId;
+			initialCategoryId = editedCategoryId;
 			propositions = [];
 			focus();
 		}
@@ -49,7 +50,6 @@
 		!(editedCategoryId === customCategoryId && !customCategoryInput?.length);
 
 	onMount(() => {
-		shouldAutodetectCategory = editedCategoryId === otherCategoryId;
 		focus();
 	});
 
@@ -110,7 +110,11 @@
 		if (shouldAutodetectCategory) {
 			debounce(() => {
 				const detected = categoryAutodetector.detect(editedItem.itemDescription);
-				editedCategoryId = detected.id;
+				if (detected) {
+					editedCategoryId = detected.id;
+				} else {
+					editedCategoryId = initialCategoryId;
+				}
 			});
 		}
 	}
@@ -132,7 +136,6 @@
 	}
 
 	function onCategoryUserInput(): void {
-		console.log('cat select input');
 		shouldAutodetectCategory = false;
 	}
 

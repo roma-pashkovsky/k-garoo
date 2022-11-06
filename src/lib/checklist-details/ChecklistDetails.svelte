@@ -92,6 +92,7 @@
 	let editedCategoryId: string;
 	let isAddToListMode: boolean;
 	let addToCategoryId: string;
+	let lastAddToCategory: CategoryOption;
 	let propositionsFuzzySearchTS: Writable<number> = writable(new Date().getTime());
 	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
@@ -151,6 +152,11 @@
 			listName = list.name;
 			items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
 			shouldCreateNewList = false;
+			if (isByCategoryView) {
+				const grouped = getChecklistGroupedByCategory(list.items);
+				const lastGroup = grouped[grouped.length - 1];
+				lastAddToCategory = lastGroup?.category;
+			}
 		} else {
 			shouldCreateNewList = true;
 		}
@@ -458,10 +464,12 @@
 		}
 		let count = 0;
 		const changed: any = {};
+		const changedItems = [];
 		items = items.map((it) => {
 			if (it.selected) {
 				changed[it.id] = { category };
 				it.category = { ...category };
+				changedItems.push(it);
 				count++;
 			}
 			return it;
@@ -474,7 +482,7 @@
 				}
 			}
 		});
-		updatePropositionsWithItems(objectValues(changed));
+		updatePropositionsWithItems(changedItems);
 		deselectAllCheckboxes();
 		toastManager.push({
 			text: ($t as any)('lists.details.changed-category-toast'),
@@ -569,6 +577,7 @@
 			}
 			setDataFromList(list);
 			checkListForDuplicates();
+			updatePropositionsWithItems(items);
 			toastManager.push({
 				text: get(t)('app.toasts.success'),
 				color: 'success',
@@ -611,6 +620,7 @@
 			targetCategory.color = pickColorForACategory(items, $categoryOptions);
 		}
 		const updated = { ...editedItem, category: { ...targetCategory } };
+		lastAddToCategory = targetCategory;
 		if (addToCategoryId) {
 			items = [...items, updated];
 			if (!shouldCreateNewList) {
@@ -694,11 +704,12 @@
 	}
 
 	function getNewListItem(category?: CategoryOption): CheckListItemEditModel {
-		const targetCategory = category || {
-			id: otherCategoryId,
-			color: 'bg-grey-100',
-			name: ($t as any)('lists.create_new_list.other-category')
-		};
+		const targetCategory = category ||
+			lastAddToCategory || {
+				id: otherCategoryId,
+				color: 'bg-grey-100',
+				name: ($t as any)('lists.create_new_list.other-category')
+			};
 		return {
 			id: getUID(),
 			itemDescription: '',
@@ -990,6 +1001,7 @@
 		<ChecklistItemEditor
 			{editedItem}
 			{isByCategoryView}
+			shouldAutodetectCategory={!addToCategoryId}
 			categoryOptions={$categoryOptions}
 			propositionsFuzzySearch={$propositionsFuzzySearch}
 			categoryAutodetector={$categoryAutodetector}

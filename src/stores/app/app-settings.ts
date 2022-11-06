@@ -42,8 +42,11 @@ export const setHasSeenDemo = async (): Promise<void> => {
 	await updateAppSettingsEndpoint(get(appSettings));
 };
 
-export const updateAppSettingsEndpoint = async (settings: AppSettings): Promise<void> => {
-	await fetch('/api/v1/settings', { method: 'POST', body: JSON.stringify(settings) });
+export const updateAppSettingsEndpoint = async (
+	settings: AppSettings,
+	f = fetch
+): Promise<void> => {
+	await f('/api/v1/settings', { method: 'POST', body: JSON.stringify(settings) });
 };
 
 export const clearAppSettingsEndpoint = async (): Promise<void> => {
@@ -59,7 +62,7 @@ export class AppSettingsStore {
 
 	private static isInit = false;
 
-	public static async init(): Promise<void> {
+	public static async init(f = fetch): Promise<void> {
 		if (!this.isInit) {
 			let settings = getAppSettings();
 			if (!settings) {
@@ -73,7 +76,7 @@ export class AppSettingsStore {
 			}
 			appSettings.set(settings);
 			setAppSettings(settings);
-			updateAppSettingsEndpoint(settings);
+			updateAppSettingsEndpoint(settings, f);
 			this.isInit = true;
 		}
 	}

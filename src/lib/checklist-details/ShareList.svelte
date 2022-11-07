@@ -61,7 +61,7 @@
 	}
 
 	function updateIsSharedStore(items: ShareListUser[]): void {
-		const curr = items.reduce((p, c) => ({ ...p, [c.id]: c.isShared }), {});
+		const curr = (items || []).reduce((p, c) => ({ ...p, [c.id]: c.isShared }), {});
 		isSharedStore.update((prev) => ({ ...prev, ...curr }));
 	}
 

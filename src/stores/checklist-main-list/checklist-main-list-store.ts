@@ -27,13 +27,12 @@ export const loadListItems = async (browser: boolean, f = fetch): Promise<void> 
 };
 
 export const removeList = async (listId: string): Promise<void> => {
+	items.update((old) => old.filter((it) => it.id !== listId));
 	const user = get(auth).user;
+	await removeListLocal(listId);
 	if (user) {
 		await removeListAPI(listId);
-	} else {
-		await removeListLocal(listId);
 	}
-	await loadListItems(false);
 };
 
 async function removeListAPI(listId: string): Promise<void> {

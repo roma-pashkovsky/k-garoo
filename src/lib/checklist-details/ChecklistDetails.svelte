@@ -90,7 +90,7 @@
 	let editedCategoryId: string;
 	let isAddToListMode: boolean;
 	let addToCategoryId: string;
-	let lastAddToCategory: CategoryOption;
+	let lastAddToCategory: CategoryOption | null;
 	let propositionsFuzzySearchTS: Writable<number> = writable(new Date().getTime());
 	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
@@ -143,11 +143,7 @@
 			listName = list.name;
 			items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
 			shouldCreateNewList = false;
-			if (isByCategoryView) {
-				const grouped = getChecklistGroupedByCategory(list.items);
-				const lastGroup = grouped[grouped.length - 1];
-				lastAddToCategory = lastGroup?.category;
-			}
+			lastAddToCategory = getDefaultAddToCategory(list);
 		} else {
 			shouldCreateNewList = true;
 		}
@@ -163,6 +159,20 @@
 		} else {
 			clearTimeout(timeoutHandle);
 			closeAllEdits();
+		}
+	}
+
+	function getDefaultAddToCategory(l: CheckList): CategoryOption | null {
+		if (!l.items?.length) {
+			return null;
+		}
+		const unchecked = l.items.filter((it) => !it.checked);
+		if (isByCategoryView) {
+			const grouped = getChecklistGroupedByCategory(unchecked);
+			const lastGroup = grouped[grouped.length - 1];
+			lastAddToCategory = lastGroup?.category;
+		} else {
+			lastAddToCategory = unchecked.length ? unchecked[unchecked.length - 1].category : undefined;
 		}
 	}
 

@@ -1,4 +1,5 @@
 import type { ShareListUser } from '../../types/share-list';
+import { appFetch } from '../../utils/app-fetch';
 
 export class ShareListStore {
 	public async searchUsers(listId: string, search?: string): Promise<ShareListUser[]> {
@@ -15,10 +16,10 @@ export class ShareListStore {
 
 	public async recentUsers(listId: string): Promise<ShareListUser[]> {
 		try {
-			const res = await fetch(`/api/v1/share-list-recent-users/${listId}`, {
+			const users = await appFetch<ShareListUser[]>(`/share-list-recent-users/${listId}`, {
 				method: 'GET'
 			});
-			return res.json();
+			return users;
 		} catch (err) {
 			console.error(err);
 			return [];

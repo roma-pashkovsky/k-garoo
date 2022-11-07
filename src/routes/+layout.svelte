@@ -19,6 +19,7 @@
 	import { initPropositions } from '../stores/checklist-details/propositions';
 	import { t } from '../stores/app/translate';
 	import { startOfflineListener } from '../stores/offline-mode/offline-mode.store';
+	import ShareList from '../lib/checklist-details/ShareList.svelte';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
@@ -104,6 +105,8 @@
 	<LoginModal />
 
 	<UsersByListDrawer />
+
+	<ShareList />
 </div>
 
 <style>

@@ -9,7 +9,7 @@
 	import DotMenu from '../DotMenu.svelte';
 	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
 	import { Duplicate, EyeOff } from 'svelte-heros';
-	import { Badge, Button, Drawer, DropdownItem } from 'flowbite-svelte';
+	import { Badge, Button, DropdownItem } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
@@ -51,8 +51,6 @@
 	import { t } from '../../stores/app/translate';
 	import { p } from '../../stores/app/plurals';
 	import { getDefaultListName } from '../../utils/get-default-list-name';
-	import ShareList from './ShareList.svelte';
-	import { sineIn } from 'svelte/easing';
 	import { AuthStore } from '../../stores/login/auth.store';
 	import { AppSettingsStore, setHasSeenDemo } from '../../stores/app/app-settings';
 	import {
@@ -63,7 +61,6 @@
 	} from '../../stores/checklist-details/checklist-details-data';
 	import { getChecklistItemFromEditItem } from '../../utils/get-checklist-item-from-edit-item';
 	import { addCategoryOption } from '../../stores/checklist-details/category-options';
-	import { objectValues } from '../../utils/object-values';
 	import UsersByListMini from '../UsersByListMini.svelte';
 	import {
 		propositionStore,
@@ -72,6 +69,7 @@
 	import { fade } from 'svelte/transition';
 	import PasteListener from '../PasteListener.svelte';
 	import { parseListFromText } from '../../utils/parse-list-from-text';
+	import { shareList } from '../../stores/app/share-list-drawer.store';
 
 	export let listId: string;
 	export let list: ChecklistWithSettings | null;
@@ -100,13 +98,6 @@
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
 	let shouldCreateNewList = !list;
-	// share drawer
-	let transitionParams = {
-		x: 320,
-		duration: 200,
-		easing: sineIn
-	};
-	let shareDrawerHidden = true;
 	let isShareEnabled = AuthStore.isLoggedIn;
 	const darkBG = darkEquivalents;
 	// paste list functionality
@@ -254,7 +245,7 @@
 	}
 
 	function onShareClicked(): void {
-		shareDrawerHidden = false;
+		shareList(listId);
 	}
 
 	function onDuplicateListClicked() {
@@ -785,9 +776,6 @@
 		<div class="space-x-2 flex items-center" slot="right-content">
 			{#if !isListReadOnly && items?.length}
 				<div in:fade class="space-x-2 flex items-center">
-					<!--					<div class="hidden md:flex items-center">-->
-					<!--						<UsersByListMini {listId} position="horizontal" border="true" addWrapperClass="h-9" />-->
-					<!--					</div>-->
 					<Button
 						class="!p-1.5 w-9 h-9"
 						color={isCheckboxView ? 'blue' : 'light'}
@@ -1029,19 +1017,6 @@
 	</BottomMenu>
 {/if}
 <!--		/Batch editing input-->
-
-<!--List Share-->
-<Drawer
-	transitionType="fly"
-	{transitionParams}
-	bind:hidden={shareDrawerHidden}
-	position="fixed"
-	placement="right"
-	class="w-80"
-	id="share-drawer"
->
-	<ShareList {listId} on:close={() => (shareDrawerHidden = true)} />
-</Drawer>
 
 <ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />
 <ChecklistDetailsDemoBody

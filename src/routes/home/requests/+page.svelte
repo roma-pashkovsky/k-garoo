@@ -5,10 +5,15 @@
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
 	import { t } from '../../../stores/app/translate.js';
 	import PageTitle from '../../../lib/PageTitle.svelte';
+	import { goto } from '$app/navigation';
+
+	function goHome(): void {
+		goto('/home/lists');
+	}
 </script>
 
 <Page>
-	<PageTitle>
+	<PageTitle backButton={true} on:back-clicked={goHome}>
 		{$t('share-list.requests.title')}
 	</PageTitle>
 	<div class="flex items-start justify-center">

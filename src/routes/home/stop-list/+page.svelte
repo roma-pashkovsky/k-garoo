@@ -5,10 +5,15 @@
 	import PageTitle from '../../../lib/PageTitle.svelte';
 	import { t } from '../../../stores/app/translate.js';
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
+	import { goto } from '$app/navigation';
+
+	function onBack(): void {
+		goto('/home/lists');
+	}
 </script>
 
 <Page>
-	<PageTitle>
+	<PageTitle backButton={true} on:back-clicked={onBack}>
 		{$t('stop-list.page.title')}
 	</PageTitle>
 	{#if !$stopListUsers?.length}

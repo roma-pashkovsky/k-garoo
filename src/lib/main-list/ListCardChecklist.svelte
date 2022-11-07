@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { swipe } from 'svelte-gestures';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { Button, Card, DropdownItem } from 'flowbite-svelte';
+	import { Badge, Button, Card, DropdownItem } from 'flowbite-svelte';
 	import DotMenu from '../DotMenu.svelte';
 	import { DocumentRemove } from 'svelte-heros';
-	import { ArrowDown, ArrowLeft, ArrowsUpDown, Link } from 'svelte-heros-v2';
+	import { ArrowDown, ArrowLeft, ArrowsUpDown, Link, Share } from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
 	import ListCardPreview from '../ListCardPreview.svelte';
 	import type { MainListItem } from '../../types';
@@ -13,6 +13,8 @@
 	import UsersByListMini from '../UsersByListMini.svelte';
 	import { slide } from 'svelte/transition';
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
+	import { AuthStore } from '../../stores/login/auth.store';
+	import { shareList } from '../../stores/app/share-list-drawer.store';
 
 	export let index: number;
 	export let movedIndex: number;
@@ -29,6 +31,7 @@
 		return $listDataStore[listId];
 	});
 	let dotMenuOpen: boolean;
+	const isShareEnabled = AuthStore.isLoggedIn;
 	$: isDraggedOver = hoverItemId === listId;
 	$: isDragged = draggingItemId === listId;
 	$: isLastVisited = lastVisitedId === listId;
@@ -69,6 +72,14 @@
 
 	function onInsertBefore() {
 		dispatch('insert-before');
+	}
+
+	function onShareClicked() {
+		shareList(listId);
+	}
+
+	function onShareClickedNoAuth() {
+		AuthStore.triggerLoginClicked();
 	}
 </script>
 
@@ -121,6 +132,28 @@
 							</Button>
 							{$t('list.move.menu')}
 						</div>
+					</DropdownItem>
+					<DropdownItem>
+						{#if $isShareEnabled}
+							<div on:click={onShareClicked} class="w-full flex items-center">
+								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+									<Share size="15" />
+								</Button>
+								{$t('lists.details.share-list')}
+							</div>
+						{:else}
+							<div on:click={onShareClickedNoAuth} class="w-full flex items-center">
+								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+									<Share size="15" />
+								</Button>
+								<div class="whitespace-nowrap">
+									{$t('lists.details.share-list')}
+									<Badge color="purple" class="ml-2">
+										{$t('lists.details.share-list-login')}
+									</Badge>
+								</div>
+							</div>
+						{/if}
 					</DropdownItem>
 					<DropdownItem>
 						<div class="flex items-center" on:click={() => onListGetLink()}>

@@ -30,5 +30,6 @@ export class AuthStore {
 		await AuthStore.firebaseUtils.signOut();
 		auth.set({ isResolved: true, user: null });
 		cleanLocalDataOnLogout();
+		location.reload();
 	}
 }

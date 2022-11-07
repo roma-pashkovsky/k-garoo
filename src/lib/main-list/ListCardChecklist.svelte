@@ -116,7 +116,7 @@
 	>
 		<div style="min-height: 112px;">
 			<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
-				<DotMenu bind:open={dotMenuOpen}>
+				<DotMenu bind:open={dotMenuOpen} widthClass="w-56">
 					<DropdownItem>
 						<div class="flex items-center" on:click={() => onListRemove()}>
 							<Button class="!p-2 mr-2" color="light">
@@ -136,14 +136,14 @@
 					<DropdownItem>
 						{#if $isShareEnabled}
 							<div on:click={onShareClicked} class="w-full flex items-center">
-								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+								<Button class="!p-2 mr-2" color="light">
 									<Share size="15" />
 								</Button>
 								{$t('lists.details.share-list')}
 							</div>
 						{:else}
 							<div on:click={onShareClickedNoAuth} class="w-full flex items-center">
-								<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+								<Button class="!p-2 mr-2" color="light">
 									<Share size="15" />
 								</Button>
 								<div class="whitespace-nowrap">

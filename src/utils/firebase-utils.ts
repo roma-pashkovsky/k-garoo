@@ -1,6 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import type { User, UserCredential } from 'firebase/auth';
-import { FacebookAuthProvider, getAuth, signInWithPopup, signOut } from 'firebase/auth';
+import {
+	FacebookAuthProvider,
+	getAuth,
+	signInWithPopup,
+	signOut,
+	GoogleAuthProvider
+} from 'firebase/auth';
 import { variables } from './variables';
 import { get } from 'svelte/store';
 import { t } from '../stores/app/translate';
@@ -51,6 +57,20 @@ export class FirebaseUtils {
 		const auth = getAuth();
 		const provider = new FacebookAuthProvider();
 		const cred: UserCredential = await signInWithPopup(auth, provider);
+		const token = await cred.user.getIdToken();
+		const user: AppUser = {
+			id: cred.user.uid,
+			displayName: cred.user.displayName,
+			photoUrl: cred.user.photoURL
+		};
+		await this.createSession(token, user);
+		return user;
+	}
+
+	public async signInGoogle(): Promise<AppUser> {
+		const auth = getAuth();
+		const provider = new GoogleAuthProvider();
+		const cred = await signInWithPopup(auth, provider);
 		const token = await cred.user.getIdToken();
 		const user: AppUser = {
 			id: cred.user.uid,

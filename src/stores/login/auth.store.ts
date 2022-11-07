@@ -26,6 +26,14 @@ export class AuthStore {
 		}
 	}
 
+	public async loginGoogle(sync: boolean): Promise<any> {
+		const user = await AuthStore.firebaseUtils.signInGoogle();
+		auth.set({ isResolved: true, user });
+		if (sync) {
+			await new SyncStore().syncLocalDataToDb();
+		}
+	}
+
 	public async signOut(): Promise<any> {
 		await AuthStore.firebaseUtils.signOut();
 		auth.set({ isResolved: true, user: null });

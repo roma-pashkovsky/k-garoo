@@ -31,7 +31,8 @@ export default {
 		'app.show-me-how': 'Show me how',
 		'app.login-popup.title': 'Login',
 		'app.login-popup.facebook-button': 'Login with Facebook',
-		'app.login-popup.sync-data-checkbox': 'Sync lists to my account',
+		'app.login-popup.google-button': 'Login with Google',
+		'app.login-popup.sync-data-checkbox': 'Sync local lists to my account',
 		// Main list page
 		'lists.no_lists': 'No lists.',
 		'lists.no_lists_cta_1': "Let's",
@@ -153,7 +154,8 @@ export default {
 		'app.show-me-how': 'Як це зробити?',
 		'app.login-popup.title': 'Вхід',
 		'app.login-popup.facebook-button': 'Вхід через Facebook',
-		'app.login-popup.sync-data-checkbox': 'Завантажити списки у мій акаунт',
+		'app.login-popup.google-button': 'Вхід через Google',
+		'app.login-popup.sync-data-checkbox': 'Завантажити локальні списки у мій акаунт',
 		// Main list
 		'lists.no_lists': 'Поки що тут немає списків.',
 		'lists.no_lists_cta_1': 'Нумо',

@@ -33,6 +33,12 @@ export default {
 		'app.login-popup.facebook-button': 'Login with Facebook',
 		'app.login-popup.google-button': 'Login with Google',
 		'app.login-popup.sync-data-checkbox': 'Sync local lists to my account',
+		// merge accounts
+		'app.login-popup.merge-warning':
+			"You previously logged in with a different method. You'll have to merge accounts to continue.",
+		'app.login-popup.merge-button-label': 'Merge accounts',
+		'app.login-popup.failed-to-login-error': 'Failed to login. Contact support',
+		'app.login-popup.failed-to-merge-error': 'Failed to merge account. Contact support',
 		// Main list page
 		'lists.no_lists': 'No lists.',
 		'lists.no_lists_cta_1': "Let's",
@@ -156,6 +162,14 @@ export default {
 		'app.login-popup.facebook-button': 'Вхід через Facebook',
 		'app.login-popup.google-button': 'Вхід через Google',
 		'app.login-popup.sync-data-checkbox': 'Завантажити локальні списки у мій акаунт',
+		// merge accounts
+		'app.login-popup.merge-warning':
+			'Ви раніше заходили через іншу систему. Щоб продовжити, потрібно обʼєднати акаунти.',
+		'app.login-popup.merge-button-label': 'Обʼєднати акаунти',
+		'app.login-popup.failed-to-login-error':
+			'Не вдалося увійти в систему. Зверніться до технічної підтримки',
+		'app.login-popup.failed-to-merge-error':
+			'Не вдалося обʼєднати акаунти. Зверніться до технічної підтримки',
 		// Main list
 		'lists.no_lists': 'Поки що тут немає списків.',
 		'lists.no_lists_cta_1': 'Нумо',

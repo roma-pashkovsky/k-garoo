@@ -1,8 +1,10 @@
-import { FirebaseUtils } from '../../utils/firebase-utils';
-import { derived, writable } from 'svelte/store';
+import { FirebaseUtils, WrongProviderError } from '../../utils/firebase-utils';
+import { derived, get, writable } from 'svelte/store';
 import { SyncStore } from './sync.store';
 import { auth } from './auth';
 import { cleanLocalDataOnLogout } from '../../utils/local-storage-state';
+import type { AuthCredential } from 'firebase/auth';
+import { t } from '../app/translate';
 
 export class AuthStore {
 	public static isLoginModalOpen = writable<boolean>(false);
@@ -19,18 +21,69 @@ export class AuthStore {
 	}
 
 	public async loginFacebook(sync: boolean): Promise<any> {
-		const user = await AuthStore.firebaseUtils.signInWithFacebook();
-		auth.set({ isResolved: true, user });
-		if (sync) {
-			await new SyncStore().syncLocalDataToDb();
+		try {
+			const user = await AuthStore.firebaseUtils.signInWithFacebook();
+			auth.set({ isResolved: true, user });
+			if (sync) {
+				await new SyncStore().syncLocalDataToDb();
+			}
+		} catch (err) {
+			console.error(err);
+			if (err instanceof WrongProviderError) {
+				auth.set({
+					isResolved: true,
+					wrongProvider: { email: err.email, cred: err.cred },
+					user: null
+				});
+			} else {
+				auth.set({
+					isResolved: true,
+					error: get(t)('app.login-popup.failed-to-login-error'),
+					user: null
+				});
+			}
 		}
 	}
 
 	public async loginGoogle(sync: boolean): Promise<any> {
-		const user = await AuthStore.firebaseUtils.signInGoogle();
-		auth.set({ isResolved: true, user });
-		if (sync) {
-			await new SyncStore().syncLocalDataToDb();
+		try {
+			const user = await AuthStore.firebaseUtils.signInGoogle();
+			auth.set({ isResolved: true, user });
+			if (sync) {
+				await new SyncStore().syncLocalDataToDb();
+			}
+		} catch (err) {
+			console.error(err);
+			if (err instanceof WrongProviderError) {
+				auth.set({
+					isResolved: true,
+					wrongProvider: { email: err.email, cred: err.cred },
+					user: null
+				});
+			} else {
+				auth.set({
+					isResolved: true,
+					error: get(t)('app.login-popup.failed-to-login-error'),
+					user: null
+				});
+			}
+		}
+	}
+
+	public async linkAccounts(sync: boolean): Promise<any> {
+		const authState = get(auth);
+		try {
+			const user = await AuthStore.firebaseUtils.handleExistingCredentialsError(
+				authState?.wrongProvider?.email as string,
+				authState.wrongProvider?.cred as AuthCredential
+			);
+			auth.set({ isResolved: true, user });
+			if (sync) {
+				await new SyncStore().syncLocalDataToDb();
+			}
+		} catch (err) {
+			console.error(err);
+			auth.update((prev) => ({ ...prev, error: get(t)('app.login-popup.failed-to-merge-error') }));
 		}
 	}
 

@@ -1,7 +1,16 @@
 import { get, writable } from 'svelte/store';
 import type { AppUser } from '../../types/auth';
+import type { AuthCredential } from 'firebase/auth';
 
-export const auth = writable<{ isResolved: boolean; user: AppUser | null }>({
+export const auth = writable<{
+	isResolved: boolean;
+	user: AppUser | null;
+	wrongProvider?: {
+		email: string;
+		cred: AuthCredential;
+	};
+	error?: string;
+}>({
 	isResolved: false,
 	user: null
 });

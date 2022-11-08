@@ -170,9 +170,9 @@
 		if (isByCategoryView) {
 			const grouped = getChecklistGroupedByCategory(unchecked);
 			const lastGroup = grouped[grouped.length - 1];
-			lastAddToCategory = lastGroup?.category;
+			return lastGroup?.category;
 		} else {
-			lastAddToCategory = unchecked.length ? unchecked[unchecked.length - 1].category : undefined;
+			return unchecked.length ? unchecked[unchecked.length - 1].category : undefined;
 		}
 	}
 

@@ -13,6 +13,7 @@
 	let keepMyData = false;
 	const wrongProvider = derived(auth, ($auth) => $auth.wrongProvider);
 	const error = derived(auth, ($auth) => $auth.error);
+	const sessionExpired = derived(auth, ($auth) => $auth.isSessionExpired);
 
 	async function onLoginWithFacebook(): Promise<void> {
 		state = 'facebook';
@@ -58,6 +59,11 @@
 </script>
 
 <div>
+	{#if $sessionExpired}
+		<Alert class="mb-4">
+			{$t('app.login-popup.session-expired')}
+		</Alert>
+	{/if}
 	<Button class="mb-4 w-full" size="md" color="blue" on:click={onLoginWithFacebook}>
 		{#if state === 'facebook'}
 			<Spinner class="mr-2" size={4} />

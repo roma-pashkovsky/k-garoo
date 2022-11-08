@@ -16,6 +16,7 @@ import { variables } from './variables';
 import { get } from 'svelte/store';
 import { t } from '../stores/app/translate';
 import type { AppUser } from '../types/auth';
+import { setUserLocalStorage } from './local-storage-state';
 
 export class WrongProviderError extends Error {
 	constructor(public email: string, public cred: AuthCredential) {
@@ -177,6 +178,7 @@ export class FirebaseUtils {
 			}),
 			body: JSON.stringify(user)
 		});
+		await setUserLocalStorage(user);
 	}
 
 	private async deleteSession(): Promise<void> {

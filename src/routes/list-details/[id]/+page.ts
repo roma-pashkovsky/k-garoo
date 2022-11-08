@@ -6,7 +6,7 @@ import { get } from 'svelte/store';
 import { loadUserIfNotResolved } from '../../../stores/login/auth';
 
 export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData | undefined> {
-	await loadUserIfNotResolved(event.fetch);
+	await loadUserIfNotResolved(event.fetch, browser);
 	const listId: string = event.params.id as string;
 	let list = get(listDataStore)[listId];
 	if (!list) {

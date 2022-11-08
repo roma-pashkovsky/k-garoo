@@ -271,10 +271,9 @@ export const setIsGroupedByCategory = async (
 		};
 	});
 	const authUser = get(auth)?.user;
+	setIsGroupedByCategoryLocal(listId, isByCategory);
 	if (authUser) {
 		await setIsGroupedByCategorySettingsAPI(listId, isByCategory);
-	} else {
-		setIsGroupedByCategoryLocal(listId, isByCategory);
 	}
 };
 
@@ -312,10 +311,9 @@ export const setHideCrossedOut = async (
 			}
 		};
 	});
+	await setIsHideCrossedOutLocal(listId, isHideCrossedOut);
 	if (get(auth).user) {
 		await setIsHideCrossedOutSettingsAPI(listId, isHideCrossedOut);
-	} else {
-		await setIsHideCrossedOutLocal(listId, isHideCrossedOut);
 	}
 };
 

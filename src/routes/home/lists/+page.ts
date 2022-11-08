@@ -4,6 +4,6 @@ import type { Load } from '@sveltejs/kit';
 import { loadUserIfNotResolved } from '../../../stores/login/auth';
 
 export const load: Load = async ({ fetch }) => {
-	await loadUserIfNotResolved(fetch);
+	await loadUserIfNotResolved(fetch, browser);
 	await loadListItems(browser, fetch);
 };

@@ -6,6 +6,7 @@ import type {
 	PersistedList,
 	Proposition
 } from '../types';
+import type { AppUser } from '../types/auth';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
 import type { ApiSyncTask } from '../types/api-sync-task';
 
@@ -14,6 +15,30 @@ export { customCategoryId, otherCategoryId };
 export const specialCategories = {
 	[customCategoryId]: {},
 	[otherCategoryId]: {}
+};
+
+export const setUserLocalStorage = (user: AppUser): Promise<void> => {
+	return new Promise<void>((resolve) => {
+		requestAnimationFrame(() => {
+			const str = JSON.stringify(user);
+			localStorage.setItem('k-garoo/user', str);
+			resolve();
+		});
+	});
+};
+
+export const getUserLocalStorage = (): Promise<AppUser | null> => {
+	return new Promise<AppUser | null>((resolve) => {
+		requestAnimationFrame(() => {
+			const str = localStorage.getItem('k-garoo/user');
+			if (str) {
+				const parsed = JSON.parse(str);
+				resolve(parsed);
+			} else {
+				resolve(null);
+			}
+		});
+	});
 };
 
 export const getAppSettings = (): AppSettings | null => {
@@ -139,7 +164,6 @@ export const cleanAllLocalData = (): void => {
 };
 
 export const cleanLocalDataOnLogout = (): void => {
-	console.log(localStorage.length);
 	const forRemove: string[] = [];
 	const l = localStorage.length;
 	for (let i = 0; i < l; i++) {
@@ -147,7 +171,10 @@ export const cleanLocalDataOnLogout = (): void => {
 		if (
 			key &&
 			key.startsWith('k-garoo') &&
-			(key.includes('list') || key.includes('categoryOptions') || key.includes('syncTasks'))
+			(key.includes('list') ||
+				key.includes('categoryOptions') ||
+				key.includes('syncTasks') ||
+				key.includes('user'))
 		) {
 			forRemove.push(key);
 		}

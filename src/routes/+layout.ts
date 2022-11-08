@@ -5,7 +5,7 @@ import type { LayoutLoad } from '../../.svelte-kit/types/src/routes/$types';
 import { loadCategoryOptions } from '../stores/checklist-details/category-options';
 
 export const load: LayoutLoad = async ({ fetch }): Promise<any> => {
-	await loadUserFromSession(fetch);
+	await loadUserFromSession(fetch, browser);
 	await loadAppSettings(fetch);
 	await loadCategoryOptions(browser, fetch);
 

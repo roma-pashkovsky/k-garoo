@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Login from './Login.svelte';
-	import { AuthStore } from '../stores/login/auth.store.js';
 	import { onMount } from 'svelte';
 	import { CloseButton, Drawer } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 	import { t } from '../stores/app/translate.js';
+	import { loginClickEvents } from '../stores/login/auth';
 
 	export let hidden = true;
 
@@ -15,7 +15,7 @@
 	};
 
 	onMount(() => {
-		AuthStore.loginClickEvents.subscribe((ev) => {
+		loginClickEvents.subscribe((ev) => {
 			console.log(ev);
 			if (ev) {
 				hidden = false;

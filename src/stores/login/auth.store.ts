@@ -1,7 +1,7 @@
 import { FirebaseUtils, WrongProviderError } from '../../utils/firebase-utils';
 import { derived, get, writable } from 'svelte/store';
 import { SyncStore } from './sync.store';
-import { auth } from './auth';
+import { auth, loginClickEvents } from './auth';
 import { cleanLocalDataOnLogout } from '../../utils/local-storage-state';
 import type { AuthCredential } from 'firebase/auth';
 import { t } from '../app/translate';
@@ -14,10 +14,8 @@ export class AuthStore {
 	public static user = derived(auth, (auth) => auth.user);
 	public static isLoggedIn = derived(this.user, (user) => !!user);
 
-	public static loginClickEvents = writable<number | null>(null);
-
 	public static triggerLoginClicked(): void {
-		this.loginClickEvents.set(new Date().getTime());
+		loginClickEvents.set(new Date().getTime());
 	}
 
 	public async loginFacebook(sync: boolean): Promise<any> {

@@ -5,28 +5,30 @@ export const getListNMostRelevantItems = (
 	list: ChecklistWithSettings,
 	n: number
 ): CheckListItem[] => {
-	let items = [];
+	const result = [];
+	const source = list.hideCrossedOut ? list.items.filter((it) => !it.checked) : list.items;
+
 	if (list.isGroupByCategory) {
-		const grouped = getChecklistGroupedByCategory(list.items);
+		const grouped = getChecklistGroupedByCategory(source);
 		for (const cat of grouped) {
 			if (cat.items) {
 				for (const item of cat.items) {
-					items.push(item);
+					if (result.length < n) {
+						result.push(item);
+					} else {
+						break;
+					}
 				}
 			}
 		}
 	} else {
-		items = list.items;
+		for (const item of source) {
+			if (result.length < n) {
+				result.push(item);
+			} else {
+				break;
+			}
+		}
 	}
-	if (!items?.length) {
-		return [];
-	}
-	const unchecked = items.filter((it) => !it.checked);
-	if (unchecked.length >= n) {
-		return unchecked.slice(0, n);
-	} else {
-		const rest = n - unchecked.length;
-		const checked = items.filter((it) => it.checked);
-		return [...unchecked, ...checked.slice(0, rest)];
-	}
+	return result;
 };

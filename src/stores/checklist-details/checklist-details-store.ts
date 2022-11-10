@@ -18,11 +18,12 @@ export class ChecklistDetailsStore {
 
 	constructor(checklist: CheckList, private locale: 'en' | 'ua') {
 		this.categoryOptions = derived(
-			ChecklistDetailsStore.customCategoryOptions,
-			($customOptions) => {
+			[ChecklistDetailsStore.customCategoryOptions, propositionStore],
+			([$customOptions, $propositionStore]) => {
 				const manager = new CategoryOptionManager(
 					$customOptions || [],
 					checklist?.items || [],
+					$propositionStore,
 					this.locale
 				);
 				return manager.getCategoryOptions();

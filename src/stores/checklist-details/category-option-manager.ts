@@ -1,10 +1,11 @@
-import type { CategoryOption, CheckListItem } from '../../types';
+import type { CategoryOption, CheckListItem, Proposition } from '../../types';
 import { customCategoryId, reservedCategories } from '../../utils/autodetect-data';
 
 export class CategoryOptionManager {
 	constructor(
 		private categoryOptions: CategoryOption[],
 		private listItems: CheckListItem[],
+		private propositions: Proposition[],
 		private locale: 'en' | 'ua'
 	) {}
 
@@ -21,7 +22,8 @@ export class CategoryOptionManager {
 				name: reservedCategories[catKey][this.locale]
 			};
 		});
-		[...(this.categoryOptions || []), ...reserved]
+		const fromProps = this.propositions.map((prop) => prop?.category).filter((cat) => !!cat);
+		[...(this.categoryOptions || []), ...reserved, ...fromProps]
 			.filter((c) => !!c.name)
 			.forEach((c) => {
 				const n = c.name.toLowerCase();

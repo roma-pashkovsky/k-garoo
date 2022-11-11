@@ -185,83 +185,81 @@
 	onclick={stopMouseEvent}
 	on:submit|preventDefault={onAddFormSubmit}
 	on:swiped-right={onAddFormSubmit}
-	class="relative flex items-start w-full"
+	class="relative w-full"
 >
 	{#if isFirstTimeUse}
 		<ChecklistEditorDemo on:next-click={focus} />
 	{/if}
-	<div class="left flex-1 relative">
-		<!--		Top row-->
-		<div class="top flex h-9 mb-2">
-			<form on:submit|preventDefault={onAddFormSubmit} class="flex-1 h-full !p-0">
-				<textarea
-					class="resize-none focus:ring-0 single-line w-full h-full !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
-					id="form-input"
-					autocomplete="off"
-					autofocus
-					placeholder={$t('lists.details.add-item-placeholder')}
-					rows="1"
-					wrap="off"
-					bind:value={editedItem.itemDescription}
-					bind:this={inputEl}
-					on:keyup={onDescriptionInputKeyUp}
-					on:input={onInput}
+	<!--		Top row-->
+	<div class="top flex h-9 mb-2">
+		<form on:submit|preventDefault={onAddFormSubmit} class="flex-1 h-full !p-0">
+			<textarea
+				class="resize-none focus:ring-0 single-line w-full h-full !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
+				id="form-input"
+				autocomplete="off"
+				autofocus
+				placeholder={$t('lists.details.add-item-placeholder')}
+				rows="1"
+				wrap="off"
+				bind:value={editedItem.itemDescription}
+				bind:this={inputEl}
+				on:keyup={onDescriptionInputKeyUp}
+				on:input={onInput}
+			/>
+			<button type="submit" class="hidden" />
+		</form>
+		{#if isByCategoryView}
+			<div class=" flex-0">
+				<ChecklistItemCategoryInput
+					addWrapClass="rounded"
+					bind:categoryId={editedCategoryId}
+					bind:categoryOptions
+					bind:customCategoryInput
+					on:user-input={onCategoryUserInput}
 				/>
-				<button type="submit" class="hidden" />
-			</form>
-			{#if isByCategoryView}
-				<div class=" flex-0">
-					<ChecklistItemCategoryInput
-						addWrapClass="rounded"
-						bind:categoryId={editedCategoryId}
-						bind:categoryOptions
-						bind:customCategoryInput
-						on:user-input={onCategoryUserInput}
-					/>
-				</div>
-			{/if}
-		</div>
-		<!--		Bottom row-->
-		<div class="bottom flex  relative max-w-full">
-			<!--			Propositions-->
-			<div class="flex-1 flex h-9 items-center">
-				{#each displayPropositions as proposition, index}
-					{#if index > 0}
-						<div class="mx-2 h-9 leading-8 text-gray-500 dark:text-gray-400">
-							<span class="align-middle text-sm">|</span>
-						</div>
-					{/if}
-					<div
-						class="prop-item text-ellipsis overflow-x-hidden whitespace-nowrap leading-8 h-9 text-gray-500 dark:text-gray-400 text-sm relative {index !==
-						0
-							? 'ml-1'
-							: ''} {displayPropositions.length === 1
-							? 'single'
-							: displayPropositions.length === 2
-							? 'two-fold'
-							: ''}"
-						in:fade
-						on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
-						onmousedown={stopMouseEvent}
-						onmouseup="event.stopPropagation()"
-						onclick="event.stopPropagation()"
-					>
-						<span class="align-middle text-sm">{proposition.itemDescription}</span>
-					</div>
-				{/each}
 			</div>
-			<!--			Submit button-->
-			<button
-				type="submit"
-				disabled={!isValidInput}
-				on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
-				class="!p-1.5 w-8 h-8 ml-2 rounded {isValidInput
-					? 'bg-blue-600 text-white'
-					: 'border border-blue-400 text-gray-500'}"
-			>
-				<ArrowRight size="18" />
-			</button>
+		{/if}
+	</div>
+	<!--		Bottom row-->
+	<div class="bottom flex  relative max-w-full">
+		<!--			Propositions-->
+		<div class="flex-1 flex h-9 items-center">
+			{#each displayPropositions as proposition, index}
+				{#if index > 0}
+					<div class="mx-2 h-9 leading-8 text-gray-500 dark:text-gray-400">
+						<span class="align-middle text-sm">|</span>
+					</div>
+				{/if}
+				<div
+					class="prop-item text-ellipsis overflow-x-hidden whitespace-nowrap leading-8 h-9 text-gray-500 dark:text-gray-400 text-sm relative {index !==
+					0
+						? 'ml-1'
+						: ''} {displayPropositions.length === 1
+						? 'single'
+						: displayPropositions.length === 2
+						? 'two-fold'
+						: ''}"
+					in:fade
+					on:mousedown|stopPropagation|preventDefault={() => onPropositionClick(proposition)}
+					onmousedown={stopMouseEvent}
+					onmouseup="event.stopPropagation()"
+					onclick="event.stopPropagation()"
+				>
+					<span class="align-middle text-sm">{proposition.itemDescription}</span>
+				</div>
+			{/each}
 		</div>
+		<!--			Submit button-->
+		<button
+			type="submit"
+			disabled={!isValidInput}
+			on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
+			class="!p-1.5 w-8 h-8 ml-2 rounded {isValidInput
+				? 'bg-blue-600 text-white'
+				: 'border border-blue-400 text-gray-500'}"
+		>
+			<ArrowRight size="18" />
+		</button>
 	</div>
 </form>
 

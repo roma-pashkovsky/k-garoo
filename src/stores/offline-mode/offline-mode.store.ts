@@ -1,44 +1,62 @@
 import { writable } from 'svelte/store';
-import { getSyncTasks } from '../../utils/local-storage-state';
-import type { ApiSyncTask } from '../../types/api-sync-task';
-import { appFetch } from '../../utils/app-fetch';
 
 export const offline = writable<boolean>(false);
 
+let handle: any;
+
 export const startOfflineListener = (): void => {
+	if (navigator) {
+		offline.set(!navigator.onLine);
+	}
 	addEventListener('online', () => {
-		console.log(':online');
-		offline.set(false);
-		processSyncTasks();
+		if (handle) {
+			clearInterval(handle);
+			handle = undefined;
+		}
+		handle = setInterval(() => {
+			checkConnectionPing(2500)
+				.then(() => {
+					clearInterval(handle);
+					handle = undefined;
+					console.log(':online');
+					offline.set(false);
+				})
+				.catch((err) => {
+					// still offline
+				});
+		}, 3000);
 	});
 
 	addEventListener('offline', () => {
 		console.log(':offline');
 		offline.set(true);
+		if (handle) {
+			clearInterval(handle);
+			handle = undefined;
+		}
 	});
 };
 
-async function processSyncTasks(): Promise<void> {
-	const syncTasks = await getSyncTasks();
-	if (syncTasks?.length) {
-		const groups: { [id: string]: ApiSyncTask[] } = {};
-		syncTasks.forEach((st) => {
-			if (!groups[st.groupId]) {
-				groups[st.groupId] = [];
-			}
-			groups[st.groupId].push(st);
-		});
-		const groupIds = Object.keys(groups);
-		for (const groupId of groupIds) {
-			const groupTasks = groups[groupId];
-			groupTasks.sort((a, b) => a.ts - b.ts);
-			for (const task of groupTasks) {
-				try {
-					await appFetch(task.urlPath, { method: task.method, body: task.body }, fetch, 10000);
-				} catch (err) {
-					break;
-				}
-			}
+function checkConnectionPing(timeout: number): Promise<void> {
+	return new Promise<void>((resolve, reject) => {
+		let controller: AbortController | undefined = undefined;
+		if (AbortController) {
+			controller = new AbortController();
+			setTimeout(() => {
+				(controller as AbortController).abort();
+				reject('timeout');
+			}, timeout);
 		}
-	}
+
+		fetch(
+			'/img/ping.png',
+			controller ? { cache: 'no-store', signal: controller.signal } : { cache: 'no-store' }
+		)
+			.then(() => {
+				resolve();
+			})
+			.catch((err) => {
+				reject(err);
+			});
+	});
 }

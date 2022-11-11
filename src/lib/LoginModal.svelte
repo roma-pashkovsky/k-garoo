@@ -5,6 +5,7 @@
 	import { sineIn } from 'svelte/easing';
 	import { t } from '../stores/app/translate.js';
 	import { loginClickEvents } from '../stores/login/auth';
+	import { invalidAuthEventStore } from '../utils/app-fetch';
 
 	export let hidden = true;
 
@@ -16,7 +17,6 @@
 
 	onMount(() => {
 		loginClickEvents.subscribe((ev) => {
-			console.log(ev);
 			if (ev) {
 				hidden = false;
 			}

@@ -211,7 +211,9 @@
 
 	function onToggleByCategoryViewClicked(): void {
 		isByCategoryView = !isByCategoryView;
-		setIsGroupedByCategory(listId, isByCategoryView);
+		if (list) {
+			setIsGroupedByCategory(listId, isByCategoryView);
+		}
 	}
 
 	async function onGenerateListLinkClicked(): Promise<void> {
@@ -689,6 +691,8 @@
 
 	async function createNewList(): Promise<void> {
 		list = await createList({ id: listId, name: listName, items });
+		await setIsGroupedByCategory(listId, isByCategoryView || false);
+		await setHideCrossedOut(listId, isHideCrossedOut || false);
 		listName = list.name;
 		items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
 		shouldCreateNewList = false;
@@ -772,7 +776,9 @@
 
 	async function onToggleHideCrossedOut(): Promise<void> {
 		isHideCrossedOut = !isHideCrossedOut;
-		setHideCrossedOut(listId, isHideCrossedOut);
+		if (list) {
+			setHideCrossedOut(listId, isHideCrossedOut);
+		}
 	}
 </script>
 
@@ -956,14 +962,13 @@
 		<!--		Add item button-->
 		<svelte:fragment slot="float">
 			{#if !isListReadOnly}
-				<div class="md:hidden absolute bottom-8 right-8">
+				<div class="md:hidden absolute bottom-8 right-4">
 					{#if !editedItem}
 						<Button class="!p-2" on:click={onAddToListClicked} color="blue">
 							<Plus />
 						</Button>
 					{/if}
 				</div>
-
 				<div class="hidden md:block absolute top-8 right-8">
 					{#if !editedItem}
 						<Button class="!p-2" on:click={onAddToListClicked} color="blue">

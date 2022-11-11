@@ -3,7 +3,7 @@ import { get, writable } from 'svelte/store';
 import { getListIds, removeListData, setListIds } from '../../utils/local-storage-state';
 import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-ids-from-persisted-list';
 import { auth } from '../login/auth';
-import { appFetch, TimeoutError } from '../../utils/app-fetch';
+import { appFetch } from '../../utils/app-fetch';
 
 export const items = writable<MainListItem[]>([]);
 
@@ -36,7 +36,7 @@ export const removeList = async (listId: string): Promise<void> => {
 };
 
 async function removeListAPI(listId: string): Promise<void> {
-	await fetch(`/api/v1/lists/${listId}`, { method: 'DELETE' });
+	await appFetch(`/lists/${listId}`, { method: 'DELETE' }, fetch, 10000, listId);
 }
 
 async function removeListLocal(listId: string): Promise<void> {
@@ -52,16 +52,21 @@ async function removeListLocal(listId: string): Promise<void> {
 export const reorderList = async (list: MainListItem[]): Promise<void> => {
 	items.set(list);
 	const listIds = list.map((l) => l.id);
+	await reorderListLocal(listIds);
 	const user = get(auth).user;
 	if (user) {
 		await reorderListAPI(listIds);
-	} else {
-		await reorderListLocal(listIds);
 	}
 };
 
 async function reorderListAPI(listIds: string[]): Promise<void> {
-	await fetch(`/api/v1/reorder`, { method: 'POST', body: JSON.stringify(listIds) });
+	await appFetch(
+		`/reorder`,
+		{ method: 'POST', body: JSON.stringify(listIds) },
+		fetch,
+		10000,
+		'reorder' + new Date().getTime()
+	);
 }
 
 async function reorderListLocal(listIds: string[] = []): Promise<void> {

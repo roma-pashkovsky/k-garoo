@@ -2,6 +2,7 @@ import { get, writable } from 'svelte/store';
 import type { AppUser } from '../../types/auth';
 import { listDataStore } from './checklist-details-data';
 import { auth } from '../login/auth';
+import { appFetch } from '../../utils/app-fetch';
 
 export const usersByListStore = writable<{ [listId: string]: AppUser[] }>({});
 
@@ -29,9 +30,5 @@ export const loadUsersByList = async (listId: string): Promise<void> => {
 };
 
 async function doLoadUsersByList(listId: string): Promise<AppUser[]> {
-	const resp = await fetch(`/api/v1/lists/${listId}/users`, { method: 'GET' });
-	if (!resp.ok) {
-		throw new Error(resp.statusText);
-	}
-	return await resp.json();
+	return appFetch<AppUser[]>(`/lists/${listId}/users`, { method: 'GET' });
 }

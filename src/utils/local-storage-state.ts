@@ -27,6 +27,15 @@ export const setUserLocalStorage = (user: AppUser): Promise<void> => {
 	});
 };
 
+export const cleanUserLocalStorage = (): Promise<void> => {
+	return new Promise<void>((resolve) => {
+		requestAnimationFrame(() => {
+			localStorage.removeItem('k-garoo/user');
+			resolve();
+		});
+	});
+};
+
 export const getUserLocalStorage = (): Promise<AppUser | null> => {
 	return new Promise<AppUser | null>((resolve) => {
 		requestAnimationFrame(() => {

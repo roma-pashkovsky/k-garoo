@@ -22,6 +22,7 @@
 	import ShareList from '../lib/checklist-details/ShareList.svelte';
 	import { processedSyncTasks, processSyncTasks } from '../utils/process-sync-tasks';
 	import { invalidAuthEventStore } from '../utils/app-fetch';
+	import { cleanLocalDataOnLogout } from '../utils/local-storage-state';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
@@ -77,6 +78,14 @@
 		AppSettingsStore.markIsLocaleSet();
 		goto('/home/add-app-to-main-screen');
 	}
+
+	async function onCloseLoginModal() {
+		if (get(auth).isSessionExpired) {
+			await cleanLocalDataOnLogout();
+			await goto('/home/lists');
+			location.reload();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -126,7 +135,7 @@
 		on:show-how-add-to-main={onShowHowAddToMain}
 	/>
 
-	<LoginModal />
+	<LoginModal on:dismiss={onCloseLoginModal} />
 
 	<UsersByListDrawer />
 

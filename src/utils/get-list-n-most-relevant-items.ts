@@ -5,6 +5,9 @@ export const getListNMostRelevantItems = (
 	list: ChecklistWithSettings,
 	n: number
 ): CheckListItem[] => {
+	if (!list?.items) {
+		return [];
+	}
 	const result = [];
 	const source = list.hideCrossedOut ? list.items.filter((it) => !it.checked) : list.items;
 

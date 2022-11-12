@@ -1,4 +1,5 @@
 import { derived, writable } from 'svelte/store';
+import { appFetch } from '../../utils/app-fetch';
 
 export const sharedListIds = writable<string[]>([]);
 
@@ -6,8 +7,7 @@ export const sharedListCount = derived(sharedListIds, ($listIds) => $listIds?.le
 
 export const loadSharedListIds = async (f = fetch): Promise<void> => {
 	try {
-		const res = await f('/api/v1/my-shared-lists', { method: 'GET' });
-		const listIds = await res.json();
+		const listIds = await appFetch<string[]>('/my-shared-lists', { method: 'GET' }, f);
 		sharedListIds.set(listIds);
 	} catch (err) {
 		console.log(err);

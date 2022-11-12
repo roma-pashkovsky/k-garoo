@@ -11,7 +11,7 @@ import { userPath } from '../../../../utils/api/db-paths';
 import { serverError } from '../../../../utils/api/responses';
 import { UserSearchManager } from '../../../../utils/api/user-search-manager';
 
-const WEEK_SECONDS = 60 * 60 * 24 * 7;
+const WEEK_SECONDS = 60 * 60 * 24 * 12;
 
 export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	const authHeader = request.headers.get('Authorization');

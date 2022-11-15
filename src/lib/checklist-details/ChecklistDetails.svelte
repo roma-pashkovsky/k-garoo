@@ -393,6 +393,7 @@
 
 	function onItemCheckboxChange(item: CheckListItemEditModel): void {
 		if (isCheckboxView) {
+			closeAllEdits();
 			item.selected = !item.selected;
 			updateItemInTheList(item);
 		}
@@ -446,6 +447,16 @@
 	function onItemLongPress(item: CheckListItemEditModel): void {
 		if (isCheckboxView) {
 			return;
+		}
+		isAddToListMode = false;
+		addToCategoryId = undefined;
+		editedItem = { ...item };
+		editedCategoryId = editedItem.category.id;
+	}
+
+	function onItemEditIconPressed(item: CheckListItemEditModel): void {
+		if (isCheckboxView) {
+			deselectAllCheckboxes();
 		}
 		isAddToListMode = false;
 		addToCategoryId = undefined;
@@ -967,6 +978,7 @@
 								on:item-click={() => onItemClick(item)}
 								on:item-long-press={() => onItemLongPress(item)}
 								on:checkbox-change={() => onItemCheckboxChange(item)}
+								on:item-edit-pressed={() => onItemEditIconPressed(item)}
 								addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
 							/>
 						{/each}
@@ -992,6 +1004,7 @@
 					on:item-click={() => onItemClick(item)}
 					on:item-long-press={() => onItemLongPress(item)}
 					on:checkbox-change={() => onItemCheckboxChange(item)}
+					on:item-edit-pressed={() => onItemEditIconPressed(item)}
 					addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
 				/>
 			{/each}
@@ -1000,7 +1013,7 @@
 		{#if items?.length && isCalcMode}
 			<div class="flex justify-end py-1.5 mt-8 px-2">
 				<div class="w-80 border-t border-gray-500 dark:border-gray-200 text-right">
-					{$t('lists.details.calculator.total')}: {sumItems(items)}
+					{$t('lists.details.calculator.total')}: {sumItems(displayItems)}
 				</div>
 			</div>
 		{/if}

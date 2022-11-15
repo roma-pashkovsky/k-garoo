@@ -5,6 +5,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import DuplicateBadge from './DuplicateBadge.svelte';
+	import { Pencil } from 'svelte-heros';
 
 	export let item: CheckListItemEditModel;
 	export let isCheckboxView: boolean;
@@ -40,6 +41,10 @@
 	function onItemLongPress(): void {
 		dispatch('item-long-press');
 	}
+
+	function onItemEditPressed(): void {
+		dispatch('item-edit-pressed');
+	}
 </script>
 
 <div
@@ -54,7 +59,7 @@
 				ondblclick="event.stopPropagation()"
 			>
 				<div
-					class="mask absolute top-0 left-0 right-0 bottom-0"
+					class="mask absolute top-0 left-0 right-6 bottom-0"
 					on:mousedown={checkboxChanged}
 					style="z-index: 1"
 				/>
@@ -67,6 +72,12 @@
 					<div class="text-base font-normal {item?.checked ? 'line-through' : ''}">
 						{item?.itemDescription}
 						<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
+						<div
+							class="ml-2 inline-block"
+							on:mousedown|preventDefault|stopPropagation={onItemEditPressed}
+						>
+							<Pencil class="w-4 h-4" />
+						</div>
 					</div>
 				</div>
 			</div>

@@ -72,9 +72,7 @@
 			</div>
 		{:else}
 			<div>
-				<!--				use:press={{ timeframe: 400, triggerBeforeFinished: true }}-->
 				<div
-					use:swipe={{ timeframe: 300, minSwipeDistance: 70, touchAction: 'pan-y' }}
 					on:swiped-left
 					on:swiped-right
 					on:long-press={onItemLongPress}

@@ -3,7 +3,7 @@
 	import type { FuzzySearch } from '../../utils/fuzzy-search';
 	import { ArrowRight } from 'svelte-heros';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { customCategoryId, otherCategoryId } from '../../utils/local-storage-state';
+	import { customCategoryId } from '../../utils/local-storage-state';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
 	import { fade } from 'svelte/transition';
 	import { getUID } from '../../utils/get-uid';
@@ -16,6 +16,7 @@
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 
 	export let editedItem: CheckListItem;
+	export let isFocusOnStart: boolean;
 	export let editedCategoryId: string;
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
@@ -26,6 +27,7 @@
 
 	const dispatch = createEventDispatcher();
 	let inputEl: HTMLTextAreaElement;
+	let isFocused = false;
 	let customCategoryInput: string;
 	let prevEditedItemId: string;
 	let propositions: Proposition[] = [];
@@ -59,13 +61,18 @@
 
 	function focus() {
 		if (inputEl) {
-			inputEl.focus();
+			inputEl.focus({ preventScroll: true });
 		}
 		setTimeout(() => {
 			if (inputEl) {
-				inputEl.focus();
+				inputEl.focus({ preventScroll: true });
 			}
-		}, 200);
+		}, 400);
+	}
+
+	function onInputClicked() {
+		inputEl.focus({ preventScroll: true });
+		isFocused = true;
 	}
 
 	function getLines(text: string): string[] {
@@ -181,8 +188,7 @@
 	}
 </script>
 
-<form
-	onclick={stopMouseEvent}
+<div
 	on:submit|preventDefault={onAddFormSubmit}
 	on:swiped-right={onAddFormSubmit}
 	class="relative w-full"
@@ -192,22 +198,21 @@
 	{/if}
 	<!--		Top row-->
 	<div class="top flex h-9 mb-2">
-		<form on:submit|preventDefault={onAddFormSubmit} class="flex-1 h-full !p-0">
+		<div class="flex-1 h-full !p-0">
 			<textarea
-				class="resize-none focus:ring-0 single-line w-full h-full !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
+				class="resize-none focus:ring-0 single-line !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
 				id="form-input"
 				autocomplete="off"
-				autofocus
 				placeholder={$t('lists.details.add-item-placeholder')}
 				rows="1"
 				wrap="off"
 				bind:value={editedItem.itemDescription}
 				bind:this={inputEl}
-				on:keyup={onDescriptionInputKeyUp}
+				on:keyup|preventDefault={onDescriptionInputKeyUp}
 				on:input={onInput}
+				on:mousedown|preventDefault|stopPropagation={onInputClicked}
 			/>
-			<button type="submit" class="hidden" />
-		</form>
+		</div>
 		{#if isByCategoryView}
 			<div class=" flex-0">
 				<ChecklistItemCategoryInput
@@ -261,7 +266,7 @@
 			<ArrowRight size="18" />
 		</button>
 	</div>
-</form>
+</div>
 
 <style>
 	.prop-item {

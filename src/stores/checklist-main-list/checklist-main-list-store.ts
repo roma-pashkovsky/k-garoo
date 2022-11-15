@@ -4,15 +4,16 @@ import { getListIds, removeListData, setListIds } from '../../utils/local-storag
 import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-ids-from-persisted-list';
 import { auth } from '../login/auth';
 import { appFetch } from '../../utils/app-fetch';
+import { offline } from '../offline-mode/offline-mode.store';
 
 export const items = writable<MainListItem[]>([]);
 
 export const loadListItems = async (browser: boolean, f = fetch): Promise<void> => {
-	const user = get(auth).user;
 	if (browser) {
 		items.set(getSortedListIdsFromPersistedList(getListIds()));
 	}
-	if (user) {
+	const user = get(auth).user;
+	if (user && !get(offline)) {
 		appFetch<PersistedList | null>(`/lists`, { method: 'GET' }, f, 5000)
 			.then((list) => {
 				if (browser) {

@@ -31,7 +31,9 @@ export const getList = async (
 		if (fromApi) {
 			list = fromApi;
 			listDataStore.update((prev) => ({ ...prev, [listId]: list }));
-			setListData(list);
+			if (browser) {
+				setListData(list);
+			}
 		}
 	} catch (err) {
 		console.error(err);
@@ -59,6 +61,7 @@ async function getListLocal(listId: string): Promise<CheckList | null> {
  */
 export const createList = async (request: CreateListRequest): Promise<CheckList> => {
 	const list = await createListLocal(request);
+	listDataStore.update((prev) => ({ ...prev, [list.id]: list }));
 	if (get(auth).user) {
 		await createListAPI(request);
 	}

@@ -60,8 +60,10 @@ export const getAppSettings = (): AppSettings | null => {
 };
 
 export const setAppSettings = (settings: AppSettings): void => {
-	const str = JSON.stringify(settings);
-	localStorage.setItem('k-garoo/appSettings', str);
+	if (window && 'localStorage' in window) {
+		const str = JSON.stringify(settings);
+		localStorage.setItem('k-garoo/appSettings', str);
+	}
 };
 
 export const getListIds = (): PersistedList => {
@@ -130,6 +132,9 @@ export const setCategoryOptionsLocalStorage = (options: CategoryOption[]): void 
 
 export const addSyncTask = async (task: ApiSyncTask): Promise<void> => {
 	return new Promise((resolve) => {
+		if (!localStorage) {
+			resolve();
+		}
 		requestAnimationFrame(() => {
 			localStorage.setItem(`k-garoo/syncTasks/${task.groupId}%${task.ts}`, JSON.stringify(task));
 			resolve();

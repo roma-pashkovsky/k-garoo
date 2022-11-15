@@ -28,12 +28,26 @@
 	const isAppReloading = AppReloader.isReloading;
 	let isSetLocalePopupOpen = !get(AppSettingsStore.isLocaleSet);
 	const theme = AppSettingsStore.theme;
+	let viewPort: VisualViewport;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 
 	onMount(() => {
 		initPropositions();
 		startOfflineListener();
+		viewPort = window.visualViewport;
+		setViewportHeightProperty();
+		let prevTheme: string | null = null;
+		theme.subscribe((themeVal) => {
+			if (prevTheme) {
+				document.body.classList.remove(prevTheme);
+			}
+			document.body.classList.add(themeVal);
+			prevTheme = themeVal;
+		});
+		viewPort.addEventListener('resize', () => {
+			setViewportHeightProperty();
+		});
 		invalidAuthEventStore.subscribe((ev) => {
 			if (ev) {
 				console.log('invalid auth event');
@@ -69,6 +83,12 @@
 			}
 		});
 	});
+
+	function setViewportHeightProperty(): void {
+		let vh = viewPort.height * 0.01;
+		// Then we set the value in the --vh custom property to the root of the document
+		document.documentElement.style.setProperty('--vh', `${vh}px`);
+	}
 
 	function onCloseSettingsPopup(): void {
 		AppSettingsStore.markIsLocaleSet();
@@ -106,8 +126,8 @@
 	bg-amber-900"
 />
 
-<div class="fixed top-0 bottom-0 left-0 right-0 root {$theme}">
-	<div class="fixed top-0 bottom-0 left-0 right-0 dark:bg-black dark:text-white">
+<div class="w-full h-full relative {$theme}">
+	<div class="w-full h-full relative dark:text-white">
 		{#if $isAppReloading || $navigating}
 			<FullPageSpinner />
 		{/if}
@@ -119,7 +139,7 @@
 			{/each}
 		</div>
 
-		<slot />
+		<!--		Insert slot after test here-->
 
 		<div class="toast-wrapper">
 			{#each toasts as toast}
@@ -128,18 +148,21 @@
 				</div>
 			{/each}
 		</div>
+
+		<InitConfigPopup
+			open={isSetLocalePopupOpen}
+			on:complete={onCloseSettingsPopup}
+			on:show-how-add-to-main={onShowHowAddToMain}
+		/>
+
+		<LoginModal on:dismiss={onCloseLoginModal} />
+
+		<UsersByListDrawer />
+
+		<ShareList />
+
+		<slot />
 	</div>
-	<InitConfigPopup
-		open={isSetLocalePopupOpen}
-		on:complete={onCloseSettingsPopup}
-		on:show-how-add-to-main={onShowHowAddToMain}
-	/>
-
-	<LoginModal on:dismiss={onCloseLoginModal} />
-
-	<UsersByListDrawer />
-
-	<ShareList />
 </div>
 
 <style>

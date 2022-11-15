@@ -107,6 +107,8 @@
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: isAnyItemSelected = items.some((it) => it.selected);
 	$: isListReadOnly = !shouldCreateNewList && !list?.isMyList;
+	$: categoryBgColor = (cat: CategoryOption) =>
+		(get(AppSettingsStore.theme) === 'light' ? cat.color : darkBG[cat.color]) || '';
 	let propositionsFuzzySearch: Readable<FuzzySearch<Proposition>>;
 
 	onMount(() => {
@@ -894,16 +896,10 @@
 			<!--			By category view-->
 			{#each byCategoryList as catItem, catIndex}
 				<div
-					class="relative rounded-md  bg-{catItem.category.color
-						? catItem.category.color
-						: 'transparent'} dark:!bg-transparent {catIndex === 0 ? '' : 'mt-6'}"
+					class="relative rounded-md bg-{categoryBgColor(catItem.category)} {catIndex === 0
+						? ''
+						: 'mt-6'}"
 				>
-					<div
-						class="absolute top-0 bottom-0 left-0 right-0 hidden dark:block rounded-md -z-10 bg-{catItem
-							.category.color
-							? darkBG[catItem.category.color]
-							: 'transparent'}"
-					/>
 					<div onclick="event.stopPropagation()">
 						<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
 							<span
@@ -997,41 +993,42 @@
 			</div>
 		</svelte:fragment>
 	</DetailsBody>
+
+	<!--        Bottom input-->
+	{#if !!editedItem}
+		<BottomMenu on:swipe-left={onBodyClick}>
+			<ChecklistItemEditor
+				{editedItem}
+				{isByCategoryView}
+				shouldAutodetectCategory={!addToCategoryId}
+				categoryOptions={$categoryOptions}
+				propositionsFuzzySearch={$propositionsFuzzySearch}
+				categoryAutodetector={$categoryAutodetector}
+				{isFirstTimeUse}
+				on:form-submit={(e) => onAddFormSubmit(e)}
+				on:dismiss={onBodyClick}
+				on:destroy={onEditorFormDestroyed}
+				bind:editedCategoryId
+			/>
+		</BottomMenu>
+	{/if}
+	<!--		/Bottom input-->
+	<!--		Batch editing input-->
+	{#if isAnyItemSelected}
+		<div on:swipe-left={onBodyClick}>
+			<ChecklistBatchEditor
+				{isByCategoryView}
+				categoryOptions={$categoryOptions}
+				on:batch-remove={onBatchRemove}
+				on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
+				on:batch-save-new-list={onBatchSaveAsNewList}
+				on:batch-copy-items={onBatchCopyItems}
+				on:dismiss={onBodyClick}
+			/>
+		</div>
+	{/if}
+	<!--		/Batch editing input-->
 </DetailsPage>
-<!--        Bottom input-->
-{#if !!editedItem}
-	<BottomMenu on:swipe-left={onBodyClick}>
-		<ChecklistItemEditor
-			{editedItem}
-			{isByCategoryView}
-			shouldAutodetectCategory={!addToCategoryId}
-			categoryOptions={$categoryOptions}
-			propositionsFuzzySearch={$propositionsFuzzySearch}
-			categoryAutodetector={$categoryAutodetector}
-			{isFirstTimeUse}
-			on:form-submit={(e) => onAddFormSubmit(e)}
-			on:dismiss={onBodyClick}
-			on:destroy={onEditorFormDestroyed}
-			bind:editedCategoryId
-		/>
-	</BottomMenu>
-{/if}
-<!--		/Bottom input-->
-<!--		Batch editing input-->
-{#if isAnyItemSelected}
-	<BottomMenu on:swipe-left={onBodyClick}>
-		<ChecklistBatchEditor
-			{isByCategoryView}
-			categoryOptions={$categoryOptions}
-			on:batch-remove={onBatchRemove}
-			on:batch-change-category={(event) => onBatchChangeCategory(event.detail)}
-			on:batch-save-new-list={onBatchSaveAsNewList}
-			on:batch-copy-items={onBatchCopyItems}
-			on:dismiss={onBodyClick}
-		/>
-	</BottomMenu>
-{/if}
-<!--		/Batch editing input-->
 
 <ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />
 <ChecklistDetailsDemoBody

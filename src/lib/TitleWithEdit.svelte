@@ -44,7 +44,7 @@
 {:else}
 	<h3
 		on:click|stopPropagation={onEditListNameOpen}
-		class="font-medium text-base sm:text-2xl select-none inline-block w-full"
+		class="font-medium text-base sm:text-2xl select-none inline-block w-full dark:text-white"
 	>
 		{title}
 	</h3>

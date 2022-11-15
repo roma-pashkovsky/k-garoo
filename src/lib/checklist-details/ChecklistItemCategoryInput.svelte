@@ -15,7 +15,7 @@
 	let prevCategoryId = categoryId;
 	const dispatch = createEventDispatcher();
 
-	$: selectCategoryOptions = categoryOptions.map((o) => ({ name: o.name, value: o.id }));
+	$: selectCategoryOptions = (categoryOptions || []).map((o) => ({ name: o.name, value: o.id }));
 	$: isCustomCategoryOpen = categoryId === customCategoryId;
 
 	onMount(() => {

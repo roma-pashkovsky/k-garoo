@@ -16,6 +16,7 @@
 	import {
 		BarsArrowUp,
 		Briefcase,
+		Calculator,
 		Eye,
 		InformationCircle,
 		Link,
@@ -70,6 +71,7 @@
 	import PasteListener from '../PasteListener.svelte';
 	import { parseListFromText } from '../../utils/parse-list-from-text';
 	import { shareList } from '../../stores/app/share-list-drawer.store';
+	import { getNumericValueFromDescription } from '../../utils/get-numeric-value-from-description';
 
 	export let listId: string;
 	export let list: ChecklistWithSettings | null;
@@ -95,6 +97,7 @@
 	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
 	let isHideCrossedOut = list?.hideCrossedOut || false;
+	let isCalcMode = false;
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
 	let shouldCreateNewList = !list;
@@ -215,6 +218,16 @@
 		isByCategoryView = !isByCategoryView;
 		if (list) {
 			setIsGroupedByCategory(listId, isByCategoryView);
+		}
+	}
+
+	function onToggleCalcMode(): void {
+		isCalcMode = !isCalcMode;
+		if (isCalcMode) {
+			toastManager.push({
+				color: 'default',
+				text: get(t)('lists.details.calculator.prompt')
+			});
 		}
 	}
 
@@ -438,6 +451,14 @@
 		addToCategoryId = undefined;
 		editedItem = { ...item };
 		editedCategoryId = editedItem.category.id;
+	}
+
+	function sumItems(items: CheckListItemEditModel[]): string {
+		const res = (items || []).reduce(
+			(p, c) => p + getNumericValueFromDescription(c?.itemDescription),
+			0
+		);
+		return res.toFixed(2);
 	}
 
 	function onBatchRemove(): void {
@@ -778,6 +799,13 @@
 
 	async function onToggleHideCrossedOut(): Promise<void> {
 		isHideCrossedOut = !isHideCrossedOut;
+		const hasCrossedOut = items.some((it) => it.checked);
+		if (!hasCrossedOut) {
+			toastManager.push({
+				color: 'default',
+				text: get(t)('lists.details.toggle-crossed-out-prompt')
+			});
+		}
 		if (list) {
 			setHideCrossedOut(listId, isHideCrossedOut);
 		}
@@ -825,6 +853,14 @@
 							<div class="whitespace-nowrap">
 								{$t('lists.details.by-category')}
 							</div>
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onToggleCalcMode} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color={isCalcMode ? 'blue' : 'light'}>
+								<Calculator size="15" variation={isCalcMode ? 'solid' : 'outline'} />
+							</Button>
+							{$t('lists.details.calculator')}
 						</div>
 					</DropdownItem>
 					<DropdownItem>
@@ -934,6 +970,13 @@
 								addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
 							/>
 						{/each}
+						{#if isCalcMode}
+							<div class="flex justify-end py-1.5 mt-2 px-2">
+								<div class="w-80 border-t border-gray-500 dark:border-gray-200 text-right">
+									{catItem.category.name}: {sumItems(catItem.items)}
+								</div>
+							</div>
+						{/if}
 					</div>
 				</div>
 			{/each}
@@ -953,6 +996,13 @@
 				/>
 			{/each}
 			<!--		/Plain view-->
+		{/if}
+		{#if items?.length && isCalcMode}
+			<div class="flex justify-end py-1.5 mt-8 px-2">
+				<div class="w-80 border-t border-gray-500 dark:border-gray-200 text-right">
+					{$t('lists.details.calculator.total')}: {sumItems(items)}
+				</div>
+			</div>
 		{/if}
 		<!--        /List-->
 		<!--		Add item button-->

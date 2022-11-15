@@ -70,8 +70,13 @@ export default {
 		'lists.details.save-as-new-list-warning':
 			'Selected items will be saved as a new list, and you will be taken to the new list. This list will remain unchanged. Ok?',
 		'lists.details.by-category': 'By category',
+		'lists.details.calculator': 'Calculator',
+		'lists.details.calculator.total': 'Total',
+		'lists.details.calculator.prompt': `Garoo can sum up items like 'Tuna 20' or 'Tuna $20.5'`,
 		'lists.details.hide-crossed-out': 'Hide crossed out',
 		'lists.details.show-crossed-out': 'Show crossed out',
+		'lists.details.toggle-crossed-out-prompt':
+			'This button will hide completed items. Click an item to complete it.',
 		'lists.details.colors-for-categories': 'Colors for categories',
 		'lists.details.link-to-list': 'Get link to list',
 		'lists.details.duplicate': 'Duplicate list',
@@ -202,8 +207,13 @@ export default {
 			'Зберігаємо виділені пункти в новий список і переходимо до нього. Цей список залишиться без змін. Гаразд?',
 		'lists.details.remove-warning': 'Видаляємо список. Впевнені?',
 		'lists.details.by-category': 'За категоріями',
+		'lists.details.calculator': 'Калькулятор',
+		'lists.details.calculator.total': 'Всього',
+		'lists.details.calculator.prompt': `Garoo може порахувати суму за пунктами типу 'Морква 20' або 'Морква 20 грн'`,
 		'lists.details.hide-crossed-out': 'Сховати закреслені',
 		'lists.details.show-crossed-out': 'Показати закреслені',
+		'lists.details.toggle-crossed-out-prompt':
+			'Ця кнопка ховає закреслені пункти. Клацніть на пункт, щоб закреслити.',
 		'lists.details.colors-for-categories': 'Кольори для категорій',
 		'lists.details.link-to-list': 'Посилання',
 		'lists.details.duplicate': 'Дублювати список',

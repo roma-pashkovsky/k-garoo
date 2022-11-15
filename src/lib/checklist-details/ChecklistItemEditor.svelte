@@ -16,7 +16,6 @@
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 
 	export let editedItem: CheckListItem;
-	export let isFocusOnStart: boolean;
 	export let editedCategoryId: string;
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
@@ -27,7 +26,6 @@
 
 	const dispatch = createEventDispatcher();
 	let inputEl: HTMLTextAreaElement;
-	let isFocused = false;
 	let customCategoryInput: string;
 	let prevEditedItemId: string;
 	let propositions: Proposition[] = [];
@@ -52,6 +50,13 @@
 		!(editedCategoryId === customCategoryId && !customCategoryInput?.length);
 
 	onMount(() => {
+		const onMouseDownListener = (event: MouseEvent) => {
+			event.stopPropagation();
+			event.preventDefault();
+			inputEl.focus({ preventScroll: true });
+			inputEl.removeEventListener('mousedown', onMouseDownListener);
+		};
+		inputEl.addEventListener('mousedown', onMouseDownListener);
 		focus();
 	});
 
@@ -70,9 +75,14 @@
 		}, 400);
 	}
 
-	function onInputClicked() {
-		inputEl.focus({ preventScroll: true });
-		isFocused = true;
+	function onInputBlur() {
+		const onMouseDownListener = (event: MouseEvent) => {
+			event.stopPropagation();
+			event.preventDefault();
+			inputEl.focus({ preventScroll: true });
+			inputEl.removeEventListener('mousedown', onMouseDownListener);
+		};
+		inputEl.addEventListener('mousedown', onMouseDownListener);
 	}
 
 	function getLines(text: string): string[] {
@@ -200,7 +210,7 @@
 	<div class="top flex h-9 mb-2">
 		<div class="flex-1 h-full !p-0">
 			<textarea
-				class="resize-none focus:ring-0 single-line !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
+				class="w-full resize-none focus:ring-0 single-line !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
 				id="form-input"
 				autocomplete="off"
 				placeholder={$t('lists.details.add-item-placeholder')}
@@ -210,7 +220,7 @@
 				bind:this={inputEl}
 				on:keyup|preventDefault={onDescriptionInputKeyUp}
 				on:input={onInput}
-				on:mousedown|preventDefault|stopPropagation={onInputClicked}
+				on:blur={onInputBlur}
 			/>
 		</div>
 		{#if isByCategoryView}

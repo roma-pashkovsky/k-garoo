@@ -304,3 +304,45 @@ async function setIsHideCrossedOutLocal(listId: string, isHideCrossedOut: boolea
 	const listData = getListData(listId);
 	setListData({ ...(listData as ChecklistWithSettings), hideCrossedOut: isHideCrossedOut });
 }
+
+/**
+ * Calc mode
+ */
+export const setIsCalcMode = async (listId: string, isCalcMode: boolean): Promise<void> => {
+	listDataStore.update((prev) => {
+		return {
+			...prev,
+			[listId]: {
+				...(prev[listId] as ChecklistWithSettings),
+				isCalcMode
+			}
+		};
+	});
+	await setIsCalcModeLocal(listId, isCalcMode);
+	if (get(auth).user) {
+		await setIsCalcModeAPI(listId, isCalcMode);
+	}
+};
+
+async function setIsCalcModeLocal(listId: string, isCalcMode: boolean): Promise<void> {
+	const listData = getListData(listId);
+	setListData({ ...(listData as ChecklistWithSettings), isCalcMode });
+}
+
+async function setIsCalcModeAPI(listId: string, isCalcMode: boolean): Promise<void> {
+	const request: UpdateChecklistSettingsRequest = {
+		isCalcMode
+	};
+	await appFetch(
+		`/lists/${listId}/settings`,
+		{
+			method: 'PUT',
+			body: JSON.stringify(request)
+		},
+		fetch,
+		5000,
+		listId
+	).catch((err) => {
+		console.error(err);
+	});
+}

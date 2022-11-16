@@ -33,6 +33,7 @@ export const getChecklistByUserThroughCache = async (
 	let sharedBy = null;
 	let byUserIsGroupByCategory: boolean | undefined;
 	let byUserHideCrossedOut: boolean | undefined;
+	let byUserIsCalcMode: boolean | undefined;
 	if (userId) {
 		isMyList = await existsAdmin(listByMePath(userId, listId));
 		if (!isMyList) {
@@ -49,6 +50,7 @@ export const getChecklistByUserThroughCache = async (
 		);
 		byUserIsGroupByCategory = byUserSettings?.isGroupByCategory;
 		byUserHideCrossedOut = byUserSettings?.hideCrossedOut;
+		byUserIsCalcMode = byUserSettings?.isCalcMode;
 	}
 	const items = Object.values(listData.items);
 	items.sort((a, b) => a.orderAdded - b.orderAdded);
@@ -57,7 +59,8 @@ export const getChecklistByUserThroughCache = async (
 		items,
 		isMyList,
 		isGroupByCategory: byUserIsGroupByCategory ?? listData.isGroupByCategory,
-		hideCrossedOut: byUserHideCrossedOut ?? false
+		hideCrossedOut: byUserHideCrossedOut ?? false,
+		isCalcMode: byUserIsCalcMode ?? listData.isCalcMode ?? false
 	};
 	if (sharedBy) {
 		result = { ...result, sharedBy };

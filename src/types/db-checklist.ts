@@ -6,6 +6,7 @@ export type DbChecklist = {
 	created_utc: number;
 	updated_utc: number;
 	isGroupByCategory?: boolean;
+	isCalcMode?: boolean;
 	items: {
 		[itemId: string]: CheckListItem;
 	};

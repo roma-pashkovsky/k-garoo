@@ -47,6 +47,12 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 						value
 					});
 				}
+				if (key === 'isCalcMode' && isCreatedByMe) {
+					updated.push({
+						path: listPropertyPath(listId, 'isCalcMode'),
+						value
+					});
+				}
 				const path = listSettingsByMeByListPropertyPath(
 					user.uid,
 					listId,

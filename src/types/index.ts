@@ -59,6 +59,7 @@ export type Proposition = {
 export type ChecklistSettings = {
 	isGroupByCategory?: boolean;
 	hideCrossedOut?: boolean;
+	isCalcMode?: boolean;
 };
 
 export type Language = 'en' | 'ua';

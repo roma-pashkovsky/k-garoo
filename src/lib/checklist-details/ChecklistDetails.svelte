@@ -57,6 +57,7 @@
 	import {
 		createList,
 		setHideCrossedOut,
+		setIsCalcMode,
 		setIsGroupedByCategory,
 		updateList
 	} from '../../stores/checklist-details/checklist-details-data';
@@ -97,7 +98,7 @@
 	let isFirstTimeUse = false;
 	let isFirstTimeAdded = false;
 	let isHideCrossedOut = list?.hideCrossedOut || false;
-	let isCalcMode = false;
+	let isCalcMode = list?.isCalcMode || false;
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
 	let shouldCreateNewList = !list;
@@ -229,6 +230,9 @@
 				text: get(t)('lists.details.calculator.prompt')
 			});
 		}
+		if (list) {
+			setIsCalcMode(listId, isCalcMode);
+		}
 	}
 
 	async function onGenerateListLinkClicked(): Promise<void> {
@@ -240,6 +244,7 @@
 				id: listId,
 				name: listName,
 				isGroupByCategory: isByCategoryView,
+				isCalcMode,
 				items: items.map((s, i) => {
 					return {
 						id: s.id,
@@ -727,6 +732,7 @@
 		list = await createList({ id: listId, name: listName, items });
 		await setIsGroupedByCategory(listId, isByCategoryView || false);
 		await setHideCrossedOut(listId, isHideCrossedOut || false);
+		await setIsCalcMode(listId, isCalcMode || false);
 		listName = list.name;
 		items = list.items.map((it) => ({ ...it, selected: false, isEdited: false }));
 		shouldCreateNewList = false;
@@ -1010,7 +1016,7 @@
 			{/each}
 			<!--		/Plain view-->
 		{/if}
-		{#if items?.length && isCalcMode}
+		{#if displayItems?.length && isCalcMode}
 			<div class="flex justify-end py-1.5 mt-8 px-2">
 				<div class="w-80 border-t border-gray-500 dark:border-gray-200 text-right">
 					{$t('lists.details.calculator.total')}: {sumItems(displayItems)}
@@ -1023,7 +1029,7 @@
 			{#if !isListReadOnly}
 				<div class="md:hidden absolute bottom-8 right-4">
 					{#if !editedItem}
-						<Button class="!p-2" on:click={onAddToListClicked} color="blue">
+						<Button class="!p-2 shadow-md" on:click={onAddToListClicked} color="blue">
 							<Plus />
 						</Button>
 					{/if}
@@ -1078,7 +1084,7 @@
 	<!--		/Bottom input-->
 	<!--		Batch editing input-->
 	{#if isAnyItemSelected}
-		<div on:swipe-left={onBodyClick}>
+		<BottomMenu on:swipe-left={onBodyClick}>
 			<ChecklistBatchEditor
 				{isByCategoryView}
 				categoryOptions={$categoryOptions}
@@ -1088,7 +1094,7 @@
 				on:batch-copy-items={onBatchCopyItems}
 				on:dismiss={onBodyClick}
 			/>
-		</div>
+		</BottomMenu>
 	{/if}
 	<!--		/Batch editing input-->
 </DetailsPage>

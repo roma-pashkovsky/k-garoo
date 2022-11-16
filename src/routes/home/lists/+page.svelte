@@ -129,15 +129,11 @@
 	<meta property="og:site_name" content="Garoo" />
 	<meta property="og:description" content={$t('app.logo')} />
 	<meta property="og:title" content={$t('app.my_lists')} />
-	<meta property="og:image" content="https://www.garoo.fun/img/thumb.jpg" />
-	<meta property="og:image:secure_url" content="https://www.garoo.fun/img/thumb.jpg" />
-	<meta property="og:image:width" content="200" />
-	<meta property="og:image:height" content="200" />
+
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:description" content={$t('app.logo')} />
 	<meta name="twitter:site" content="@business" />
 	<meta name="twitter:title" content={$t('app.my_lists')} />
-	<meta name="twitter:image" content="https://www.garoo.fun/img/thumb.jpg" />
 </svelte:head>
 
 <div class="hidden md:block absolute top-8 right-8 z-10">

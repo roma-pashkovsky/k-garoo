@@ -27,7 +27,7 @@
 	use:doubleTap
 	on:dbltap|preventDefault|stopPropagation
 	on:focus
-	class="flex-1 relative select-none"
+	class="flex-1 relative select-none overflow-hidden"
 >
 	<div class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto px-4 md:px-8 pb-40 pt-4">
 		<slot />

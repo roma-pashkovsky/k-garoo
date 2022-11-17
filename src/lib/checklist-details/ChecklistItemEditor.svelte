@@ -14,6 +14,8 @@
 	import { t } from '../../stores/app/translate';
 	import { updateProposition } from '../../stores/checklist-details/propositions';
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
+	import { CloseButton } from 'flowbite-svelte';
+	import { XMark } from 'svelte-heros-v2';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
@@ -196,6 +198,10 @@
 		prop.lastUsedUTC = new Date().getTime();
 		updateProposition(prop);
 	}
+
+	function onCloseClick(): void {
+		dispatch('dismiss');
+	}
 </script>
 
 <div
@@ -207,38 +213,42 @@
 		<ChecklistEditorDemo on:next-click={focus} />
 	{/if}
 	<!--		Top row-->
-	<div class="top flex h-9 mb-2">
-		<div class="flex-1 h-full !p-0">
-			<textarea
-				class="w-full resize-none focus:ring-0 single-line !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
-				id="form-input"
-				autocomplete="off"
-				placeholder={$t('lists.details.add-item-placeholder')}
-				rows="1"
-				wrap="off"
-				bind:value={editedItem.itemDescription}
-				bind:this={inputEl}
-				on:keyup|preventDefault={onDescriptionInputKeyUp}
-				on:input={onInput}
-				on:blur={onInputBlur}
-			/>
+	<div class="top flex h-11 mb-2 justify-between pt-1">
+		<textarea
+			class="flex-1 resize-none focus:ring-0 single-line !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
+			id="form-input"
+			autocomplete="off"
+			placeholder={$t('lists.details.add-item-placeholder')}
+			bind:value={editedItem.itemDescription}
+			bind:this={inputEl}
+			on:keyup|preventDefault={onDescriptionInputKeyUp}
+			on:input={onInput}
+			on:blur={onInputBlur}
+		/>
+		<div class="ml-2 flex">
+			{#if isByCategoryView}
+				<div class=" flex-0">
+					<ChecklistItemCategoryInput
+						addWrapClass="rounded"
+						bind:categoryId={editedCategoryId}
+						bind:categoryOptions
+						bind:customCategoryInput
+						on:user-input={onCategoryUserInput}
+					/>
+				</div>
+			{/if}
+			<button
+				on:mousedown|preventDefault|stopPropagation={onCloseClick}
+				class="!p-1.5 w-9 h-9 ml-3 rounded border border-gray-200 dark:border-gray-600 flex items-center justify-center"
+			>
+				<XMark size="18" />
+			</button>
 		</div>
-		{#if isByCategoryView}
-			<div class=" flex-0">
-				<ChecklistItemCategoryInput
-					addWrapClass="rounded"
-					bind:categoryId={editedCategoryId}
-					bind:categoryOptions
-					bind:customCategoryInput
-					on:user-input={onCategoryUserInput}
-				/>
-			</div>
-		{/if}
 	</div>
 	<!--		Bottom row-->
-	<div class="bottom flex  relative max-w-full">
+	<div class="bottom flex justify-between  relative max-w-full">
 		<!--			Propositions-->
-		<div class="flex-1 flex h-9 items-center">
+		<div class="flex h-9 items-center w-full" style="max-width: calc(100vw - 4.8rem)">
 			{#each displayPropositions as proposition, index}
 				{#if index > 0}
 					<div class="mx-2 h-9 leading-8 text-gray-500 dark:text-gray-400">
@@ -269,7 +279,7 @@
 			type="submit"
 			disabled={!isValidInput}
 			on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
-			class="!p-1.5 w-8 h-8 ml-2 rounded {isValidInput
+			class="!p-1.5 w-9 h-9 ml-2 rounded flex items-center justify-center {isValidInput
 				? 'bg-blue-600 text-white'
 				: 'border border-blue-400 text-gray-500'}"
 		>
@@ -280,12 +290,12 @@
 
 <style>
 	.prop-item {
-		max-width: 25%;
+		max-width: 30%;
 	}
 	.prop-item.single {
-		max-width: 80%;
+		max-width: 95%;
 	}
 	.prop-item.two-fold {
-		max-width: 40%;
+		max-width: 45%;
 	}
 </style>

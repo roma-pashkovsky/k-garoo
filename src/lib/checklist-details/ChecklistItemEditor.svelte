@@ -15,7 +15,7 @@
 	import { updateProposition } from '../../stores/checklist-details/propositions';
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 	import { CloseButton } from 'flowbite-svelte';
-	import { XMark } from 'svelte-heros-v2';
+	import { Play, XMark } from 'svelte-heros-v2';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
@@ -74,7 +74,7 @@
 			if (inputEl) {
 				inputEl.focus({ preventScroll: true });
 			}
-		}, 400);
+		}, 200);
 	}
 
 	function onInputBlur() {
@@ -123,7 +123,7 @@
 	function onInputChange() {
 		propositions = [
 			{ ...editedItem } as any as Proposition,
-			...getFilteredPropositions(editedItem.itemDescription)
+			...getFilteredPropositions(editedItem.itemDescription, 3)
 		];
 		propositionsHighlightIndex = 0;
 		if (shouldAutodetectCategory) {
@@ -173,7 +173,7 @@
 		dispatch('form-submit', { addCategory });
 	}
 
-	function getFilteredPropositions(editedItemDesc: string): Proposition[] {
+	function getFilteredPropositions(editedItemDesc: string, lim: number): Proposition[] {
 		if (!editedItemDesc?.length) {
 			return [];
 		}
@@ -181,10 +181,10 @@
 			return [];
 		}
 		const res = propositionsFuzzySearch.search(editedItemDesc).map((r) => r.item);
-		if (res.length < 3) {
+		if (res.length < lim) {
 			return res;
 		} else {
-			return res.slice(0, 3);
+			return res.slice(0, lim);
 		}
 	}
 
@@ -213,7 +213,7 @@
 		<ChecklistEditorDemo on:next-click={focus} />
 	{/if}
 	<!--		Top row-->
-	<div class="top flex h-11 mb-2 justify-between pt-1">
+	<div class="top flex h-11 justify-between items-start">
 		<textarea
 			class="flex-1 resize-none focus:ring-0 single-line !bg-transparent form-input block !border-none disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 text-gray-900 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 p-1.5 text-sm"
 			id="form-input"
@@ -226,20 +226,20 @@
 			on:blur={onInputBlur}
 		/>
 		<div class="ml-2 flex">
+			<!--		Category input-->
 			{#if isByCategoryView}
-				<div class=" flex-0">
-					<ChecklistItemCategoryInput
-						addWrapClass="rounded"
-						bind:categoryId={editedCategoryId}
-						bind:categoryOptions
-						bind:customCategoryInput
-						on:user-input={onCategoryUserInput}
-					/>
-				</div>
+				<ChecklistItemCategoryInput
+					addWrapClass="rounded-lg h-8"
+					bind:categoryId={editedCategoryId}
+					bind:categoryOptions
+					bind:customCategoryInput
+					on:user-input={onCategoryUserInput}
+				/>
 			{/if}
+			<!--			/Category input-->
 			<button
 				on:mousedown|preventDefault|stopPropagation={onCloseClick}
-				class="!p-1.5 w-9 h-9 ml-3 rounded border border-gray-200 dark:border-gray-600 flex items-center justify-center"
+				class="!p-1.5 w-8 h-8 ml-2 border border-gray-200 dark:border-gray-600 flex items-center justify-center rounded-lg"
 			>
 				<XMark size="18" />
 			</button>
@@ -248,7 +248,7 @@
 	<!--		Bottom row-->
 	<div class="bottom flex justify-between  relative max-w-full">
 		<!--			Propositions-->
-		<div class="flex h-9 items-center w-full" style="max-width: calc(100vw - 4.8rem)">
+		<div class="flex h-9 items-center w-full" style="max-width: calc(100vw - 100px)">
 			{#each displayPropositions as proposition, index}
 				{#if index > 0}
 					<div class="mx-2 h-9 leading-8 text-gray-500 dark:text-gray-400">
@@ -274,17 +274,19 @@
 				</div>
 			{/each}
 		</div>
-		<!--			Submit button-->
-		<button
-			type="submit"
-			disabled={!isValidInput}
-			on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
-			class="!p-1.5 w-9 h-9 ml-2 rounded flex items-center justify-center {isValidInput
-				? 'bg-blue-600 text-white'
-				: 'border border-blue-400 text-gray-500'}"
-		>
-			<ArrowRight size="18" />
-		</button>
+		<div class="bottom-right flex">
+			<!--			Submit button-->
+			<button
+				type="submit"
+				disabled={!isValidInput}
+				on:mousedown|preventDefault|stopPropagation={onAddFormSubmit}
+				class="!p-1.5 w-8 h-8 ml-3 rounded-lg flex items-center justify-center {isValidInput
+					? 'bg-blue-600 text-white'
+					: 'border border-blue-400 text-gray-500'}"
+			>
+				<Play variation="solid" size="16" />
+			</button>
+		</div>
 	</div>
 </div>
 

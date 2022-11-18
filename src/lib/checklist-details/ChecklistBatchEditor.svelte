@@ -6,7 +6,7 @@
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import type { CategoryOption } from '../../types';
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
-	import { DocumentDuplicate, DocumentPlus } from 'svelte-heros-v2';
+	import { DocumentDuplicate, DocumentPlus, Play } from 'svelte-heros-v2';
 	import { swipe } from 'svelte-gestures';
 	import { throttler } from '../../utils/throttler';
 	import { fly } from 'svelte/transition';
@@ -108,16 +108,16 @@
 			<div style="min-width: 200px;">
 				<ChecklistItemCategoryInput
 					{categoryOptions}
-					addWrapClass="!rounded-l"
+					addWrapClass="!rounded-lg"
 					fullWidth={true}
 					bind:categoryId={changeCategoryId}
 					bind:customCategoryInput
 				/>
 			</div>
 
-			<Button type="submit" color="blue" class="!py-1.5 !px-1 !rounded-r !rounded-l-none"
-				><ArrowRight /></Button
-			>
+			<Button type="submit" color="blue" class="!py-1.5 !px-1 w-8 h-8 ml-2">
+				<Play variation="solid" size="16" />
+			</Button>
 		</form>
 	{/if}
 </div>

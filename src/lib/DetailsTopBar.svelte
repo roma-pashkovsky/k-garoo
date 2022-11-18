@@ -16,7 +16,7 @@
 >
 	<div class="top flex justify-between items-center">
 		<div class="flex items-center">
-			<Button on:click={onBackClicked} color="light" class="!p-1.5 !border-none">
+			<Button on:click={onBackClicked} color="light" class="!p-1.5 !border-none ">
 				<ArrowLeft size="24" />
 			</Button>
 		</div>

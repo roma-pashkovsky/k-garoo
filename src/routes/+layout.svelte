@@ -168,7 +168,7 @@
 <style>
 	.top-toast-wrapper {
 		position: fixed;
-		top: 5rem;
+		top: calc(env(safe-area-inset-top) + 5rem);
 		display: flex;
 		justify-content: center;
 		align-items: center;

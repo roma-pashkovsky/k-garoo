@@ -14,7 +14,7 @@
 <Page>
 	{#if $l === 'en'}
 		<div class="mb-8">
-			<Heading tag="h4" class="mb-4">Hey there...</Heading>
+			<Heading tag="h4" class="mb-4">Hey friend...</Heading>
 			<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">
 				As you know, there's war going on in Ukraine. Russia has attacked our country because it
 				doesn't like our aspirations to become a democratic, liberal, prospering and truly

@@ -949,7 +949,7 @@
 			<!--			By category view-->
 			{#each byCategoryList as catItem, catIndex}
 				<div
-					class="relative rounded-md bg-{categoryBgColor(catItem.category)} {catIndex === 0
+					class="relative rounded-lg bg-{categoryBgColor(catItem.category)} {catIndex === 0
 						? ''
 						: 'mt-6'}"
 				>
@@ -1084,7 +1084,7 @@
 	<!--		/Bottom input-->
 	<!--		Batch editing input-->
 	{#if isAnyItemSelected}
-		<BottomMenu on:swipe-left={onBodyClick}>
+		<BottomMenu isCloseBtn={true} on:swipe-left={onBodyClick} on:close-click={onBodyClick}>
 			<ChecklistBatchEditor
 				{isByCategoryView}
 				categoryOptions={$categoryOptions}

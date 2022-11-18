@@ -21,7 +21,6 @@ export const getNumericValueFromDescription = (desc: string): number => {
 		}
 	}
 	result = result.replaceAll(/[' ]/g, '');
-	console.log(result);
 	if (result?.length) {
 		return parseFloat(result);
 	} else {

@@ -3,7 +3,7 @@
 	import { CloseButton } from 'flowbite-svelte';
 
 	export let hidden = false;
-	export let isCloseBtn;
+	export let isCloseBtn: boolean;
 	const dispatch = createEventDispatcher();
 
 	function onSwipedLeft(): void {

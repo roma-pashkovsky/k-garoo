@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { swipe } from 'svelte-gestures';
 	import { Checkbox } from 'flowbite-svelte';
 	import type { CheckListItemEditModel } from '../../types/index';
 	import { createEventDispatcher } from 'svelte';
@@ -54,35 +53,34 @@
 	<div>
 		{#if isCheckboxView}
 			<div
-				class="relative"
+				class="flex items-center"
 				onmousedown="event.preventDefault(); event.stopPropagation()"
 				ondblclick="event.stopPropagation()"
 			>
-				<div
-					class="mask absolute top-0 left-0 right-6 bottom-0"
-					on:mousedown={checkboxChanged}
-					style="z-index: 1"
-				/>
-				<div
-					class="item checkbox-wrapper flex items-center px-2 my-2 rounded {addClass} border border-blue-200"
-				>
-					<div class="mr-1 overflow-hidden h-6 w-6 flex items-center" in:slide>
-						<Checkbox class="mr-2" checked={item.selected} />
-					</div>
-					<div class="text-base font-normal {item?.checked ? 'line-through' : ''}">
-						{item?.itemDescription}
-						<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
-						<div
-							class="ml-2 inline-block"
-							on:mousedown|preventDefault|stopPropagation={onItemEditPressed}
-						>
-							<Pencil class="w-4 h-4" />
+				<div class="relative">
+					<div
+						class="mask absolute top-0 left-0 right-6 bottom-0"
+						on:mousedown|preventDefault|stopPropagation={checkboxChanged}
+						style="z-index: 1"
+					/>
+					<div
+						class="item checkbox-wrapper flex items-center px-2 my-2 rounded {addClass} border border-blue-200"
+					>
+						<div class="mr-1 overflow-hidden h-6 w-6 flex items-center" in:slide>
+							<Checkbox class="mr-2" checked={item.selected} />
+						</div>
+						<div class="w-fit text-base font-normal {item?.checked ? 'line-through' : ''}">
+							{item?.itemDescription}
+							<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
 						</div>
 					</div>
 				</div>
+				<div class="edit-icon ml-2" on:mousedown|preventDefault|stopPropagation={onItemEditPressed}>
+					<Pencil class="w-4 h-4" />
+				</div>
 			</div>
 		{:else}
-			<div>
+			<div onmousedown="event.preventDefault(); event.stopPropagation();">
 				<div
 					on:swiped-left
 					on:swiped-right
@@ -91,7 +89,6 @@
 					on:mouseup|preventDefault|stopPropagation={onItemMouseDown}
 					style="min-width: 120px; user-select: none"
 					data-long-press-delay="300"
-					onmousedown="event.preventDefault(); event.stopPropagation();"
 					ondblclick="event.stopPropagation();"
 				>
 					{item?.itemDescription}<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />

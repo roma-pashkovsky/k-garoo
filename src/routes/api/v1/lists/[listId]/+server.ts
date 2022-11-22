@@ -54,7 +54,9 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 				undefined,
 				1
 			);
-			const insertOrder = lastList ? lastList[Object.keys(lastList)[0]].order + ORDERING_GAP : 0;
+			const insertOrder = lastList
+				? (lastList[Object.keys(lastList)[0]].order || 0) + ORDERING_GAP
+				: 0;
 			const itemsMap = arrayToMap<CheckListItem>(list.items || [], 'id');
 			const target = {
 				...list,
@@ -78,6 +80,7 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 			return json(result);
 		}
 	} catch (err) {
+		console.log(err);
 		return serverError();
 	}
 };
@@ -160,6 +163,7 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 		const result = await getChecklistByUserThroughCache(listId, user.uid);
 		return json(result);
 	} catch (err) {
+		console.log(err);
 		return serverError();
 	}
 };

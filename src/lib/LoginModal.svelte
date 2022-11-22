@@ -43,7 +43,12 @@
 	placement="right"
 	class="w-80"
 >
-	<div use:click_outside on:click_outside={onDismiss} class="w-full h-full">
+	<div
+		use:click_outside
+		on:click_outside={onDismiss}
+		class="w-full h-full"
+		style="padding-top: env(safe-area-inset-top)"
+	>
 		<h5
 			id="drawer-label"
 			class="w-full inline-flex items-center mb-6 text-base font-semibold text-gray-500 uppercase dark:text-gray-400"

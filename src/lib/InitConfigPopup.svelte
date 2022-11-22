@@ -73,6 +73,7 @@
 		use:click_outside
 		on:click_outside={onHidePopup}
 		class="click-outside-container w-full h-full"
+		style="padding-top: env(safe-area-inset-top)"
 	>
 		{#if step === 1}
 			<div in:fade>

@@ -79,7 +79,7 @@
 	class="w-80"
 	id="share-drawer"
 >
-	<div class="flex items-center">
+	<div class="flex items-center" style="padding-top: env(safe-area-inset-top)">
 		<h5
 			id="drawer-label"
 			class="inline-flex items-center mb-6 text-base font-semibold text-gray-500 uppercase dark:text-gray-400"

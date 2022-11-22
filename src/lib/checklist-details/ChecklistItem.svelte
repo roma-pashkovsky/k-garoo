@@ -48,7 +48,8 @@
 
 <div
 	bind:this={containerDiv}
-	class=" flex items-center overflow-hidden {isLightBg ? 'dark:text-black' : 'dark:text-white'}"
+	class=" flex items-center overflow-hidden dark:text-gray-200"
+	style="max-width: 70vw"
 >
 	<div>
 		{#if isCheckboxView}

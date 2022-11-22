@@ -200,6 +200,9 @@
 	}
 
 	function onBodySwipeRight(): void {
+		if (isListReadOnly) {
+			return;
+		}
 		isAddToListMode = false;
 		addToCategoryId = undefined;
 		editedItem = undefined;
@@ -388,6 +391,9 @@
 	}
 
 	function onItemClick(item: CheckListItemEditModel): void {
+		if (isListReadOnly) {
+			return;
+		}
 		if (editedItem?.id === item.id) {
 			return;
 		}
@@ -833,7 +839,11 @@
 	<DetailsTopBar on:back-clicked={onBackClick}>
 		<div slot="page-title">
 			<div class="flex items-center">
-				<TitleWithEdit bind:title={listName} on:title-submit={onListTitleSave} />
+				<TitleWithEdit
+					readOnly={isListReadOnly}
+					bind:title={listName}
+					on:title-submit={onListTitleSave}
+				/>
 			</div>
 		</div>
 		<div class="space-x-2 flex items-center" slot="right-content">
@@ -979,6 +989,7 @@
 							<ChecklistItem
 								{item}
 								{isCheckboxView}
+								disabled={isListReadOnly}
 								toBeDeleted={itemsToBeDeleted[item.id]}
 								on:swiped-left={() => onItemSwipeLeft(item)}
 								on:item-click={() => onItemClick(item)}
@@ -1005,6 +1016,7 @@
 				<ChecklistItem
 					{item}
 					{isCheckboxView}
+					disabled={isListReadOnly}
 					toBeDeleted={itemsToBeDeleted[item.id]}
 					on:swiped-left={() => onItemSwipeLeft(item)}
 					on:item-click={() => onItemClick(item)}
@@ -1042,20 +1054,6 @@
 					{/if}
 				</div>
 			{/if}
-			<!--Add list to user's collection-->
-			{#if isListReadOnly}
-				<div
-					class="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-end z-20"
-					onmousedown="event.stopPropagation(); event.preventDefault()"
-				>
-					<div class="w-full flex justify-end py-4 px-4">
-						<Button on:click={onAddListToMyCollectionClicked}
-							>{$t('lists.details.add-to-my-lists-button')}</Button
-						>
-					</div>
-				</div>
-			{/if}
-			<!--EOF Add list to user's collection-->
 			<!--			Users by list for mini screens-->
 			<div class="absolute top-4 right-4 md:right-8 md:top-24">
 				<UsersByListMini {listId} border="true" />
@@ -1097,6 +1095,20 @@
 		</BottomMenu>
 	{/if}
 	<!--		/Batch editing input-->
+	<!--Add list to user's collection-->
+	{#if isListReadOnly}
+		<BottomMenu onmousedown="event.stopPropagation(); event.preventDefault()">
+			<div class="w-full flex justify-end py-4 px-4">
+				<div class="mr-4 flex items-center">
+					{$t('lists.details.add-to-my-lists-warning')}
+				</div>
+				<Button on:click={onAddListToMyCollectionClicked}
+					>{$t('lists.details.add-to-my-lists-button')}</Button
+				>
+			</div>
+		</BottomMenu>
+	{/if}
+	<!--EOF Add list to user's collection-->
 </DetailsPage>
 
 <ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />

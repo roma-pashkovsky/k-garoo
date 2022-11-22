@@ -6,6 +6,7 @@
 	import DuplicateBadge from './DuplicateBadge.svelte';
 	import { Pencil } from 'svelte-heros';
 
+	export let disabled: boolean;
 	export let item: CheckListItemEditModel;
 	export let isCheckboxView: boolean;
 	export let addClass: string;
@@ -30,18 +31,22 @@
 	}
 
 	function checkboxChanged(): void {
+		if (disabled) return;
 		dispatch('checkbox-change');
 	}
 
 	function onItemMouseDown(): void {
+		if (disabled) return;
 		dispatch('item-click');
 	}
 
 	function onItemLongPress(): void {
+		if (disabled) return;
 		dispatch('item-long-press');
 	}
 
 	function onItemEditPressed(): void {
+		if (disabled) return;
 		dispatch('item-edit-pressed');
 	}
 </script>

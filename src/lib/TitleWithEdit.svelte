@@ -7,10 +7,14 @@
 
 	export let title: string;
 	export let isFocused: boolean;
+	export let readOnly: boolean;
 	let isEditListName = false;
 	const dispatch = createEventDispatcher();
 
 	function onEditListNameOpen(): void {
+		if (readOnly) {
+			return;
+		}
 		isEditListName = true;
 	}
 

@@ -10,7 +10,7 @@
 	const dispatch = createEventDispatcher();
 	const authStore = new AuthStore();
 	let state: 'idle' | 'google' | 'facebook' | 'merging' = 'idle';
-	let keepMyData = false;
+	let keepMyData = true;
 	const wrongProvider = derived(auth, ($auth) => $auth.wrongProvider);
 	const error = derived(auth, ($auth) => $auth.error);
 	const sessionExpired = derived(auth, ($auth) => $auth.isSessionExpired);

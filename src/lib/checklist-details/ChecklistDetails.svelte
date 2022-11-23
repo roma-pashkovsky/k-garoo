@@ -101,6 +101,9 @@
 	let isCalcMode = list?.isCalcMode || false;
 	// animations for remove
 	let itemsToBeDeleted: { [id: string]: true } = {};
+	// heightlight just changed item
+	let justChangedItemId: string | null = null;
+	let justChangedTimeoutHandle: any;
 	let shouldCreateNewList = !list;
 	let isShareEnabled = AuthStore.isLoggedIn;
 	const darkBG = darkEquivalents;
@@ -139,6 +142,9 @@
 	onDestroy(() => {
 		if (!get(AppSettingsStore.hasSeenListDemo)) {
 			setHasSeenDemo();
+		}
+		if (justChangedTimeoutHandle) {
+			clearTimeout(justChangedTimeoutHandle);
 		}
 		toastManager.clear();
 	});
@@ -711,7 +717,7 @@
 		checkListForDuplicates();
 		if (items.find((it) => it.id === updated.id)?.isDuplicate) {
 			toastManager.push({
-				text: ($t as any)('lists.details.duplicate-item-badge'),
+				text: get(t)('lists.details.duplicate-item-badge'),
 				duration: 2000,
 				closePrevious: true,
 				type: 'details-top',
@@ -719,15 +725,26 @@
 			});
 		} else {
 			toastManager.push({
-				text: ($t as any)('lists.details.added-toast'),
+				text: get(t)('app.toasts.success'),
 				duration: 2000,
 				closePrevious: true,
 				type: 'details-top',
 				color: 'success'
 			});
 		}
-
 		updatePropositionsFuzzySearch();
+		highlightJustChanged(updated.id);
+	}
+
+	function highlightJustChanged(id: string): void {
+		if (justChangedTimeoutHandle) {
+			clearTimeout(justChangedTimeoutHandle);
+		}
+		justChangedItemId = id;
+		justChangedTimeoutHandle = setTimeout(() => {
+			justChangedItemId = null;
+			justChangedTimeoutHandle = undefined;
+		}, 3000);
 	}
 
 	function onEditorFormDestroyed() {
@@ -989,6 +1006,7 @@
 							<ChecklistItem
 								{item}
 								{isCheckboxView}
+								{justChangedItemId}
 								disabled={isListReadOnly}
 								toBeDeleted={itemsToBeDeleted[item.id]}
 								on:swiped-left={() => onItemSwipeLeft(item)}
@@ -1016,6 +1034,7 @@
 				<ChecklistItem
 					{item}
 					{isCheckboxView}
+					{justChangedItemId}
 					disabled={isListReadOnly}
 					toBeDeleted={itemsToBeDeleted[item.id]}
 					on:swiped-left={() => onItemSwipeLeft(item)}

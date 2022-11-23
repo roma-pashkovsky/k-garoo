@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Checkbox } from 'flowbite-svelte';
 	import type { CheckListItemEditModel } from '../../types/index';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import DuplicateBadge from './DuplicateBadge.svelte';
 	import { Pencil } from 'svelte-heros';
@@ -11,8 +11,10 @@
 	export let isCheckboxView: boolean;
 	export let addClass: string;
 	export let toBeDeleted: boolean;
-	export let isLightBg: boolean;
+	export let justChangedItemId: string | null;
 	const dispatch = createEventDispatcher();
+
+	$: isJustChanged = justChangedItemId === item?.id;
 
 	let containerDiv: HTMLDivElement;
 	let prevToBeDeleted: boolean;
@@ -28,7 +30,20 @@
 			});
 			prevToBeDeleted = true;
 		}
+
+		// highlight just changed item
+		if (justChangedItemId === item?.id) {
+			if (containerDiv) {
+				containerDiv.scrollIntoView({ block: 'center' });
+			}
+		}
 	}
+
+	onMount(() => {
+		if (isJustChanged && containerDiv) {
+			containerDiv.scrollIntoView({ behavior: 'smooth' });
+		}
+	});
 
 	function checkboxChanged(): void {
 		if (disabled) return;
@@ -53,7 +68,7 @@
 
 <div
 	bind:this={containerDiv}
-	class=" flex items-center overflow-hidden dark:text-gray-200"
+	class="flex items-center overflow-hidden dark:text-gray-200"
 	style="max-width: 70vw"
 >
 	<div>
@@ -86,12 +101,14 @@
 				</div>
 			</div>
 		{:else}
-			<div onmousedown="event.preventDefault(); event.stopPropagation();">
+			<div onmousedown="event.preventDefault(); event.stopPropagation();" class="pl-1">
 				<div
 					on:swiped-left
 					on:swiped-right
 					on:long-press={onItemLongPress}
-					class="item py-1.5 px-2 my-2 rounded {addClass} {item?.checked ? 'line-through' : ''}"
+					class="item py-1.5 px-2 my-2 rounded {addClass} {item?.checked
+						? 'line-through'
+						: ''} {isJustChanged ? 'ring-1 ring-blue-200' : ''}"
 					on:mouseup|preventDefault|stopPropagation={onItemMouseDown}
 					style="min-width: 120px; user-select: none"
 					data-long-press-delay="300"

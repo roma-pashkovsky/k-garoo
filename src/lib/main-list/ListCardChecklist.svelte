@@ -92,7 +92,7 @@
 		in:slide
 	>
 		<Card
-			class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 sm:w-80 relative"
+			class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 lg:w-80 relative"
 		>
 			<div style="min-height: 112px;" />
 		</Card>
@@ -110,7 +110,7 @@
 	on:dragover
 >
 	<Card
-		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 sm:w-80 relative {isLastVisited
+		class="!pl-6 !pt-6 !pb-6 !pr-10 !shadow-sm hover:bg-gray-50 cursor-pointer w-72 lg:w-80 relative {isLastVisited
 			? 'bg-gray-100 dark:bg-gray-700'
 			: ''} {isMovingMe ? '!border-blue-600' : ''}"
 	>
@@ -222,4 +222,7 @@
 </div>
 
 <style>
+	.w-76 {
+		width: 19rem;
+	}
 </style>

@@ -7,6 +7,7 @@
 	import { DecodeStore } from '../../../stores/decode/decode.store';
 	import { goto } from '$app/navigation';
 	import { t } from '../../../stores/app/translate';
+	import { checklistDetailsClientRoute } from '../../../utils/client-routes';
 
 	const store = new DecodeStore();
 
@@ -24,7 +25,7 @@
 		const parsed: CheckList = JSON.parse(str);
 		if (parsed) {
 			await store.process(parsed);
-			goto(`/list-details/${parsed.id}`);
+			goto(checklistDetailsClientRoute(parsed.id));
 		} else {
 			throw new Error('Unable to parse url');
 		}

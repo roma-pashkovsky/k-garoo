@@ -26,7 +26,6 @@
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
-	let isSetLocalePopupOpen = !get(AppSettingsStore.isLocaleSet);
 	const theme = AppSettingsStore.theme;
 	let viewPort: VisualViewport;
 	$: toasts = $toastStore.filter((t) => t.type === 'page-bottom');
@@ -90,15 +89,6 @@
 		document.documentElement.style.setProperty('--vh', `${vh}px`);
 	}
 
-	function onCloseSettingsPopup(): void {
-		AppSettingsStore.markIsLocaleSet();
-	}
-
-	function onShowHowAddToMain(): void {
-		AppSettingsStore.markIsLocaleSet();
-		goto('/home/add-app-to-main-screen');
-	}
-
 	async function onCloseLoginModal() {
 		if (get(auth).isSessionExpired) {
 			await cleanLocalDataOnLogout();
@@ -139,8 +129,6 @@
 			{/each}
 		</div>
 
-		<!--		Insert slot after test here-->
-
 		<div class="toast-wrapper">
 			{#each toasts as toast}
 				<div class="toast">
@@ -148,12 +136,6 @@
 				</div>
 			{/each}
 		</div>
-
-		<InitConfigPopup
-			open={isSetLocalePopupOpen}
-			on:complete={onCloseSettingsPopup}
-			on:show-how-add-to-main={onShowHowAddToMain}
-		/>
 
 		<LoginModal on:dismiss={onCloseLoginModal} />
 

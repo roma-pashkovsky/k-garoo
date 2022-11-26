@@ -16,7 +16,7 @@
 	<ul>
 		{#each previewItems as item}
 			<li
-				class="mb-1 whitespace-nowrap overflow-hidden text-ellipsis w-56 sm:w-64 {item?.checked
+				class="mb-1 whitespace-nowrap overflow-hidden text-ellipsis w-56 lg:w-64 {item?.checked
 					? 'line-through'
 					: ''}"
 			>

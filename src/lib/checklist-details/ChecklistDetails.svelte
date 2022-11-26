@@ -73,6 +73,7 @@
 	import { parseListFromText } from '../../utils/parse-list-from-text';
 	import { shareList } from '../../stores/app/share-list-drawer.store';
 	import { getNumericValueFromDescription } from '../../utils/get-numeric-value-from-description';
+	import { checklistDetailsClientRoute } from '../../utils/client-routes';
 
 	export let listId: string;
 	export let list: ChecklistWithSettings | null;
@@ -133,7 +134,7 @@
 
 	async function onAddListToMyCollectionClicked(): Promise<void> {
 		const id = await store.addListToMyCollection(list);
-		await goto(`/list-details/${id}`);
+		await goto(checklistDetailsClientRoute(id));
 		setTimeout(() => {
 			location.reload();
 		});
@@ -247,7 +248,7 @@
 	async function onGenerateListLinkClicked(): Promise<void> {
 		let url: string;
 		if (get(AuthStore.isLoggedIn)) {
-			url = window.origin + '/list-details' + `/${listId}`;
+			url = window.origin + checklistDetailsClientRoute(listId);
 		} else {
 			url = getDecodeLinkToList({
 				id: listId,
@@ -304,7 +305,7 @@
 			items: targetItems
 		} as CheckList;
 		await createList(copy);
-		await goto(`/list-details/${id}`);
+		await goto(checklistDetailsClientRoute(id));
 		setTimeout(() => location.reload());
 	}
 
@@ -565,7 +566,7 @@
 			const newItems = items.filter((it) => it.selected);
 			const newName = listName + ' > ' + ($p as any)('item', newItems.length);
 			await createList({ id: listId, name: newName, items: newItems });
-			await goto(`/list-details/${listId}`);
+			await goto(checklistDetailsClientRoute(listId));
 			setTimeout(() => {
 				location.reload();
 			});

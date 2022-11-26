@@ -34,14 +34,14 @@
 		// highlight just changed item
 		if (justChangedItemId === item?.id) {
 			if (containerDiv) {
-				containerDiv.scrollIntoView({ block: 'center' });
+				containerDiv.scrollIntoView({ block: 'end' });
 			}
 		}
 	}
 
 	onMount(() => {
 		if (isJustChanged && containerDiv) {
-			containerDiv.scrollIntoView({ behavior: 'smooth' });
+			containerDiv.scrollIntoView({ block: 'end' });
 		}
 	});
 

@@ -1,14 +1,14 @@
 <script lang="ts">
 	import ChecklistDetails from '$lib/checklist-details/ChecklistDetails.svelte';
 	import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
-	import { getDefaultListName } from '../../../utils/get-default-list-name';
-	import type { ChecklistWithSettings } from '../../../types';
+	import { getDefaultListName } from '../../../../../utils/get-default-list-name';
+	import type { ChecklistWithSettings } from '../../../../../types';
 
 	export let data: ChecklistDetailsLoadData;
 
 	let listName = data.list?.name || getDefaultListName();
 	let description = getDescription(data.list || undefined);
-	const url = 'https://k-garoo.fun/list-details/' + data.listId;
+	const url = 'https://garoo.fun/home/lists/details/' + data.listId;
 
 	function getDescription(list: ChecklistWithSettings | undefined): string {
 		if (!list) {

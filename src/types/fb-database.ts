@@ -1,5 +1,6 @@
 import type { CategoryOption } from './index';
 import type { UserByListStatus } from './index';
+import { getTimestamp } from '../utils/api/firebase-admin-utils';
 
 export type ListsSharedWithMe = {
 	[listId: string]: {
@@ -44,4 +45,10 @@ export type UsersByList = {
 		utc: number;
 		status: UserByListStatus;
 	};
+};
+
+export type ShareListInviteTokenData = {
+	listId: string;
+	userId: string;
+	created_utc: number;
 };

@@ -97,8 +97,4 @@
 			{$error}
 		</Alert>
 	{/if}
-
-	<Checkbox class="mt-6" bind:checked={keepMyData}
-		>{$t('app.login-popup.sync-data-checkbox')}</Checkbox
-	>
 </div>

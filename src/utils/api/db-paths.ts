@@ -50,3 +50,5 @@ export const categoryOptionsByUserByOptionPath = (userId: string, optionId: stri
 export const usersByListPath = (listId: string) => `usersByLists/${listId}`;
 export const userByListPath = (listId: string, userId: string) =>
 	`usersByLists/${listId}/${userId}`;
+
+export const shareListInviteTokenPath = (token: string) => `shareListInviteTokens/${token}`;

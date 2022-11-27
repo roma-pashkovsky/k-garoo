@@ -8,6 +8,10 @@ import type {
 } from '../../utils/api/client/create-update-list';
 import type { UpdateChecklistSettingsRequest } from '../../utils/api/client/checklist-settings';
 import { appFetch } from '../../utils/app-fetch';
+import { goto } from '$app/navigation';
+import { checklistDetailsClientRoute } from '../../utils/client-routes';
+import { acceptList } from '../my-shared-lists/my-shared-list.store';
+import { getUID } from '../../utils/get-uid';
 
 export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
 
@@ -389,3 +393,31 @@ function getListIdByParentListIdLocal(parentListId: string): Promise<string | nu
 function getListIdByParentListIdAPI(parentListId: string, f: any): Promise<string | null> {
 	return appFetch(`/list-by-parent-id/${parentListId}`, { method: 'GET' }, f);
 }
+
+/**
+ * Add list to my collection
+ */
+export const addListToMyCollection = async (
+	list: CheckList,
+	parentListId: string
+): Promise<string | null> => {
+	const ts = new Date().getTime();
+	if (!list) {
+		return null;
+	}
+	if (get(auth).user) {
+		const isSharedWithMe = !!list.sharedBy;
+		if (isSharedWithMe) {
+			await acceptList(list.id);
+			return list.id;
+		}
+	}
+	const copy: CheckList = {
+		...list,
+		id: getUID(),
+		created_utc: ts,
+		updated_utc: ts
+	};
+	await createList({ ...copy, parentListId });
+	return copy.id;
+};

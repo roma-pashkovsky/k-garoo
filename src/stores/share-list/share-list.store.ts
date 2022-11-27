@@ -1,5 +1,7 @@
 import type { ShareListUser } from '../../types/share-list';
 import { appFetch } from '../../utils/app-fetch';
+import type { AppUser } from '../../types/auth';
+import type { ChecklistWithSettings } from '../../types';
 
 export class ShareListStore {
 	public async searchUsers(listId: string, search?: string): Promise<ShareListUser[]> {
@@ -38,5 +40,34 @@ export class ShareListStore {
 			method: 'DELETE',
 			body: JSON.stringify({ listId, userId })
 		});
+	}
+
+	public registerShareListInviteToken(listId: string, token: string): Promise<void> {
+		return appFetch<void>('/share-list-invite-token', {
+			method: 'POST',
+			body: JSON.stringify({ listId, token })
+		});
+	}
+
+	public verifyShareListInviteToken(listId: string, token: string, f = fetch): Promise<AppUser> {
+		return appFetch<AppUser>(
+			`/share-list-invite-token/${token}`,
+			{
+				method: 'POST',
+				body: JSON.stringify({ listId })
+			},
+			f
+		);
+	}
+
+	public async applyShareListInviteToken(
+		listId: string,
+		token: string
+	): Promise<ChecklistWithSettings> {
+		const list = await appFetch<ChecklistWithSettings>(`/share-list-invite-token/${token}/apply`, {
+			method: 'POST',
+			body: JSON.stringify({ listId })
+		});
+		return list;
 	}
 }

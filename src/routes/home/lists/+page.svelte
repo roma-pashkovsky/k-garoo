@@ -18,7 +18,7 @@
 	import { doubleTap } from '../../../utils/double-tap';
 	import { page } from '$app/stores';
 	import MoveCheckListBottomDrawer from '../../../lib/main-list/MoveCheckListBottomDrawer.svelte';
-	import { checklistDetailsClientRoute } from '../../../utils/client-routes';
+	import { checklistDetailsClientEditRoute } from '../../../utils/client-routes';
 
 	const toastManager = ToastService.getInstance();
 	const url = 'https://www.garoo.fun/home/lists';
@@ -53,12 +53,12 @@
 	}
 
 	function onCardClicked(id: string): void {
-		goto(checklistDetailsClientRoute(id));
+		goto(checklistDetailsClientEditRoute(id));
 	}
 
 	function onAddButtonClicked() {
 		const id = getUID();
-		goto(checklistDetailsClientRoute(id));
+		goto(checklistDetailsClientEditRoute(id));
 	}
 
 	function onDragItemDropped(): void {

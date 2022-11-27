@@ -1,13 +1,13 @@
-import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
 import type { LoadEvent } from '@sveltejs/kit';
+import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
+import { loadUserIfNotResolved } from '../../../../../stores/login/auth';
 import { browser } from '$app/environment';
+import { get } from 'svelte/store';
 import {
 	getList,
 	getListIdByParentListId,
 	listDataStore
 } from '../../../../../stores/checklist-details/checklist-details-data';
-import { get } from 'svelte/store';
-import { loadUserIfNotResolved } from '../../../../../stores/login/auth';
 
 export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData | undefined> {
 	await loadUserIfNotResolved(event.fetch, browser);

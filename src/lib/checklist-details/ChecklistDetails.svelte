@@ -132,14 +132,6 @@
 		checkListForDuplicates();
 	});
 
-	async function onAddListToMyCollectionClicked(): Promise<void> {
-		const id = await store.addListToMyCollection(list, listId);
-		await goto(checklistDetailsClientRoute(id));
-		setTimeout(() => {
-			location.reload();
-		});
-	}
-
 	onDestroy(() => {
 		if (!get(AppSettingsStore.hasSeenListDemo)) {
 			setHasSeenDemo();
@@ -1115,20 +1107,6 @@
 		</BottomMenu>
 	{/if}
 	<!--		/Batch editing input-->
-	<!--Add list to user's collection-->
-	{#if isListReadOnly}
-		<BottomMenu onmousedown="event.stopPropagation(); event.preventDefault()">
-			<div class="w-full flex justify-end py-4 px-4">
-				<div class="mr-4 flex items-center">
-					{$t('lists.details.add-to-my-lists-warning')}
-				</div>
-				<Button on:click={onAddListToMyCollectionClicked}
-					>{$t('lists.details.add-to-my-lists-button')}</Button
-				>
-			</div>
-		</BottomMenu>
-	{/if}
-	<!--EOF Add list to user's collection-->
 </DetailsPage>
 
 <ChecklistDetailsDemoBody currentStep={1} closeOnNext={true} isShown={isFirstTimeUse} />

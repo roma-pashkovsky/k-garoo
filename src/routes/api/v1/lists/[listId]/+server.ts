@@ -57,6 +57,10 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 			const insertOrder = lastList
 				? (lastList[Object.keys(lastList)[0]].order || 0) + ORDERING_GAP
 				: 0;
+			const listByMeRecord: any = { updated_ts: getTimestamp(), order: insertOrder };
+			if (list.parentListId) {
+				listByMeRecord.parentListId = list.parentListId;
+			}
 			const itemsMap = arrayToMap<CheckListItem>(list.items || [], 'id');
 			const target = {
 				...list,
@@ -68,7 +72,7 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 			await setAdmin([
 				{
 					path: listByMePath(user.uid, listId),
-					value: { updated_ts: getTimestamp(), order: insertOrder }
+					value: listByMeRecord
 				},
 				{ path: listPath(listId), value: target },
 				{

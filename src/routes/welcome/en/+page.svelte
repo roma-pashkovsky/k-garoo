@@ -1,19 +1,21 @@
 <div class="welcome-page w-full h-full flex justify-center">
-	<div class="h-full w-full max-w-screen-xl overflow-y-auto bg-white">
+	<div class="welcome-inner h-full w-full overflow-y-auto bg-white">
 		<!--		Top bar-->
 		<div
 			class="crisp-blue-bg standard-pad-top standard-pad-right standard-pad-left standard-pad-bottom  flex justify-end items-center sticky z-10 top-0"
 		>
-			<a class="font-regular height-btn pad-btn flex justify-center items-center">Українською</a>
+			<a class="font-regular height-btn pad-btn flex justify-center items-center text-white"
+				>Українською</a
+			>
 			<a
 				class="font-sb height-btn pad-btn bg-white flex items-center justify-center text-black rounded-md"
-				>Go to the app</a
+				href="/home/lists">Go to the app</a
 			>
 		</div>
 		<!--		EOF Top bar-->
 		<!--		Jumbo-->
 		<div
-			class="jumbo standard-pad-right standard-pad-left crisp-blue-bg flex flex-col items-center space-y-9"
+			class="jumbo standard-pad-right standard-pad-left crisp-blue-bg flex flex-col items-center space-y-9 text-white"
 		>
 			<!--			Caption-->
 			<div class="jumbo-caption flex flex-col items-center space-y-9">
@@ -96,6 +98,10 @@
 	.welcome-page {
 		font-family: Inter;
 		font-weight: 400;
+	}
+
+	.welcome-inner {
+		max-width: 1460px;
 	}
 
 	.jumbo {

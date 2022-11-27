@@ -133,7 +133,7 @@
 	});
 
 	async function onAddListToMyCollectionClicked(): Promise<void> {
-		const id = await store.addListToMyCollection(list);
+		const id = await store.addListToMyCollection(list, listId);
 		await goto(checklistDetailsClientRoute(id));
 		setTimeout(() => {
 			location.reload();

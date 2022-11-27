@@ -86,7 +86,7 @@ async function createListAPI(request: CreateListRequest): Promise<CheckList | nu
 
 export async function createListLocal(request: CreateListRequest): Promise<CheckList> {
 	const ts = new Date().getTime();
-	await addListToUserCollectionLocal(request.id as string, ts);
+	await addListToUserCollectionLocal(request.id as string, ts, request.parentListId);
 	await saveListDataLocal(
 		request.id as string,
 		request.name as string,
@@ -112,16 +112,24 @@ async function saveListDataLocal(
 	setListData(list);
 }
 
-async function addListToUserCollectionLocal(listId: string, ts: number): Promise<void> {
+async function addListToUserCollectionLocal(
+	listId: string,
+	ts: number,
+	parentListId?: string
+): Promise<void> {
 	return new Promise<void>((resolve) => {
 		requestAnimationFrame(() => {
 			const listIds = getListIds();
+			const record: PersistedList[string] = {
+				updated_ts: ts,
+				order: getNewListInsertOrder(listIds)
+			};
+			if (parentListId) {
+				record.parentListId = parentListId;
+			}
 			const newLists = {
 				...listIds,
-				[listId]: {
-					updated_ts: ts,
-					order: getNewListInsertOrder(listIds)
-				}
+				[listId]: record
 			};
 			setListIds(newLists);
 			resolve();
@@ -345,4 +353,39 @@ async function setIsCalcModeAPI(listId: string, isCalcMode: boolean): Promise<vo
 	).catch((err) => {
 		console.error(err);
 	});
+}
+
+/**
+ * Get list id by parent list id
+ */
+export function getListIdByParentListId(
+	parentListId: string,
+	browser: boolean,
+	f = fetch
+): Promise<string | null> {
+	if (get(auth).user) {
+		return getListIdByParentListIdAPI(parentListId, f);
+	} else if (browser) {
+		return getListIdByParentListIdLocal(parentListId);
+	} else {
+		return Promise.resolve(null);
+	}
+}
+
+function getListIdByParentListIdLocal(parentListId: string): Promise<string | null> {
+	return new Promise<string | null>((resolve) => {
+		requestAnimationFrame(() => {
+			const listIds = getListIds();
+			if (listIds) {
+				const listId = Object.keys(listIds).find((id) => listIds[id].parentListId === parentListId);
+				resolve(listId || null);
+			} else {
+				resolve(null);
+			}
+		});
+	});
+}
+
+function getListIdByParentListIdAPI(parentListId: string, f: any): Promise<string | null> {
+	return appFetch(`/list-by-parent-id/${parentListId}`, { method: 'GET' }, f);
 }

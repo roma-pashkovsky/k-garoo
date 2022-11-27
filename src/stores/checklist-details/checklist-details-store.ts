@@ -37,35 +37,28 @@ export class ChecklistDetailsStore {
 		});
 	}
 
-	public async addListToMyCollection(list: CheckList): Promise<string | null> {
+	public async addListToMyCollection(
+		list: CheckList,
+		parentListId: string
+	): Promise<string | null> {
 		const ts = new Date().getTime();
-		if (list) {
-			if (get(auth)) {
-				const isSharedWithMe = !!list.sharedBy;
-				if (isSharedWithMe) {
-					await acceptList(list.id);
-					return list.id;
-				} else {
-					const copy: CheckList = {
-						...list,
-						id: getUID(),
-						created_utc: ts,
-						updated_utc: ts
-					};
-					await createList(copy);
-					return copy.id;
-				}
-			} else {
-				const copy: CheckList = {
-					...list,
-					id: getUID(),
-					created_utc: ts,
-					updated_utc: ts
-				};
-				await createListLocal(copy);
-				return copy.id;
+		if (!list) {
+			return null;
+		}
+		if (get(auth).user) {
+			const isSharedWithMe = !!list.sharedBy;
+			if (isSharedWithMe) {
+				await acceptList(list.id);
+				return list.id;
 			}
 		}
-		return null;
+		const copy: CheckList = {
+			...list,
+			id: getUID(),
+			created_utc: ts,
+			updated_utc: ts
+		};
+		await createList({ ...copy, parentListId });
+		return copy.id;
 	}
 }

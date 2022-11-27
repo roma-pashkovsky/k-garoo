@@ -3,6 +3,7 @@ import type { LoadEvent } from '@sveltejs/kit';
 import { browser } from '$app/environment';
 import {
 	getList,
+	getListIdByParentListId,
 	listDataStore
 } from '../../../../../stores/checklist-details/checklist-details-data';
 import { get } from 'svelte/store';
@@ -19,6 +20,7 @@ export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData |
 	}
 	return {
 		listId,
-		list
+		list,
+		childListId: await getListIdByParentListId(listId, browser, event.fetch)
 	};
 }

@@ -3,12 +3,24 @@
 	import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
 	import { getDefaultListName } from '../../../../../utils/get-default-list-name';
 	import type { ChecklistWithSettings } from '../../../../../types';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { checklistDetailsClientRoute } from '../../../../../utils/client-routes';
 
 	export let data: ChecklistDetailsLoadData;
 
 	let listName = data.list?.name || getDefaultListName();
 	let description = getDescription(data.list || undefined);
 	const url = 'https://garoo.fun/home/lists/details/' + data.listId;
+
+	onMount(async () => {
+		if (data.list && !data.list.isMyList && !!data.childListId) {
+			await goto(checklistDetailsClientRoute(data.childListId), {
+				invalidateAll: true
+			});
+			location.reload();
+		}
+	});
 
 	function getDescription(list: ChecklistWithSettings | undefined): string {
 		if (!list) {

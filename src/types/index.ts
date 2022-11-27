@@ -77,6 +77,7 @@ export type PersistedList = {
 	[listId: string]: {
 		updated_ts: number;
 		order: number;
+		parentListId?: string;
 		// only when getting list from API, might be absent
 		name?: string;
 	};

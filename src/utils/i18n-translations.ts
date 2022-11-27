@@ -78,9 +78,9 @@ export default {
 		'lists.details.toggle-crossed-out-prompt':
 			'This button will hide completed items. Click an item to complete it.',
 		'lists.details.colors-for-categories': 'Colors for categories',
-		'lists.details.link-to-list': 'Link to list copy',
+		'lists.details.link-to-list': 'Copy link',
 		'lists.details.duplicate': 'Duplicate list',
-		'lists.details.share-list': 'Share list',
+		'lists.details.share-list': 'Shared access',
 		'lists.details.share-list-login': 'Login',
 		'lists.details.add-as-text': 'Paste text...',
 		'lists.details.show-me-around': 'Show me around',
@@ -217,9 +217,9 @@ export default {
 		'lists.details.toggle-crossed-out-prompt':
 			'Ця кнопка ховає закреслені пункти. Клацніть на пункт, щоб закреслити.',
 		'lists.details.colors-for-categories': 'Кольори для категорій',
-		'lists.details.link-to-list': 'Посилання на копію',
+		'lists.details.link-to-list': 'Копіювати посилання',
 		'lists.details.duplicate': 'Дублювати список',
-		'lists.details.share-list': 'Поділитись',
+		'lists.details.share-list': 'Спільний доступ',
 		'lists.details.share-list-login': 'Увійти',
 		'lists.details.add-as-text': 'Вставити як текст...',
 		'lists.details.show-me-around': 'Що тут де?',

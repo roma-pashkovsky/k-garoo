@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-	<title>K-garoo - {$t('lists.decode.page-title')}</title>
+	<title>Garoo - {$t('lists.decode.page-title')}</title>
 </svelte:head>
 
 <FullPageSpinner />

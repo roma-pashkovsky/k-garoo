@@ -1,7 +1,7 @@
 {
   "name": "Garoo - Checklists",
   "short_name": "Garoo",
-  "start_url": "/",
+  "start_url": "/home/lists",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -17,6 +17,6 @@
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "/",
+  "scope": "https://garoo.fun/",
   "description": "A neat small app for easy shopping checklists"
 }

@@ -43,6 +43,9 @@
 				text: get(t)('lists.details.link-created'),
 				closePrevious: false
 			});
+			if (navigator && navigator.share) {
+				await navigator.share({ url }).catch((err) => console.log(err));
+			}
 		} catch (err) {
 			console.error(err);
 			toastManager.push({

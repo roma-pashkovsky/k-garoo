@@ -95,6 +95,9 @@
 			await navigator.clipboard.writeText(link);
 			await store.registerShareListInviteToken(get(shareListIdStore).listId, token);
 			isCopyingShareInviteTokenSuccess = true;
+			if (navigator && navigator.share) {
+				await navigator.share({ url: link }).catch((err) => console.log(err));
+			}
 		} catch (err) {
 			console.error(err);
 			copyingShareInviteTokenError = true;

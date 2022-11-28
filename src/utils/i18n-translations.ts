@@ -140,6 +140,8 @@ export default {
 		'share-list.requests.accept-button': 'Accept',
 		'share-list.requests.reject-button': 'Reject',
 		'share-list.requests.block-user-button': 'Block user',
+		'share-list.details-page.invite-alert':
+			'{{user}} has shared this list with you. Login to edit this list.',
 		// stop list
 		'stop-list.page.title': 'Blocked',
 		'stop-list.page.empty': 'No blocked users',
@@ -281,6 +283,8 @@ export default {
 		'share-list.requests.accept-button': 'Прийняти',
 		'share-list.requests.reject-button': 'Відхилити',
 		'share-list.requests.block-user-button': 'Заблокувати',
+		'share-list.details-page.invite-alert':
+			'Користувач {{user}} поділився з Вами цим списком. Увійдіть, щоб отримати доступ до списку.',
 		// stop list
 		'stop-list.page.title': 'Заблоковані',
 		'stop-list.page.empty': 'Немає заблокованих користувачів',

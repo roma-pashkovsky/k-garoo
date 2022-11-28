@@ -91,7 +91,7 @@
 		</h5>
 		{#if data.token?.verified}
 			<Alert class="mb-4">
-				{data.token?.user?.displayName} shared this list with you. Login to edit this list.
+				{$t('share-list.details-page.invite-alert', { user: data.token?.user?.displayName })}
 			</Alert>
 		{/if}
 

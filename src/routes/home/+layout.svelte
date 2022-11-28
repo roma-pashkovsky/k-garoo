@@ -8,11 +8,21 @@
 	import InitConfigPopup from '../../lib/InitConfigPopup.svelte';
 	import { AppSettingsStore } from '../../stores/app/app-settings';
 	import { goto } from '$app/navigation';
+	import type { Page } from '@sveltejs/kit';
 
-	let isSetLocalePopupOpen = !get(AppSettingsStore.isLocaleSet);
+	const isSetLocalePopupOpen = derived(
+		[AppSettingsStore.isLocaleSet, page],
+		([isLocaleSet, pp]) => {
+			return !isLocaleSet && canShowInitConfigPopup(pp);
+		}
+	);
 	const isHideNavBar = derived(page, ($page) => {
 		return isChecklistDetailsClientRoute($page.url.pathname);
 	});
+
+	function canShowInitConfigPopup(p: Page): boolean {
+		return !isChecklistDetailsClientRoute(p.url.pathname);
+	}
 
 	function onCloseSettingsPopup(): void {
 		AppSettingsStore.markIsLocaleSet();
@@ -41,7 +51,7 @@
 </div>
 
 <InitConfigPopup
-	open={isSetLocalePopupOpen}
+	open={$isSetLocalePopupOpen}
 	on:complete={onCloseSettingsPopup}
 	on:show-how-add-to-main={onShowHowAddToMain}
 />

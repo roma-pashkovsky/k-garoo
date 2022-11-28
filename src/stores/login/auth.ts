@@ -42,7 +42,7 @@ export const loadUserFromSession = async (f = fetch, browser: boolean): Promise<
 				loginClickEvents.set(new Date().getTime());
 			}
 			if (!localUser && !!user) {
-				setUserLocalStorage(user);
+				await setUserLocalStorage(user);
 			}
 		}
 	} catch (err) {

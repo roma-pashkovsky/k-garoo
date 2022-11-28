@@ -199,12 +199,14 @@
 			</div>
 			<div class="flex justify-center ">
 				<Button size="md" outline on:click={onCopyShareInviteList}>
-					{#if isCopyingShareInviteToken}
-						<Spinner class="mr-2" size={4} />
-					{/if}
 					{$t('share-list.modal.copy-invite-link')}
 				</Button>
 			</div>
+			{#if isCopyingShareInviteToken}
+				<div class="flex justify-center">
+					<Spinner class="my-2" size={4} />
+				</div>
+			{/if}
 			{#if isCopyingShareInviteTokenSuccess}
 				<div class="flex justify-center mt-4">
 					<Alert class="text-xs">

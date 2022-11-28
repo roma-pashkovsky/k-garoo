@@ -1,7 +1,7 @@
 {
   "name": "Garoo - Checklists",
   "short_name": "Garoo",
-  "start_url": "/home/lists",
+  "start_url": "/",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

@@ -38,7 +38,8 @@ export default {
 		'app.login-popup.merge-warning':
 			"You previously logged in with a different method. You'll have to merge accounts to continue.",
 		'app.login-popup.merge-button-label': 'Merge accounts',
-		'app.login-popup.failed-to-login-error': 'Failed to login. Contact support',
+		'app.login-popup.failed-to-login-error':
+			'Failed to login ({{code}}). Please reload the page and retry.',
 		'app.login-popup.failed-to-merge-error': 'Failed to merge account. Contact support',
 		// Main list page
 		'lists.no_lists': 'No lists.',
@@ -180,7 +181,7 @@ export default {
 			'Ви раніше заходили через іншу систему. Щоб продовжити, потрібно обʼєднати акаунти.',
 		'app.login-popup.merge-button-label': 'Обʼєднати акаунти',
 		'app.login-popup.failed-to-login-error':
-			'Не вдалося увійти в систему. Зверніться до технічної підтримки',
+			'Не вдалося увійти в систему ({{error}}). Будь ласка, перезавантажте сторінку і спробуйте знову.',
 		'app.login-popup.failed-to-merge-error':
 			'Не вдалося обʼєднати акаунти. Зверніться до технічної підтримки',
 		// Main list

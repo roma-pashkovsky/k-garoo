@@ -23,7 +23,7 @@ export class AuthStore {
 			const user = await AuthStore.firebaseUtils.signInWithFacebook();
 			auth.set({ isResolved: true, user });
 			if (sync) {
-				await new SyncStore().syncLocalDataToDb();
+				await new SyncStore().syncLocalDataToDb().catch((err) => console.error(err));
 			}
 		} catch (err) {
 			console.error(err);
@@ -36,7 +36,9 @@ export class AuthStore {
 			} else {
 				auth.set({
 					isResolved: true,
-					error: get(t)('app.login-popup.failed-to-login-error'),
+					error: get(t)('app.login-popup.failed-to-login-error', {
+						code: (err as any).code || 'no-code'
+					}),
 					user: null
 				});
 			}
@@ -48,7 +50,7 @@ export class AuthStore {
 			const user = await AuthStore.firebaseUtils.signInGoogle();
 			auth.set({ isResolved: true, user });
 			if (sync) {
-				await new SyncStore().syncLocalDataToDb();
+				await new SyncStore().syncLocalDataToDb().catch((err) => console.error(err));
 			}
 		} catch (err) {
 			console.error(err);
@@ -61,7 +63,9 @@ export class AuthStore {
 			} else {
 				auth.set({
 					isResolved: true,
-					error: get(t)('app.login-popup.failed-to-login-error'),
+					error: get(t)('app.login-popup.failed-to-login-error', {
+						code: (err as any).code || 'no-code'
+					}),
 					user: null
 				});
 			}
@@ -87,8 +91,7 @@ export class AuthStore {
 
 	public async signOut(): Promise<any> {
 		await AuthStore.firebaseUtils.signOut();
-		auth.set({ isResolved: true, user: null });
 		cleanLocalDataOnLogout();
-		location.reload();
+		auth.set({ isResolved: true, user: null });
 	}
 }

@@ -6,6 +6,7 @@ import {
 } from '../../utils/local-storage-state';
 import type { CheckList, ChecklistSettings } from '../../types';
 import type { SyncRequest } from '../../utils/api/client/sync';
+import { appFetch } from '../../utils/app-fetch';
 
 export class SyncStore {
 	public async syncLocalDataToDb(): Promise<any> {
@@ -24,6 +25,6 @@ export class SyncStore {
 			checklistSettings: settings,
 			categoryOptions
 		};
-		return fetch('/api/v1/sync', { method: 'POST', body: JSON.stringify(request) });
+		return appFetch('/sync', { method: 'POST', body: JSON.stringify(request) });
 	}
 }

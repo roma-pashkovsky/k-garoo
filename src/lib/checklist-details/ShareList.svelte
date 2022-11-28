@@ -18,7 +18,6 @@
 	import { sineIn } from 'svelte/easing';
 	import { closeShareList, shareListIdStore } from '../../stores/app/share-list-drawer.store';
 	import { getUID } from '../../utils/get-uid';
-	import { ToastService } from '../../utils/toasts';
 
 	let shareDrawerHidden: boolean;
 	const transitionParams = {
@@ -36,12 +35,13 @@
 	let isCopyingShareInviteToken = false;
 	let isCopyingShareInviteTokenSuccess = false;
 	let copyingShareInviteTokenError = false;
-	const toastManager = ToastService.getInstance();
 
 	onMount(async () => {
 		shareListIdStore.subscribe(async ({ listId }) => {
 			if (listId) {
 				shareDrawerHidden = false;
+				isCopyingShareInviteTokenSuccess = false;
+				copyingShareInviteTokenError = false;
 				recentItems = await store.recentUsers(listId);
 				updateIsSharedStore(recentItems);
 			} else {

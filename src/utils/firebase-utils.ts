@@ -17,6 +17,7 @@ import { get } from 'svelte/store';
 import { t } from '../stores/app/translate';
 import type { AppUser } from '../types/auth';
 import { setUserLocalStorage } from './local-storage-state';
+import { ToastService } from './toasts';
 
 export class WrongProviderError extends Error {
 	constructor(public email: string, public cred: AuthCredential) {
@@ -89,9 +90,9 @@ export class FirebaseUtils {
 					(err as any).customData.email,
 					FacebookAuthProvider.credentialFromError(err as any) as AuthCredential
 				);
+			} else {
+				throw err;
 			}
-			console.log(err);
-			return null;
 		}
 	}
 
@@ -114,8 +115,9 @@ export class FirebaseUtils {
 					(err as any).customData.email,
 					GoogleAuthProvider.credentialFromError(err as any) as AuthCredential
 				);
+			} else {
+				throw err;
 			}
-			return null;
 		}
 	}
 

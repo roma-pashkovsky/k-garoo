@@ -32,7 +32,7 @@ export const verifyIdToken = (token: string) => {
 export const createSessionCookie = async (idToken: string, maxAgeSec: number): Promise<string> => {
 	const auth = getAuth(getAdminApp());
 	const cookie = await auth.createSessionCookie(idToken, { expiresIn: maxAgeSec * 1000 });
-	return `session=${cookie}; SameSite=Strict; path=/; HttpOnly; Max-Age=${maxAgeSec}`;
+	return `session=${cookie}; SameSite=Strict; Path=/; Secure; HttpOnly; Max-Age=${maxAgeSec}`;
 };
 
 export const verifySessionCookie = (sessionCookie: string): Promise<DecodedIdToken> => {

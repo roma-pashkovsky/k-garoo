@@ -34,7 +34,7 @@
 	}
 </script>
 
-<div class="w-full h-full flex justify-center bg-gray-800">
+<div class="w-full h-full flex justify-center bg-gray-200 dark:bg-gray-800">
 	<div class="flex flex-col max-w-screen-lg w-full shadow-md bg-white dark:bg-slate-900">
 		{#if $offline}
 			<OfflineBar />

@@ -118,14 +118,6 @@
 			<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
 				<DotMenu bind:open={dotMenuOpen} widthClass="w-56">
 					<DropdownItem>
-						<div class="flex items-center" on:click={() => onListRemove()}>
-							<Button class="!p-2 mr-2" color="light">
-								<DocumentRemove size="15" />
-							</Button>
-							{$t('lists.remove-list')}
-						</div>
-					</DropdownItem>
-					<DropdownItem>
 						<div class="flex items-center" on:click={onListMove}>
 							<Button class="!p-2 mr-2" color="light">
 								<ArrowsUpDown size="15" />
@@ -161,6 +153,14 @@
 								<Link size="15" />
 							</Button>
 							{$t('lists.details.link-to-list')}
+						</div>
+					</DropdownItem>
+					<DropdownItem>
+						<div class="flex items-center" on:click={() => onListRemove()}>
+							<Button class="!p-2 mr-2" color="light">
+								<DocumentRemove size="15" />
+							</Button>
+							{$t('lists.remove-list')}
 						</div>
 					</DropdownItem>
 				</DotMenu>

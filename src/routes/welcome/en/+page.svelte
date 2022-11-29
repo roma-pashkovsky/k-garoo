@@ -91,8 +91,8 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">Autocomplete</div>
-							<div class="text font-regular">
+							<div class="title font-md font-black">Autocomplete</div>
+							<div class="text font-regular font-gray">
 								Garoo will prompt your items as you type adapting to your most often used items.
 							</div>
 						</div>
@@ -100,8 +100,8 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">Flexible categories</div>
-							<div class="text font-regular">
+							<div class="title font-md font-black">Flexible categories</div>
+							<div class="text font-regular font-gray">
 								You can view your items by categories, customize category names and colors
 							</div>
 						</div>
@@ -109,8 +109,10 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">Gesture support</div>
-							<div class="text font-regular">Remove, add and edit items with one swipe.</div>
+							<div class="title font-md font-black">Gesture support</div>
+							<div class="text font-regular font-gray">
+								Remove, add and edit items with one swipe.
+							</div>
 						</div>
 					</div>
 				</div>
@@ -123,8 +125,8 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">Calculator</div>
-							<div class="text font-regular">
+							<div class="title font-md font-black">Calculator</div>
+							<div class="text font-regular font-gray">
 								Garoo can sum up items with numbers, e.g. tuna 15$
 							</div>
 						</div>
@@ -132,15 +134,17 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">Dark theme</div>
-							<div class="text font-regular">‘Cause your eyes need rest.</div>
+							<div class="title font-md font-black">Dark theme</div>
+							<div class="text font-regular font-gray">‘Cause your eyes need rest.</div>
 						</div>
 					</div>
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">No ads</div>
-							<div class="text font-regular">Simple and clean interface with no advertising.</div>
+							<div class="title font-md font-black">No ads</div>
+							<div class="text font-regular font-gray">
+								Simple and clean interface with no advertising.
+							</div>
 						</div>
 					</div>
 				</div>
@@ -166,8 +170,8 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">Sharing</div>
-							<div class="text font-regular">
+							<div class="title font-md font-black">Sharing</div>
+							<div class="text font-regular font-gray">
 								Share links to your lists even if you’re not logged in. For registered users it
 								becomes even easier - you can do it right in the app.
 							</div>
@@ -176,8 +180,8 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md">No need to install</div>
-							<div class="text font-regular">
+							<div class="title font-md font-black">No need to install</div>
+							<div class="text font-regular font-gray">
 								Basically it’s a website that looks nice on any platform. You can add it to your
 								home screen for quick access and a native app expeience. How to add to the home
 								screen.
@@ -329,6 +333,14 @@
 
 	.font-bold {
 		font-weight: 600;
+	}
+
+	.font-black {
+		color: black;
+	}
+
+	.font-gray {
+		color: rgba(0, 0, 0, 0.75);
 	}
 
 	.welcome-page {

@@ -12,6 +12,7 @@ import { goto } from '$app/navigation';
 import { checklistDetailsClientRoute } from '../../utils/client-routes';
 import { acceptList } from '../my-shared-lists/my-shared-list.store';
 import { getUID } from '../../utils/get-uid';
+import { offline } from '../offline-mode/offline-mode.store';
 
 export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
 
@@ -24,6 +25,9 @@ export const getList = async (
 	if (browser) {
 		list = await getListLocal(listId);
 		listDataStore.update((prev) => ({ ...prev, [listId]: list }));
+	}
+	if (get(offline)) {
+		return list;
 	}
 	try {
 		const fromApi = await appFetch<ChecklistWithSettings | null>(

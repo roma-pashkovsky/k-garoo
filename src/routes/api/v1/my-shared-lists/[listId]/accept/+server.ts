@@ -15,6 +15,7 @@ import {
 } from '../../../../../../utils/api/db-paths';
 import type { ListsByUser, UsersByList } from '../../../../../../types/fb-database';
 import { UserByListStatus } from '../../../../../../types';
+import { getListInsertOrderByUser } from '../../../../../../utils/api/get-last-list-order-by-user';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -23,13 +24,7 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 	}
 	const listId: string = params.listId as string;
 	try {
-		const lastList = await readOnceAdmin<ListsByUser>(
-			listsByMePath(user.uid),
-			'order',
-			undefined,
-			1
-		);
-		const insertOrder = lastList ? lastList[Object.keys(lastList)[0]].order + 1000 : 0;
+		const insertOrder = await getListInsertOrderByUser(user.uid);
 		await setAdmin([
 			{
 				path: listByMePath(user.uid, listId),

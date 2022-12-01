@@ -7,6 +7,7 @@
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
 	import {
 		items,
+		lastVisitedListId,
 		removeList,
 		reorderList
 	} from '../../../stores/checklist-main-list/checklist-main-list-store';
@@ -16,7 +17,6 @@
 	import Page from '../../../lib/Page.svelte';
 	import { Plus } from 'svelte-heros-v2';
 	import { doubleTap } from '../../../utils/double-tap';
-	import { page } from '$app/stores';
 	import MoveCheckListBottomDrawer from '../../../lib/main-list/MoveCheckListBottomDrawer.svelte';
 	import { checklistDetailsClientEditRoute } from '../../../utils/client-routes';
 
@@ -25,7 +25,6 @@
 
 	let draggingItemId: string | null = null;
 	let hoverItemId: string | null = null;
-	let lastVisitedId: string | null = $page?.url?.searchParams?.get('lastVisitedId');
 	let movedChecklist: MainListItem | null = null;
 	let movedIndex = -1;
 
@@ -56,11 +55,13 @@
 	}
 
 	function onCardClicked(id: string): void {
+		lastVisitedListId.set(id);
 		goto(checklistDetailsClientEditRoute(id));
 	}
 
 	function onAddButtonClicked() {
 		const id = getUID();
+		lastVisitedListId.set(id);
 		goto(checklistDetailsClientEditRoute(id));
 	}
 
@@ -181,7 +182,7 @@
 					listItem={item}
 					{draggingItemId}
 					{hoverItemId}
-					{lastVisitedId}
+					lastVisitedId={$lastVisitedListId}
 					{index}
 					{movedIndex}
 					on:remove={(event) => onListRemove(item.id, event.detail.card)}

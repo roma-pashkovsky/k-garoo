@@ -29,6 +29,7 @@ import type { ListsByUser, UsersByList } from '../../../../../types/fb-database'
 import { redisSet } from '../../../../../utils/api/redis';
 import { ORDERING_GAP } from '../../../../../utils/api/ordering-gap';
 import type { DbChecklist } from '../../../../../types/db-checklist';
+import { getListInsertOrderByUser } from '../../../../../utils/api/get-last-list-order-by-user';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -48,15 +49,7 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 		if (exists) {
 			return badRequest('List already exists');
 		} else {
-			const lastList = await readOnceAdmin<ListsByUser>(
-				listsByMePath(user.uid),
-				'order',
-				undefined,
-				1
-			);
-			const insertOrder = lastList
-				? (lastList[Object.keys(lastList)[0]].order || 0) + ORDERING_GAP
-				: 0;
+			const insertOrder = await getListInsertOrderByUser(user.uid);
 			const listByMeRecord: any = { updated_ts: getTimestamp(), order: insertOrder };
 			if (list.parentListId) {
 				listByMeRecord.parentListId = list.parentListId;

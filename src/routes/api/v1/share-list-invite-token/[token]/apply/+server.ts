@@ -22,6 +22,7 @@ import { ORDERING_GAP } from '../../../../../../utils/api/ordering-gap';
 import { redisSet } from '../../../../../../utils/api/redis';
 import { getChecklistByUserThroughCache } from '../../../../../../utils/api/get-checklist-by-user-through-cache';
 import { json } from '@sveltejs/kit';
+import { getListInsertOrderByUser } from '../../../../../../utils/api/get-last-list-order-by-user';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -37,15 +38,7 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 		);
 		if (tokenEntry) {
 			if (tokenEntry.listId === listId) {
-				const lastList = await readOnceAdmin<ListsByUser>(
-					listsByMePath(user.uid),
-					'order',
-					undefined,
-					1
-				);
-				const insertOrder = lastList
-					? (lastList[Object.keys(lastList)[0]].order || 0) + ORDERING_GAP
-					: 0;
+				const insertOrder = await getListInsertOrderByUser(user.uid);
 				const listByMeRecord: any = { updated_ts: getTimestamp(), order: insertOrder };
 				await setAdmin([
 					{

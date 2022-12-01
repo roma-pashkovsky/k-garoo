@@ -1,22 +1,51 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
+	import { AppSettingsStore } from '../../../stores/app/app-settings';
 
 	let innerScrollDiv: HTMLDivElement;
 	let scrollDivHeight: number;
+	let isAnimating = false;
+	let isInit = false;
 
-	function onScrollDiv(): void {
-		const scrollValue = innerScrollDiv.scrollTop;
-		const scrollPercent = scrollValue / scrollDivHeight;
-		let scrollInd = 1 - scrollPercent;
-		scrollInd = Math.max(0.75, scrollInd);
-		scrollInd = Math.min(1, scrollInd);
-		innerScrollDiv.style.setProperty('--scroll-ind', '' + scrollInd);
-		innerScrollDiv.style.setProperty('--scroll-percent', '' + scrollPercent);
+	async function onScrollDiv(): Promise<void> {
+		if (isAnimating) {
+			return;
+		}
+		isAnimating = true;
+		try {
+			await doOnScroll();
+		} catch (err) {
+			console.log('anim error: ', err);
+		} finally {
+			isAnimating = false;
+		}
+	}
+
+	let prevInd = 0;
+	async function doOnScroll(): Promise<void> {
+		return new Promise((resolve) => {
+			window.requestAnimationFrame(() => {
+				const scrollValue = innerScrollDiv.scrollTop;
+				if (scrollValue < 400) {
+					const scrollPercent = scrollValue / scrollDivHeight;
+					let scrollInd = 1 - scrollPercent;
+					scrollInd = Math.max(0.75, scrollInd);
+					scrollInd = Math.min(1, scrollInd);
+					innerScrollDiv.style.setProperty('--scroll-ind', '' + scrollInd);
+					innerScrollDiv.style.setProperty('--scroll-percent', '' + scrollPercent);
+					prevInd = scrollInd;
+				}
+				resolve();
+			});
+		});
 	}
 
 	onMount(() => {
-		scrollDivHeight = innerScrollDiv.scrollHeight;
+		AppSettingsStore.setLanguage('en');
+		scrollDivHeight = innerScrollDiv.getBoundingClientRect().height;
 		innerScrollDiv.addEventListener('scroll', onScrollDiv);
+		setTimeout(() => (isInit = true), 200);
 	});
 
 	onDestroy(() => {
@@ -26,25 +55,68 @@
 	});
 </script>
 
-<div class="welcome-page w-full h-full flex justify-center">
+<svelte:head>
+	<title>Garoo - Easy checklists</title>
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content="https://garoo.fun/welcome/en" />
+	<meta property="og:site_name" content="Garoo" />
+	<meta
+		property="og:description"
+		content="Easy checklists for shopping work or personal development"
+	/>
+	<meta property="og:title" content="Garoo Checklists" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta
+		name="twitter:description"
+		content="Easy checklists for shopping work or personal development"
+	/>
+	<meta name="twitter:site" content="@business" />
+	<meta name="twitter:title" content="Garoo Checklists" />
+	<meta property="og:image" content="https://www.garoo.fun/landing/thumb.png" />
+	<meta property="og:image:secure_url" content="https://www.garoo.fun/landing/thumb.png" />
+	<meta property="og:image:width" content="125" />
+	<meta property="og:image:height" content="100" />
+	<meta name="twitter:image" content="https://www.garoo.fun/landing/thumb.png" />
+</svelte:head>
+
+<div class="welcome-page w-full h-full flex justify-center bg-gray-200">
 	<div bind:this={innerScrollDiv} class="welcome-inner h-full w-full overflow-y-auto bg-white">
-		<!--		Top bar-->
-		<div
-			class="top-bar crisp-blue-bg standard-pad-right standard-pad-left sticky z-10 top-0 flex justify-between items-center"
-		>
-			<div class="top-bar-label">Garoo Checklists</div>
-			<div class="flex justify-end items-center">
-				<a
-					class="top-bar-button change-lang font-regular height-btn pad-btn flex justify-center items-center text-white"
-					href="/welcome/ua">UA</a
+		<!--		Sticky top-->
+		<div class="sticky z-10 top-0">
+			<!--		Support Ukraine-->
+			{#if isInit}
+				<div
+					in:slide|local={{ duration: 600 }}
+					class="bg-blue-800 text-white flex justify-center space-x-2 py-1 sticky z-10"
 				>
-				<a
-					class="top-bar-button font-sb height-btn pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap"
-					href="/home/lists">Go to the app</a
-				>
+					<a href="/home/support-ukraine" class="h-6">Garoo stands with Ukraine!</a><img
+						src="/flag-Ukraine.png"
+						alt="support Ukraine"
+						class="h-6"
+					/>
+				</div>
+			{/if}
+			<!--		Top bar-->
+			<div
+				class="top-bar crisp-blue-bg standard-pad-right standard-pad-left flex justify-between items-center"
+			>
+				<div class="flex items-center space-x-2">
+					<div class="top-bar-label">Garoo Checklists</div>
+				</div>
+				<div class="flex justify-end items-center">
+					<a
+						class="top-bar-button change-lang font-regular height-btn pad-btn flex justify-center items-center text-white"
+						href="/welcome/ua">UA</a
+					>
+					<a
+						class="top-bar-button font-sb height-btn pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap"
+						href="/home/lists">Go to the app</a
+					>
+				</div>
 			</div>
+			<!--		EOF Top bar-->
 		</div>
-		<!--		EOF Top bar-->
+
 		<!--		Jumbo-->
 		<div
 			class="jumbo standard-pad-right standard-pad-left crisp-blue-bg flex flex-col items-center space-y-9 text-white"
@@ -76,7 +148,7 @@
 		</div>
 		<!--		EOF Jumbo-->
 		<!--		Feature highlights-->
-		<div class="feature-highlights standard-pad-left standard-pad-right standard-pad-bottom">
+		<div class="feature-highlights standard-pad-left standard-pad-right">
 			<!--			First highlight-->
 			<div
 				class="highlight grid grid-cols-1 grid-rows-2 gap-y-8 md:grid-cols-2 md:grid-rows-1 md:gap-x-4"
@@ -183,8 +255,10 @@
 							<div class="title font-md font-black">No need to install</div>
 							<div class="text font-regular font-gray">
 								Basically it’s a website that looks nice on any platform. You can add it to your
-								home screen for quick access and a native app expeience. How to add to the home
-								screen.
+								home screen for quick access and a native app experience. <a
+									class="text-blue-600"
+									href="/home/add-app-to-main-screen">How to add to the home screen.</a
+								>
 							</div>
 						</div>
 					</div>
@@ -194,9 +268,11 @@
 		<!--		EOF Feature highlights-->
 		<!--		Footer-->
 		<div
-			class="footer standard-pad-bottom standard-pad-right standard-pad-left standard-pad-top font-regular text-sm"
+			class="footer crisp-blue-bg standard-pad-bottom standard-pad-right standard-pad-left standard-pad-top font-regular text-sm"
 		>
-			Copyright (c) 2022. Developed by Roman Pashkovsky.
+			Copyright (c) 2022. <a href="mailto:pashkovsky.roma@gmail.com"
+				>Developed by Roman Pashkovsky.</a
+			>
 		</div>
 		<!--		EOF Footer-->
 	</div>
@@ -228,51 +304,7 @@
 		font-weight: 600;
 	}
 
-	@media (min-width: 768px) {
-		.top-bar-label {
-			font-size: 30%;
-		}
-
-		.feature-highlights {
-			padding-top: 300px;
-			background: url('/landing/curly-line-bg.png') top 100px left 0/100% auto no-repeat,
-				url('/landing/bg-donuts.png') top 900px left 0/100% auto no-repeat;
-		}
-
-		.feature-box {
-			justify-content: center;
-		}
-
-		.highlight {
-			margin-top: 200px;
-		}
-
-		.jumbo {
-			font-size: 96px;
-		}
-
-		.top-bar {
-			font-size: 96px;
-		}
-
-		.pad-btn {
-			padding: 0 42px;
-		}
-
-		.height-btn {
-			height: calc(65px * var(--scroll-ind));
-		}
-
-		.change-lang {
-			margin-right: 30px;
-		}
-
-		.device-box {
-			height: 435px;
-			width: 420px;
-		}
-	}
-
+	/** Mobile */
 	@media (max-width: 768px) {
 		.top-bar-label {
 			font-size: 20%;
@@ -280,9 +312,9 @@
 
 		.feature-highlights {
 			padding-top: 0px;
-			background: url('/landing/curly-line-bg.png') top -10px left 0/100% auto no-repeat,
-				url('/landing/bg-donuts.png') top 900px left 0/100% auto no-repeat,
-				url('/landing/bg-donuts.png') top 1800px left 0/100% auto no-repeat;
+			background: url('/landing/bg-donuts-top.svg') top -10px left 0/100% auto no-repeat,
+				url('/landing/bg-donuts-line.svg') top 900px left 0/100% auto no-repeat,
+				url('/landing/bg-donuts-line.svg') top 1800px left 0/100% auto no-repeat;
 		}
 
 		.feature-box {
@@ -319,6 +351,52 @@
 		}
 	}
 
+	/** Desktop */
+	@media (min-width: 768px) {
+		.top-bar-label {
+			font-size: 30%;
+		}
+
+		.feature-highlights {
+			padding-top: 300px;
+			background: url('/landing/bg-donuts-top.svg') top 100px left 0/100% auto no-repeat,
+				url('/landing/bg-donuts.svg') top 900px left 0/100% auto no-repeat;
+		}
+
+		.feature-box {
+			justify-content: center;
+		}
+
+		.highlight {
+			margin-top: 200px;
+		}
+
+		.jumbo {
+			font-size: 96px;
+		}
+
+		.top-bar {
+			font-size: 96px;
+		}
+
+		.pad-btn {
+			padding: 0 42px;
+		}
+
+		.height-btn {
+			height: calc(65px * var(--scroll-ind));
+		}
+
+		.change-lang {
+			margin-right: 30px;
+		}
+
+		.device-box {
+			height: 435px;
+			width: 420px;
+		}
+	}
+
 	.font-regular {
 		font-weight: 300;
 	}
@@ -347,6 +425,7 @@
 		font-family: Inter;
 		font-weight: 400;
 		--crisp-blue: #1c64f2;
+		--light-blue: #c6d7fa;
 		--scroll-ind: 1;
 		--scroll-percent: 0;
 	}
@@ -440,6 +519,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		padding-bottom: 60px;
 	}
 
 	.device-box {
@@ -463,7 +543,7 @@
 	}
 
 	.feature-device-backdrop.blue-bg {
-		background-color: rgba(156, 187, 249, 0.56);
+		background-color: var(--light-blue);
 	}
 
 	.feature-device-backdrop.blue-border {
@@ -504,8 +584,7 @@
 	}
 
 	.footer {
-		background-color: #133c8d;
 		color: white;
-		margin-top: 60px;
+		min-height: 120px;
 	}
 </style>

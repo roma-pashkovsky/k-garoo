@@ -6,7 +6,3 @@
 		goto('/home/lists');
 	});
 </script>
-
-<div class="landing">
-	<div class="jumbo" />
-</div>

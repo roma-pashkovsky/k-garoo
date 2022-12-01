@@ -19,7 +19,6 @@ export async function processSyncTasks(): Promise<void> {
 	await waitForProcessingFinished();
 	processing.set(true);
 	const syncTasks = await getSyncTasks();
-	console.log('Sync tasks to process: ', syncTasks);
 	if (syncTasks?.length) {
 		const groups: { [id: string]: ApiSyncTask[] } = {};
 		syncTasks.forEach((st) => {

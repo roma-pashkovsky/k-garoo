@@ -146,7 +146,9 @@ export default {
 		// stop list
 		'stop-list.page.title': 'Blocked',
 		'stop-list.page.empty': 'No blocked users',
-		'stop-list.item.unblock-button': 'Unblock'
+		'stop-list.item.unblock-button': 'Unblock',
+		// adding app to home screen
+		'add-app-to-home-screen.go-to-lists-button': 'OK, now go to my checklists!'
 	},
 	ua: {
 		'app.logo': 'Списки',
@@ -289,6 +291,8 @@ export default {
 		// stop list
 		'stop-list.page.title': 'Заблоковані',
 		'stop-list.page.empty': 'Немає заблокованих користувачів',
-		'stop-list.item.unblock-button': 'Розблокувати'
+		'stop-list.item.unblock-button': 'Розблокувати',
+		// adding app to home screen
+		'add-app-to-home-screen.go-to-lists-button': 'Гаразд, а тепер до списків!'
 	}
 } as Translations;

@@ -1,10 +1,10 @@
 import { FirebaseUtils, WrongProviderError } from '../../utils/firebase-utils';
 import { derived, get, writable } from 'svelte/store';
-import { SyncStore } from './sync.store';
 import { auth, loginClickEvents } from './auth';
 import { cleanLocalDataOnLogout } from '../../utils/local-storage-state';
 import type { AuthCredential } from 'firebase/auth';
 import { t } from '../app/translate';
+import { syncLocalDataToDb } from './sync.store';
 
 export class AuthStore {
 	public static isLoginModalOpen = writable<boolean>(false);
@@ -23,7 +23,7 @@ export class AuthStore {
 			const user = await AuthStore.firebaseUtils.signInWithFacebook();
 			auth.set({ isResolved: true, user });
 			if (sync) {
-				await new SyncStore().syncLocalDataToDb().catch((err) => console.error(err));
+				await syncLocalDataToDb().catch((err) => console.error(err));
 			}
 		} catch (err) {
 			console.error(err);
@@ -50,7 +50,7 @@ export class AuthStore {
 			const user = await AuthStore.firebaseUtils.signInGoogle();
 			auth.set({ isResolved: true, user });
 			if (sync) {
-				await new SyncStore().syncLocalDataToDb().catch((err) => console.error(err));
+				await syncLocalDataToDb().catch((err) => console.error(err));
 			}
 		} catch (err) {
 			console.error(err);
@@ -81,7 +81,7 @@ export class AuthStore {
 			);
 			auth.set({ isResolved: true, user });
 			if (sync) {
-				await new SyncStore().syncLocalDataToDb();
+				await syncLocalDataToDb();
 			}
 		} catch (err) {
 			console.error(err);

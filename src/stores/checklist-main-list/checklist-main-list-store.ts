@@ -8,6 +8,8 @@ import { offline } from '../offline-mode/offline-mode.store';
 
 export const items = writable<MainListItem[]>([]);
 
+export const lastVisitedListId = writable<string | null>(null);
+
 export const loadListItems = async (browser: boolean, f = fetch): Promise<void> => {
 	if (browser) {
 		items.set(getSortedListIdsFromPersistedList(getListIds()));

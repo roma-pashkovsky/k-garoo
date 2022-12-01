@@ -34,6 +34,14 @@
 	}
 </script>
 
+<svelte:head>
+	<meta property="og:image" content="https://www.garoo.fun/img/thumb.jpg" />
+	<meta property="og:image:secure_url" content="https://www.garoo.fun/img/thumb.jpg" />
+	<meta property="og:image:width" content="100" />
+	<meta property="og:image:height" content="100" />
+	<meta name="twitter:image" content="https://www.garoo.fun/img/thumb.jpg" />
+</svelte:head>
+
 <div class="w-full h-full flex justify-center bg-gray-200 dark:bg-gray-800">
 	<div class="flex flex-col max-w-screen-lg w-full shadow-md bg-white dark:bg-slate-900">
 		{#if $offline}

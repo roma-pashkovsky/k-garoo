@@ -23,6 +23,7 @@
 	import { processedSyncTasks, processSyncTasks } from '../utils/process-sync-tasks';
 	import { invalidAuthEventStore } from '../utils/app-fetch';
 	import { cleanLocalDataOnLogout } from '../utils/local-storage-state';
+	import { syncLocalDataEvent } from '../stores/login/sync.store';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;
@@ -77,6 +78,11 @@
 			}
 		});
 		processedSyncTasks.subscribe((event) => {
+			if (event) {
+				loadListItems(true);
+			}
+		});
+		syncLocalDataEvent.subscribe((event) => {
 			if (event) {
 				loadListItems(true);
 			}

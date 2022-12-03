@@ -2,6 +2,7 @@ import { derived, get, writable } from 'svelte/store';
 import type { AppSettings, Language, Theme } from '../../types';
 import { cleanAllLocalData, getAppSettings, setAppSettings } from '../../utils/local-storage-state';
 import translations from '../../utils/i18n-translations';
+import { appFetch } from '../../utils/app-fetch';
 
 export const defaultLocale = 'en';
 export const locales = Object.keys(translations);
@@ -27,10 +28,9 @@ const getResetAppSettings = (): AppSettings => {
 };
 
 export const loadAppSettings = async (f = fetch): Promise<void> => {
-	const settingsResp = await f('/api/v1/settings', { method: 'GET' });
-	const settings = await settingsResp.json();
-	if (settings) {
-		appSettings.set(settings);
+	const settingsResp = await appFetch<AppSettings>('/settings', { method: 'GET' }, f);
+	if (settingsResp) {
+		appSettings.set(settingsResp);
 	}
 };
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from 'flowbite-svelte';
-	import { ArrowLeft } from 'svelte-heros';
+	import { ArrowLeft } from 'svelte-heros-v2';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();

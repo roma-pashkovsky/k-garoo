@@ -4,7 +4,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import DuplicateBadge from './DuplicateBadge.svelte';
-	import { Pencil } from 'svelte-heros';
+	import { Pencil } from 'svelte-heros-v2';
 
 	export let disabled: boolean;
 	export let item: CheckListItemEditModel;

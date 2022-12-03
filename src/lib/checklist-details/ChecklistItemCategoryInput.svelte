@@ -3,7 +3,7 @@
 	import type { CategoryOption } from '../../types';
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import { onMount } from 'svelte';
-	import { X } from 'svelte-heros';
+	import { XMark } from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
 	import { createEventDispatcher } from 'svelte';
 
@@ -55,7 +55,7 @@
 			autocomplete="off"
 			bind:value={customCategoryInput}
 		>
-			<X on:click={onCloseCustomCategoryInput} />
+			<XMark on:click={onCloseCustomCategoryInput} />
 		</Iconinput>
 	{:else}
 		<Select

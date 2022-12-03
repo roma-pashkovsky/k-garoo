@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	try {
 		const settings = await request.json();
 		const encoded = JSON.stringify(settings);
-		const buff = new Buffer(encoded);
+		const buff = Buffer.from(encoded);
 		const base64data = buff.toString('base64');
 		return new Response(JSON.stringify({ status: 'ok' }), {
 			headers: { 'Set-Cookie': `settings=${base64data}; SameSite=Strict; path=/; HttpOnly;` }
@@ -34,7 +34,7 @@ export const GET: RequestHandler = async ({ request }): Promise<Response> => {
 		if (!settings) {
 			return json(null);
 		} else {
-			const buff = new Buffer(settings, 'base64');
+			const buff = Buffer.from(settings, 'base64');
 			const text = buff.toString('ascii');
 			return new Response(text);
 		}

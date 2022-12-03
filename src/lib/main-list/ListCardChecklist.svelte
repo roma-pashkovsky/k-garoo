@@ -3,7 +3,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { Badge, Button, Card, DropdownItem } from 'flowbite-svelte';
 	import DotMenu from '../DotMenu.svelte';
-	import { DocumentRemove } from 'svelte-heros';
+	import { DocumentMinus } from 'svelte-heros-v2';
 	import { ArrowDown, ArrowLeft, ArrowsUpDown, Link, Share } from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
 	import ListCardPreview from '../ListCardPreview.svelte';
@@ -158,7 +158,7 @@
 					<DropdownItem>
 						<div class="flex items-center" on:click={() => onListRemove()}>
 							<Button class="!p-2 mr-2" color="light">
-								<DocumentRemove size="15" />
+								<DocumentMinus size="15" />
 							</Button>
 							{$t('lists.remove-list')}
 						</div>

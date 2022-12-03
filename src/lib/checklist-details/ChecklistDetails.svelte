@@ -8,23 +8,19 @@
 	import ChecklistBatchEditor from './ChecklistBatchEditor.svelte';
 	import DotMenu from '../DotMenu.svelte';
 	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
-	import { Duplicate, EyeOff } from 'svelte-heros';
 	import { Badge, Button, DropdownItem } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 	import {
-		ArrowDownOnSquare,
+		ArrowDown,
 		ArrowUp,
-		ArrowUpOnSquare,
 		BarsArrowUp,
 		Briefcase,
 		Calculator,
-		ChevronDoubleDown,
-		ChevronDoubleUp,
-		ChevronDown,
-		ChevronUp,
+		DocumentDuplicate,
 		Eye,
+		EyeSlash,
 		InformationCircle,
 		Link,
 		PencilSquare,
@@ -75,7 +71,7 @@
 		propositionStore,
 		updatePropositionsWithItems
 	} from '../../stores/checklist-details/propositions';
-	import { fade } from 'svelte/transition';
+	import { crossfade, fade } from 'svelte/transition';
 	import PasteListener from '../PasteListener.svelte';
 	import { parseListFromText } from '../../utils/parse-list-from-text';
 	import { shareList } from '../../stores/app/share-list-drawer.store';
@@ -88,7 +84,7 @@
 	} from '../../utils/category-ordering';
 	import { arrayToMap } from '../../utils/array-to-map';
 	import { flip } from 'svelte/animate';
-	import { crossfade } from 'svelte/transition';
+
 	const [send, receive] = crossfade({});
 
 	export let listId: string;
@@ -254,7 +250,7 @@
 				toastManager.push({
 					type: 'details-top',
 					color: 'success',
-					text: get(t)('app.toasts.success'),
+					text: get(t)('app.toasts.moved'),
 					onCancel: () => {
 						updateItemsInTheList(prevAffected);
 						if (!shouldCreateNewList) {
@@ -266,7 +262,7 @@
 					}
 				});
 			}
-		}, 200);
+		}, 500);
 	}
 
 	function onToggleCheckboxViewClicked(): void {
@@ -944,7 +940,7 @@
 						color={isHideCrossedOut ? 'blue' : 'light'}
 					>
 						{#if isHideCrossedOut}
-							<EyeOff size="15" />
+							<EyeSlash size="15" />
 						{:else}
 							<Eye size="15" />
 						{/if}
@@ -1003,7 +999,7 @@
 					<DropdownItem>
 						<div on:click={onDuplicateListClicked} class="w-full flex items-center">
 							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
-								<Duplicate size="15" />
+								<DocumentDuplicate size="15" />
 							</Button>
 							{$t('lists.details.duplicate')}
 						</div>
@@ -1071,7 +1067,7 @@
 											class="w-7 h-7 cursor-pointer flex focus:ring-1 items-center justify-center rounded"
 											on:click={() => onMoveCategoryUp(catItem.category.id)}
 										>
-											<ArrowUpOnSquare class="w-5 h-5" />
+											<ArrowUp class="w-4 h-4" />
 										</button>
 									{/if}
 									{#if catIndex !== byCategoryList.length - 1}
@@ -1079,7 +1075,7 @@
 											class="w-7 h-7 cursor-pointer flex focus:ring-1 items-center justify-center rounded"
 											on:click={() => onMoveCategoryDown(catItem.category.id)}
 										>
-											<ArrowDownOnSquare class="w-5 h-5" />
+											<ArrowDown class="w-4 h-4" />
 										</button>
 									{/if}
 								</div>

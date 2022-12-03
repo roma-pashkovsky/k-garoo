@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { Button } from 'flowbite-svelte';
-	import { ArrowRight, DocumentRemove } from 'svelte-heros';
+	import { DocumentDuplicate, DocumentMinus, DocumentPlus, Play } from 'svelte-heros-v2';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import type { CategoryOption } from '../../types';
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
-	import { DocumentDuplicate, DocumentPlus, Play } from 'svelte-heros-v2';
 	import { swipe } from 'svelte-gestures';
 	import { throttler } from '../../utils/throttler';
 	import { fly } from 'svelte/transition';
 	import { t } from '../../stores/app/translate';
-	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
+	import { stopMouseEvent } from '../../utils/stop-mouse-event';
 
 	export let isByCategoryView: boolean;
 	export let categoryOptions: CategoryOption[];
@@ -80,7 +79,7 @@
 		on:click={onRemoveClicked}
 		class="mr-2 !p-1.5 text-xs flex-1 sm:flex-auto  flex flex-col items-center mb-2 rounded"
 	>
-		<DocumentRemove />
+		<DocumentMinus />
 		<span>{$t('lists.details.batch-remove-button')}</span>
 	</button>
 	<button

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { CategoryOption, CheckListItem, Proposition } from '../../types';
 	import type { FuzzySearch } from '../../utils/fuzzy-search';
-	import { ArrowRight } from 'svelte-heros';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import ChecklistItemCategoryInput from './ChecklistItemCategoryInput.svelte';
@@ -14,7 +13,6 @@
 	import { t } from '../../stores/app/translate';
 	import { updateProposition } from '../../stores/checklist-details/propositions';
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
-	import { CloseButton } from 'flowbite-svelte';
 	import { Play, XMark } from 'svelte-heros-v2';
 
 	export let editedItem: CheckListItem;

@@ -58,13 +58,20 @@ export async function appFetch<T>(
 								reject(body.error);
 							}
 						})
-						.catch((err) => reject(err));
+						// could not parse json
+						.catch((err) => {
+							console.log('JSON parse err: ', err);
+							return null;
+						});
 				})
 				.catch((apiError) => reject(apiError));
 		});
 	} else {
 		const resp = await f(prefix + urlPath, reqInit);
-		const body = await resp.json();
+		const body = await resp.json().catch((err) => {
+			console.log('JSON parse err: ', err);
+			return null;
+		});
 		if (!resp.ok) {
 			throw new Error(body?.error as string);
 		}

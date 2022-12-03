@@ -17,6 +17,6 @@
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "https://garoo.fun/",
+  "scope": "/",
   "description": "A neat small app for easy shopping checklists"
 }

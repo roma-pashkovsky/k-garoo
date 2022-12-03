@@ -8,26 +8,19 @@ import type {
 } from '../../../../../utils/api/client/create-update-list';
 import type { FirebaseSetItem } from '../../../../../types/firebase-utils';
 import { badRequest, invalidAuth, ok, serverError } from '../../../../../utils/api/responses';
-import {
-	existsAdmin,
-	getTimestamp,
-	readOnceAdmin,
-	setAdmin
-} from '../../../../../utils/api/firebase-admin-utils';
+import { existsAdmin, getTimestamp, setAdmin } from '../../../../../utils/api/firebase-admin-utils';
 import {
 	listByMePath,
 	listItemPropertyPath,
 	listPath,
 	listPropertyPath,
-	listsByMePath,
 	userByListPath
 } from '../../../../../utils/api/db-paths';
 import { getUserFromRequest } from '../../../../../utils/api/get-user-from-request';
 import { arrayToMap } from '../../../../../utils/array-to-map';
 import { getChecklistByUserThroughCache } from '../../../../../utils/api/get-checklist-by-user-through-cache';
-import type { ListsByUser, UsersByList } from '../../../../../types/fb-database';
+import type { UsersByList } from '../../../../../types/fb-database';
 import { redisSet } from '../../../../../utils/api/redis';
-import { ORDERING_GAP } from '../../../../../utils/api/ordering-gap';
 import type { DbChecklist } from '../../../../../types/db-checklist';
 import { getListInsertOrderByUser } from '../../../../../utils/api/get-last-list-order-by-user';
 

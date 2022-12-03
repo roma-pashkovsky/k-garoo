@@ -14,9 +14,16 @@
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
 	import {
+		ArrowDownOnSquare,
+		ArrowUp,
+		ArrowUpOnSquare,
 		BarsArrowUp,
 		Briefcase,
 		Calculator,
+		ChevronDoubleDown,
+		ChevronDoubleUp,
+		ChevronDown,
+		ChevronUp,
 		Eye,
 		InformationCircle,
 		Link,
@@ -74,6 +81,15 @@
 	import { shareList } from '../../stores/app/share-list-drawer.store';
 	import { getNumericValueFromDescription } from '../../utils/get-numeric-value-from-description';
 	import { checklistDetailsClientRoute } from '../../utils/client-routes';
+	import {
+		getCategoryOrderInTheList,
+		moveCategoryDown,
+		moveCategoryUp
+	} from '../../utils/category-ordering';
+	import { arrayToMap } from '../../utils/array-to-map';
+	import { flip } from 'svelte/animate';
+	import { crossfade } from 'svelte/transition';
+	const [send, receive] = crossfade({});
 
 	export let listId: string;
 	export let list: ChecklistWithSettings | null;
@@ -207,6 +223,50 @@
 		editedItem = undefined;
 		editedCategoryId = undefined;
 		isCheckboxView = true;
+	}
+
+	function onMoveCategoryUp(categoryId: string): void {
+		const affected = moveCategoryUp(categoryId, items);
+		doOnMove(categoryId, affected);
+	}
+
+	function onMoveCategoryDown(categoryId: string): void {
+		const affected = moveCategoryDown(categoryId, items);
+		doOnMove(categoryId, affected);
+	}
+
+	function doOnMove(categoryId: string, affected: CheckListItemEditModel[]): void {
+		const affectedMap = arrayToMap<CheckListItemEditModel>(affected, 'id');
+		const prevAffected = items.filter((it) => !!affectedMap[it.id]);
+		// remove items to show animation
+		const moved = items.filter((it) => it.category.id === categoryId);
+		items = items.filter((it) => it.category.id !== categoryId);
+		setTimeout(() => {
+			items = [...items, ...moved];
+			updateItemsInTheList(affected);
+			if (affected.length) {
+				if (!shouldCreateNewList) {
+					const updated = affected.reduce((p, c) => {
+						return { ...p, [c.id]: { category: c.category } };
+					}, {});
+					updateList({ id: listId, items: { updated } });
+				}
+				toastManager.push({
+					type: 'details-top',
+					color: 'success',
+					text: get(t)('app.toasts.success'),
+					onCancel: () => {
+						updateItemsInTheList(prevAffected);
+						if (!shouldCreateNewList) {
+							const updated = prevAffected.reduce((p, c) => {
+								return { ...p, [c.id]: { category: c.category } };
+							}, {});
+							updateList({ id: listId, items: { updated } });
+						}
+					}
+				});
+			}
+		}, 200);
 	}
 
 	function onToggleCheckboxViewClicked(): void {
@@ -512,6 +572,7 @@
 		if (!category.color) {
 			category.color = pickColorForACategory(items, $categoryOptions);
 		}
+		category.order = getCategoryOrderInTheList(category.id, previousItems);
 		let count = 0;
 		const changed: any = {};
 		const changedItems = [];
@@ -669,6 +730,7 @@
 		if (!targetCategory.color) {
 			targetCategory.color = pickColorForACategory(items, $categoryOptions);
 		}
+		targetCategory.order = getCategoryOrderInTheList(targetCategory.id, items);
 		const updated = { ...editedItem, category: { ...targetCategory } };
 		lastAddToCategory = targetCategory;
 		if (addToCategoryId) {
@@ -764,6 +826,13 @@
 			} else {
 				return it;
 			}
+		});
+	}
+
+	function updateItemsInTheList(tt: CheckListItemEditModel[]) {
+		const itemMap = arrayToMap<CheckListItemEditModel>(tt, 'id');
+		items = items.map((it) => {
+			return itemMap[it.id] ?? it;
 		});
 	}
 
@@ -970,8 +1039,11 @@
 		<!--        List-->
 		{#if isByCategoryView}
 			<!--			By category view-->
-			{#each byCategoryList as catItem, catIndex}
+			{#each byCategoryList as catItem, catIndex (catItem.category.id)}
 				<div
+					in:receive={{ key: catItem.category.id }}
+					out:send={{ key: catItem.category.id }}
+					animate:flip={{ duration: 400 }}
 					class="relative rounded-lg bg-{categoryBgColor(catItem.category)} {catIndex === 0
 						? ''
 						: 'mt-6'}"
@@ -985,14 +1057,32 @@
 							>
 								{catItem.category.name}
 							</span>
-							{#if isByCategoryView && isCheckboxView}
-								<ColorSelector
-									id={catItem.category.id}
-									selected={catItem.category.color}
-									placement={catIndex < 2 ? 'bottom' : 'top'}
-									classPrefix="bg-"
-									on:select={(event) => onCategoryColorSelect(event.detail.color, catItem)}
-								/>
+							{#if isCheckboxView}
+								<div class="inline-flex items-center space-x-2">
+									<ColorSelector
+										id={catItem.category.id}
+										selected={catItem.category.color}
+										placement={catIndex < 2 ? 'bottom' : 'top'}
+										classPrefix="bg-"
+										on:select={(event) => onCategoryColorSelect(event.detail.color, catItem)}
+									/>
+									{#if catIndex !== 0}
+										<button
+											class="w-7 h-7 cursor-pointer flex focus:ring-1 items-center justify-center rounded"
+											on:click={() => onMoveCategoryUp(catItem.category.id)}
+										>
+											<ArrowUpOnSquare class="w-5 h-5" />
+										</button>
+									{/if}
+									{#if catIndex !== byCategoryList.length - 1}
+										<button
+											class="w-7 h-7 cursor-pointer flex focus:ring-1 items-center justify-center rounded"
+											on:click={() => onMoveCategoryDown(catItem.category.id)}
+										>
+											<ArrowDownOnSquare class="w-5 h-5" />
+										</button>
+									{/if}
+								</div>
 							{/if}
 						</h5>
 					</div>

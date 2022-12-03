@@ -18,6 +18,12 @@ export const getChecklistGroupedByCategory = (items: CheckListItem[]): GroupedBy
 	});
 	const distinctCategories = Object.keys(byCategoryObj);
 	distinctCategories.sort((a, b) => {
+		if (
+			byCategoryObj[a].category.order !== undefined &&
+			byCategoryObj[b].category.order !== undefined
+		) {
+			return byCategoryObj[a].category.order - byCategoryObj[b].category.order;
+		}
 		if (a === otherCategoryId) {
 			return 1;
 		}

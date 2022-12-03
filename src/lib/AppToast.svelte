@@ -5,6 +5,14 @@
 	import { t } from '../stores/app/translate';
 
 	export let toast: ToastType;
+	let isCancelApplied = false;
+
+	function onCancelClicked(): void {
+		if (!isCancelApplied) {
+			toast.onCancel();
+			isCancelApplied = true;
+		}
+	}
 </script>
 
 {#if toast?.color === 'default'}
@@ -41,7 +49,7 @@
 		{toast.text}
 		{#if !!toast.onCancel}<button
 				class="text-sm font-medium text-blue-600 p-1.5 hover:bg-blue-100 rounded-lg dark:text-blue-500 dark:hover:bg-gray-700"
-				on:click={toast.onCancel}>{$t('app.undo')}</button
+				on:click={onCancelClicked}>{$t('app.undo')}</button
 			>{/if}
 	</Toast>
 {/if}

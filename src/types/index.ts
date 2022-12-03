@@ -47,6 +47,7 @@ export type CategoryOption = {
 	id: string;
 	name: string;
 	color: string | undefined;
+	order?: number;
 };
 
 export type Proposition = {

@@ -22,33 +22,37 @@ export const getCategoryOrderInTheList = (
  */
 export const moveCategoryUp = (
 	categoryId: string,
-	items: CheckListItemEditModel[]
+	items: CheckListItemEditModel[],
+	hideCrossedOut: boolean
 ): CheckListItemEditModel[] => {
-	const grouped = getChecklistGroupedByCategory(items);
-	const prevInd = grouped.findIndex((cat) => cat.category.id === categoryId);
+	const displayItems = hideCrossedOut ? items.filter((it) => !it.checked) : items;
+	const displayGrouped = getChecklistGroupedByCategory(displayItems);
+	const prevInd = displayGrouped.findIndex((cat) => cat.category.id === categoryId);
 	if (prevInd === 0) {
 		return [];
 	}
 	const newInd = prevInd - 1;
-	const affected: CheckListItemEditModel[] = [];
-	let targetMoveToInd = grouped[newInd].category.order ?? newInd;
-	const targetMoveFromInd = grouped[prevInd].category.order ?? prevInd;
+	let targetMoveToInd = displayGrouped[newInd].category.order ?? newInd;
+	const targetMoveFromInd = displayGrouped[prevInd].category.order ?? prevInd;
 	if (targetMoveFromInd === targetMoveToInd) {
 		targetMoveToInd = targetMoveFromInd - 1;
 	}
-	for (const it of grouped[prevInd].items) {
-		const order = targetMoveToInd;
-		affected.push({
-			...it,
-			category: { ...it.category, order }
-		});
-	}
-	for (const it of grouped[newInd].items) {
-		const order = targetMoveFromInd;
-		affected.push({
-			...it,
-			category: { ...it.category, order }
-		});
+	const replacedCategoryId = displayGrouped[newInd].category.id;
+	const affected: CheckListItemEditModel[] = [];
+	for (const it of items) {
+		if (it.category.id === categoryId) {
+			const order = targetMoveToInd;
+			affected.push({
+				...it,
+				category: { ...it.category, order }
+			});
+		} else if (it.category.id === replacedCategoryId) {
+			const order = targetMoveFromInd;
+			affected.push({
+				...it,
+				category: { ...it.category, order }
+			});
+		}
 	}
 	return affected;
 };
@@ -58,27 +62,37 @@ export const moveCategoryUp = (
  */
 export const moveCategoryDown = (
 	categoryId: string,
-	items: CheckListItemEditModel[]
+	items: CheckListItemEditModel[],
+	hideCrossedOut: boolean
 ): CheckListItemEditModel[] => {
-	const grouped = getChecklistGroupedByCategory(items);
-	const prevInd = grouped.findIndex((cat) => cat.category.id === categoryId);
-	if (prevInd === grouped.length - 1) {
+	const displayItems = hideCrossedOut ? items.filter((it) => !it.checked) : items;
+	const displayGrouped = getChecklistGroupedByCategory(displayItems);
+	const prevInd = displayGrouped.findIndex((cat) => cat.category.id === categoryId);
+	if (prevInd === displayGrouped.length - 1) {
 		return [];
 	}
 	const newInd = prevInd + 1;
-	const affected: CheckListItemEditModel[] = [];
-	let targetMoveToInd = grouped[newInd].category.order ?? newInd;
-	const targetMoveFromInd = grouped[prevInd].category.order ?? prevInd;
+	let targetMoveToInd = displayGrouped[newInd].category.order ?? newInd;
+	const targetMoveFromInd = displayGrouped[prevInd].category.order ?? prevInd;
 	if (targetMoveToInd === targetMoveFromInd) {
 		targetMoveToInd = targetMoveFromInd + 1;
 	}
-	for (const it of grouped[prevInd].items) {
-		const order = targetMoveToInd;
-		affected.push({ ...it, category: { ...it.category, order } });
-	}
-	for (const it of grouped[newInd].items) {
-		const order = targetMoveFromInd;
-		affected.push({ ...it, category: { ...it.category, order } });
+	const affected: CheckListItemEditModel[] = [];
+	const replacedCategoryId = displayGrouped[newInd].category.id;
+	for (const it of items) {
+		if (it.category.id === categoryId) {
+			const order = targetMoveToInd;
+			affected.push({
+				...it,
+				category: { ...it.category, order }
+			});
+		} else if (it.category.id === replacedCategoryId) {
+			const order = targetMoveFromInd;
+			affected.push({
+				...it,
+				category: { ...it.category, order }
+			});
+		}
 	}
 	return affected;
 };

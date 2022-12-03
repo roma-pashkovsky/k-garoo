@@ -222,12 +222,12 @@
 	}
 
 	function onMoveCategoryUp(categoryId: string): void {
-		const affected = moveCategoryUp(categoryId, items);
+		const affected = moveCategoryUp(categoryId, items, isHideCrossedOut);
 		doOnMove(categoryId, affected);
 	}
 
 	function onMoveCategoryDown(categoryId: string): void {
-		const affected = moveCategoryDown(categoryId, items);
+		const affected = moveCategoryDown(categoryId, items, isHideCrossedOut);
 		doOnMove(categoryId, affected);
 	}
 

@@ -42,10 +42,10 @@
   },
   "type": "module",
   "dependencies": {
+    "@rive-app/canvas": "^1.0.95",
     "firebase": "^9.10.0",
     "fuse.js": "^6.6.2",
     "lz-string": "^1.4.4",
-    "redis": "^4.3.1",
-    "svelte-gestures": "^1.4.1"
+    "redis": "^4.3.1"
   }
 }

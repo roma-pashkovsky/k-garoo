@@ -60,6 +60,7 @@ export async function appFetch<T>(
 						})
 						// could not parse json
 						.catch((err) => {
+							console.log(resp);
 							console.log('JSON parse err: ', err);
 							return null;
 						});
@@ -69,7 +70,8 @@ export async function appFetch<T>(
 	} else {
 		const resp = await f(prefix + urlPath, reqInit);
 		const body = await resp.json().catch((err) => {
-			console.log('JSON parse err: ', err);
+			console.log('JSON parse err (2): ', err);
+			console.log(resp);
 			return null;
 		});
 		if (!resp.ok) {

@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { Checkbox } from 'flowbite-svelte';
-	import type { CheckListItemEditModel } from '../../types/index';
+	import type { CheckListItemEditModel, Theme } from '../../types/index';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import DuplicateBadge from './DuplicateBadge.svelte';
 	import { Pencil } from 'svelte-heros-v2';
+	import ChecklistItemCheckAnimate from './ChecklistItemCheckAnimate.svelte';
 
 	export let disabled: boolean;
 	export let item: CheckListItemEditModel;
@@ -12,6 +13,7 @@
 	export let addClass: string;
 	export let toBeDeleted: boolean;
 	export let justChangedItemId: string | null;
+	export let theme: Theme;
 	const dispatch = createEventDispatcher();
 
 	$: isJustChanged = justChangedItemId === item?.id;
@@ -34,14 +36,14 @@
 		// highlight just changed item
 		if (justChangedItemId === item?.id) {
 			if (containerDiv) {
-				containerDiv.scrollIntoView({ block: 'end' });
+				containerDiv.scrollIntoView({ block: 'center' });
 			}
 		}
 	}
 
 	onMount(() => {
 		if (isJustChanged && containerDiv) {
-			containerDiv.scrollIntoView({ block: 'end' });
+			containerDiv.scrollIntoView({ block: 'center' });
 		}
 	});
 
@@ -68,8 +70,8 @@
 
 <div
 	bind:this={containerDiv}
-	class="flex items-center overflow-hidden dark:text-gray-200"
-	style="max-width: 70vw"
+	class="flex items-center overflow-hidden dark:text-gray-200 pl-0.5"
+	style="max-width: 75vw"
 >
 	<div>
 		{#if isCheckboxView}
@@ -85,36 +87,45 @@
 						style="z-index: 1"
 					/>
 					<div
-						class="item checkbox-wrapper flex items-center px-2 my-2 rounded {addClass} border border-blue-200"
+						class="item checkbox-wrapper flex items-center pl-0.5 pr-2 py-1.5 space-x-1 my-2 rounded ring-1 ring-blue-200"
 					>
-						<div class="mr-1 overflow-hidden h-6 w-6 flex items-center" in:slide>
-							<Checkbox class="mr-2" checked={item.selected} />
+						<div class="overflow-hidden h-[30px] w-[30px] flex items-center justify-center">
+							<Checkbox checked={item.selected} />
 						</div>
-						<div class="w-fit text-base font-normal {item?.checked ? 'line-through' : ''}">
+						<div
+							class="px-1 w-fit text-base font-normal {item?.checked
+								? 'line-through'
+								: ''} {addClass}"
+						>
 							{item?.itemDescription}
 							<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
 						</div>
 					</div>
 				</div>
 				<div class="edit-icon ml-2" on:mousedown|preventDefault|stopPropagation={onItemEditPressed}>
-					<Pencil class="w-4 h-4" />
+					<Pencil class="w-5 h-4" />
 				</div>
 			</div>
 		{:else}
-			<div onmousedown="event.preventDefault(); event.stopPropagation();" class="pl-1">
+			<div onmousedown="event.preventDefault(); event.stopPropagation();">
 				<div
 					on:swiped-left
 					on:swiped-right
 					on:long-press={onItemLongPress}
-					class="item py-1.5 px-2 my-2 rounded {addClass} {item?.checked
+					class="flex items-start space-x-1 item py-1.5 pl-0.5 pr-2 my-2 rounded {item?.checked
 						? 'line-through'
-						: ''} {isJustChanged ? 'ring-1 ring-blue-200' : ''}"
+						: ''}"
 					on:mouseup|preventDefault|stopPropagation={onItemMouseDown}
 					style="min-width: 120px; user-select: none"
-					data-long-press-delay="300"
+					data-long-press-delay="400"
 					ondblclick="event.stopPropagation();"
 				>
-					{item?.itemDescription}<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
+					<div class="h-[30px] w-[30px] overflow-hidden">
+						<ChecklistItemCheckAnimate {theme} checked={item.checked} />
+					</div>
+					<div class="flex-1 px-1 rounded {isJustChanged ? 'ring-1 ring-blue-200' : ''} {addClass}">
+						{item?.itemDescription}<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
+					</div>
 				</div>
 			</div>
 		{/if}

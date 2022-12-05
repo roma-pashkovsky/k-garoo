@@ -1,20 +1,19 @@
 <script lang="ts">
-	import { swipe } from 'svelte-gestures';
 	import { createEventDispatcher } from 'svelte';
 	import { doubleTap } from '../utils/double-tap';
 
-	// export let noTopPadding = false;
+	export let addPaddingClass = '';
 	const dispatch = createEventDispatcher();
 
 	function onBodyClick(): void {
 		dispatch('body-click');
 	}
 
-	function onBodySwipeLeft(event: any): void {
+	function onBodySwipeLeft(): void {
 		dispatch('body-swipe-left');
 	}
 
-	function onBodySwipeRight(event: any): void {
+	function onBodySwipeRight(): void {
 		dispatch('body-swipe-right');
 	}
 </script>
@@ -29,7 +28,9 @@
 	on:focus
 	class="flex-1 relative select-none overflow-hidden"
 >
-	<div class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto px-4 md:px-8 pb-40 pt-4">
+	<div
+		class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto px-4 {addPaddingClass} pb-40 pt-4"
+	>
 		<slot />
 	</div>
 	<slot name="float" />

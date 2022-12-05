@@ -7,7 +7,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const path = event?.url?.pathname;
 	const method = event?.request?.method;
 	const date = new Date().toISOString();
-
 	console.log(`[${date}] ${method} ${path} requested`);
 	console.time(`[${date}] ${method} ${path}`);
 	try {

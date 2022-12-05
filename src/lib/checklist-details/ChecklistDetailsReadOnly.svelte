@@ -70,7 +70,7 @@
 						</h5>
 					</div>
 
-					<div class="pl-4">
+					<div class="pl-1">
 						{#each catItem.items as item (item.id)}
 							<ChecklistItem {item} disabled={true} />
 						{/each}

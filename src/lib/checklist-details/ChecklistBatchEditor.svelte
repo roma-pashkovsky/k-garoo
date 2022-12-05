@@ -6,7 +6,6 @@
 	import { customCategoryId } from '../../utils/local-storage-state';
 	import type { CategoryOption } from '../../types';
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
-	import { swipe } from 'svelte-gestures';
 	import { throttler } from '../../utils/throttler';
 	import { fly } from 'svelte/transition';
 	import { t } from '../../stores/app/translate';
@@ -101,8 +100,7 @@
 			on:submit|preventDefault={onChangeCategoryThrottled}
 			class="col-span-3 md:col-span-1 flex items-center justify-center mb-2 rounded px-2"
 			style="height: 56px;"
-			use:swipe={{ timeframe: 300, minSwipeDistance: 80, touchAction: 'pan-y' }}
-			on:swipe={onCategorySwipe}
+			on:swiped-right={onChangeCategory}
 		>
 			<div style="min-width: 200px;">
 				<ChecklistItemCategoryInput

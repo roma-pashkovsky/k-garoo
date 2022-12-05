@@ -9,4 +9,3 @@ declare namespace App {
 	// interface PublicEnv {}
 }
 
-/// <reference types="svelte-gestures" />

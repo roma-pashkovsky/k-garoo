@@ -27,7 +27,6 @@
 		Plus,
 		Share
 	} from 'svelte-heros-v2';
-	import { press } from 'svelte-gestures';
 	import { goto } from '$app/navigation';
 	import type { FuzzyOptions } from '../../utils/fuzzy-search';
 	import { FuzzySearch } from '../../utils/fuzzy-search';
@@ -130,6 +129,7 @@
 	$: categoryBgColor = (cat: CategoryOption) =>
 		(get(AppSettingsStore.theme) === 'light' ? cat.color : darkBG[cat.color]) || '';
 	let propositionsFuzzySearch: Readable<FuzzySearch<Proposition>>;
+	const theme = AppSettingsStore.theme;
 
 	onMount(() => {
 		store = new ChecklistDetailsStore(list, get(AppSettingsStore.lang));
@@ -1027,6 +1027,7 @@
 		</div>
 	</DetailsTopBar>
 	<DetailsBody
+		addPaddingClass={isByCategoryView ? 'md:px-28' : 'md:px-8'}
 		on:body-swipe-left={onBodySwipeLeft}
 		on:body-swipe-right={onBodySwipeRight}
 		on:dbltap={onListBodyDoubleClick}
@@ -1039,7 +1040,6 @@
 				<div
 					in:receive={{ key: catItem.category.id }}
 					out:send={{ key: catItem.category.id }}
-					animate:flip={{ duration: 400 }}
 					class="relative rounded-lg bg-{categoryBgColor(catItem.category)} {catIndex === 0
 						? ''
 						: 'mt-6'}"
@@ -1048,8 +1048,8 @@
 						<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
 							<span
 								class="p-2"
-								use:press={{ timeframe: 400, triggerBeforeFinished: true }}
-								on:press|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
+								on:long-press={() => onAddToCategoryClicked(catItem.category)}
+								data-long-press-delay="400"
 							>
 								{catItem.category.name}
 							</span>
@@ -1083,12 +1083,13 @@
 						</h5>
 					</div>
 
-					<div class="pl-4">
+					<div class="pl-1">
 						{#each catItem.items as item (item.id)}
 							<ChecklistItem
 								{item}
 								{isCheckboxView}
 								{justChangedItemId}
+								theme={$theme}
 								disabled={isListReadOnly}
 								toBeDeleted={itemsToBeDeleted[item.id]}
 								on:swiped-left={() => onItemSwipeLeft(item)}
@@ -1117,6 +1118,7 @@
 					{item}
 					{isCheckboxView}
 					{justChangedItemId}
+					theme={$theme}
 					disabled={isListReadOnly}
 					toBeDeleted={itemsToBeDeleted[item.id]}
 					on:swiped-left={() => onItemSwipeLeft(item)}
@@ -1147,7 +1149,7 @@
 						</Button>
 					{/if}
 				</div>
-				<div class="hidden md:block absolute top-8 right-8">
+				<div class="hidden md:block absolute top-4 right-8">
 					{#if !editedItem}
 						<Button class="!p-2" on:click={onAddToListClicked} color="blue">
 							<Plus />
@@ -1156,7 +1158,7 @@
 				</div>
 			{/if}
 			<!--			Users by list for mini screens-->
-			<div class="absolute top-4 right-4 md:right-8 md:top-24">
+			<div class="absolute top-4 right-4 md:right-8 md:top-20">
 				<UsersByListMini {listId} border="true" />
 			</div>
 		</svelte:fragment>

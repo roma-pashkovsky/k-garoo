@@ -82,7 +82,7 @@
 			>
 				<div class="relative">
 					<div
-						class="mask absolute top-0 left-0 right-6 bottom-0"
+						class="mask absolute top-0 left-0 right-3 bottom-0"
 						on:mousedown|preventDefault|stopPropagation={checkboxChanged}
 						style="z-index: 1"
 					/>

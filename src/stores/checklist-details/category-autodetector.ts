@@ -1,6 +1,6 @@
 import type { CategoryOption, Proposition } from '../../types';
 import { FuzzySearch } from '../../utils/fuzzy-search';
-import { otherCategoryId, reservedCategories } from '../../utils/autodetect-data';
+import { reservedCategories } from '../../utils/autodetect-data';
 
 export class CategoryAutodetector {
 	private propositionsFuzzy: FuzzySearch<Proposition>;

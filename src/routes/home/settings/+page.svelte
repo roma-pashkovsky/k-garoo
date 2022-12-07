@@ -6,6 +6,7 @@
 	import { CleanDataStore } from '../../../stores/app/clean-data-store.js';
 	import { ToastService } from '../../../utils/toasts';
 	import { t } from '../../../stores/app/translate';
+	import MyCategoryOptionsEditor from '../../../lib/MyCategoryOptionsEditor.svelte';
 
 	const cleanDataStore = new CleanDataStore();
 	const toastManager = ToastService.getInstance();
@@ -55,6 +56,13 @@
 		</p>
 	</div>
 
+	<!--	My category options-->
+	<div class="mb-8">
+		<h4 class="font-medium mb-4">{$t('settings.header.my-categories')}</h4>
+		<p class="pl-10">
+			<MyCategoryOptionsEditor />
+		</p>
+	</div>
 	<!--	Clean data-->
 	<div id="clean" name="clean" class="mb-8">
 		<h4 class="font-medium mb-4">{$t('settings.header.data')}</h4>

@@ -14,6 +14,7 @@
 	import { updateProposition } from '../../stores/checklist-details/propositions';
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 	import { Play, XMark } from 'svelte-heros-v2';
+	import { forceIncludeCategoryOptions } from '../../stores/checklist-details/category-options-for-checklist';
 
 	export let editedItem: CheckListItem;
 	export let editedCategoryId: string;
@@ -50,6 +51,7 @@
 		!(editedCategoryId === customCategoryId && !customCategoryInput?.length);
 
 	onMount(() => {
+		forceIncludeCategoryOptions.set([]);
 		const onMouseDownListener = (event: MouseEvent) => {
 			event.stopPropagation();
 			event.preventDefault();
@@ -62,6 +64,7 @@
 
 	onDestroy(() => {
 		dispatch('destroy');
+		forceIncludeCategoryOptions.set([]);
 	});
 
 	function focus() {
@@ -129,6 +132,7 @@
 				const detected = categoryAutodetector.detect(editedItem.itemDescription);
 				if (detected) {
 					editedCategoryId = detected.id;
+					forceIncludeCategoryOptions.set([detected]);
 				} else {
 					editedCategoryId = initialCategoryId;
 				}
@@ -150,6 +154,7 @@
 		selectedPropositionTS = new Date().getTime();
 		editedItem.itemDescription = prop.itemDescription;
 		editedCategoryId = prop.category.id;
+		forceIncludeCategoryOptions.set([prop.category]);
 	}
 
 	function onCategoryUserInput(): void {

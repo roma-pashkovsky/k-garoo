@@ -5,6 +5,7 @@ import {
 	getCategoryOptionsLocalStorage,
 	setCategoryOptionsLocalStorage
 } from '../../utils/local-storage-state';
+import { appFetch } from '../../utils/app-fetch';
 
 export const categoryOptionsByUser = writable<CategoryOption[]>([]);
 
@@ -22,12 +23,21 @@ export const loadCategoryOptions = async (browser: boolean, f = fetch): Promise<
 
 export const addCategoryOption = async (option: CategoryOption): Promise<void> => {
 	const user = get(auth).user;
-	if (user) {
-		await fetch('/api/v1/category-options', { method: 'POST', body: JSON.stringify(option) });
-	} else {
-		await addCategoryOptionLocal(option);
-	}
+	await addCategoryOptionLocal(option);
 	categoryOptionsByUser.update((old) => [option, ...old]);
+	if (user) {
+		try {
+			await appFetch(
+				'/category-options',
+				{ method: 'POST', body: JSON.stringify(option) },
+				fetch,
+				10000,
+				option.id
+			);
+		} catch (e) {
+			console.error(e);
+		}
+	}
 };
 
 async function addCategoryOptionLocal(option: CategoryOption): Promise<void> {
@@ -40,3 +50,32 @@ async function addCategoryOptionLocal(option: CategoryOption): Promise<void> {
 		});
 	});
 }
+
+/**
+ * Remove option
+ */
+
+export const removeCategoryOption = async (optionId: string): Promise<void> => {
+	categoryOptionsByUser.update((prev) => prev.filter((op) => op.id !== optionId));
+	await removeCategoryOptionLocal(optionId);
+	const user = get(auth).user;
+	if (user) {
+		await removeCategoryOptionAPI(optionId);
+	}
+};
+
+export const removeCategoryOptionLocal = (optionId: string): Promise<void> => {
+	return new Promise<void>((resolve) => {
+		requestAnimationFrame(() => {
+			const options = getCategoryOptionsLocalStorage();
+			const newOptions = options.filter((op) => op.id !== optionId);
+			setCategoryOptionsLocalStorage(newOptions);
+			resolve();
+		});
+	});
+};
+
+export const removeCategoryOptionAPI = async (optionId: string): Promise<void> => {
+	const body = JSON.stringify({ optionId });
+	await appFetch('/category-options', { method: 'DELETE', body }, fetch, 10000, optionId);
+};

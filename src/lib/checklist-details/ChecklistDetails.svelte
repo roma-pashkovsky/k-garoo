@@ -37,12 +37,12 @@
 		CheckListItemEditModel,
 		ChecklistWithSettings,
 		GroupedByCategoryItem,
+		Language,
 		Proposition
 	} from '../../types';
 	import type { ChangeCategoryEvent } from '../../types/checklist-details';
 	import { getUID } from '../../utils/get-uid';
 	import TitleWithEdit from '../TitleWithEdit.svelte';
-	import { ChecklistDetailsStore } from '../../stores/checklist-details/checklist-details-store';
 	import { CategoryAutodetector } from '../../stores/checklist-details/category-autodetector';
 	import type { ToastManagerType } from '../../utils/toasts';
 	import { ToastService } from '../../utils/toasts';
@@ -82,7 +82,7 @@
 		moveCategoryUp
 	} from '../../utils/category-ordering';
 	import { arrayToMap } from '../../utils/array-to-map';
-	import { flip } from 'svelte/animate';
+	import { getCategoryOptionsForChecklist } from '../../stores/checklist-details/category-options-for-checklist';
 
 	const [send, receive] = crossfade({});
 
@@ -97,7 +97,6 @@
 		? list.items.map((it) => ({ ...it, selected: false, isEdited: false }))
 		: [];
 	let categoryOptions: Readable<CategoryOption[]>;
-	let store: ChecklistDetailsStore;
 
 	let isByCategoryView = list?.isGroupByCategory || false;
 	let isCheckboxView = false;
@@ -132,11 +131,12 @@
 	const theme = AppSettingsStore.theme;
 
 	onMount(() => {
-		store = new ChecklistDetailsStore(list, get(AppSettingsStore.lang));
 		isFirstTimeUse = !get(AppSettingsStore.hasSeenListDemo) && (!list || list?.isMyList);
-		categoryOptions = store.categoryOptions;
+		categoryOptions = getCategoryOptionsForChecklist(listId);
 		propositions = propositionStore;
-		categoryAutodetector = store.getCategoryAutoDetector();
+		categoryAutodetector = derived(propositionStore, (props) => {
+			return new CategoryAutodetector(props, get(AppSettingsStore.lang) as Language);
+		});
 		setDataFromList(list);
 		propositionsFuzzySearch = derived([propositions, propositionsFuzzySearchTS], ([props, ts]) =>
 			getPropositionsFuzzySearch(props)

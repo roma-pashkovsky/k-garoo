@@ -118,6 +118,7 @@ export default {
 		// settings
 		'settings.header.language': 'Language',
 		'settings.header.theme': 'Theme',
+		'settings.header.my-categories': 'My categories',
 		'settings.header.theme-dark': 'Dark',
 		'settings.header.theme-light': 'Light',
 		'settings.header.data': 'Data',
@@ -128,6 +129,9 @@ export default {
 		'settings.data.clean-data.toast-success': 'Cleaned all data',
 		'settings.data.clean-data.toast-failed': 'Failed to remove data',
 		'settings.data.failed-to-remove-account-prompt': `Failed to remove the account. Try logging in again and selecting "Clean all data"`,
+		'settings.categories.add-input-label': 'Type category name',
+		'settings.categories.add-button-label': 'Add',
+		'settings.categories.empty-label': "You haven't added any categories yet",
 		// share list
 		'share-list.modal.title': 'Share this list',
 		'share-list.modal.user-search-placeholder': 'Start typing user name...',
@@ -264,6 +268,7 @@ export default {
 		// settings
 		'settings.header.language': 'Мова',
 		'settings.header.theme': 'Тема',
+		'settings.header.my-categories': 'Мої категорії',
 		'settings.header.theme-dark': 'Темна',
 		'settings.header.theme-light': 'Світла',
 		'settings.header.data': 'Дані',
@@ -274,6 +279,9 @@ export default {
 		'settings.data.clean-data.toast-success': 'Дані видалено',
 		'settings.data.clean-data.toast-failed': 'Не вдалося видалити дані',
 		'settings.data.failed-to-remove-account-prompt': `Не вдалося видалити акаунт. Спробуйте заново увійти в систему і натисніть "Видалити дані"`,
+		'settings.categories.add-input-label': 'Назва категорії',
+		'settings.categories.add-button-label': 'Додати',
+		'settings.categories.empty-label': 'У Вас поки немає доданих категорій',
 		// share list
 		'share-list.modal.title': 'Поділитися списком',
 		'share-list.modal.user-search-placeholder': 'Почніть вводити імʼя...',

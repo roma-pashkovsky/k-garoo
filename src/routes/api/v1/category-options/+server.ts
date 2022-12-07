@@ -43,3 +43,23 @@ export const GET: RequestHandler = async ({ request }): Promise<Response> => {
 		return serverError();
 	}
 };
+
+export const DELETE: RequestHandler = async ({ request }): Promise<Response> => {
+	const user = await getUserFromRequest(request);
+	if (!user) {
+		return invalidAuth();
+	}
+	try {
+		const optionId = await request.json().then((res) => res.optionId);
+		await setAdmin([
+			{
+				path: categoryOptionsByUserByOptionPath(user.uid, optionId),
+				value: null
+			}
+		]);
+		return ok();
+	} catch (err) {
+		console.log(err);
+		return serverError();
+	}
+};

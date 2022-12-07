@@ -14,7 +14,11 @@ export const getCategoryOrderInTheList = (
 			return grouped[i].category.order ?? i;
 		}
 	}
-	return (grouped[grouped.length - 1].category.order ?? 0) + 1;
+	const lastCategoryOrder = Math.max(
+		grouped.length - 1,
+		grouped[grouped.length - 1].category.order ?? 0
+	);
+	return lastCategoryOrder + 1;
 };
 
 /**

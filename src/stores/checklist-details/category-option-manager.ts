@@ -10,11 +10,11 @@ export class CategoryOptionManager {
 	) {}
 
 	public getCategoryOptions(): CategoryOption[] {
-		const optionsMap: { [s: string]: CategoryOption } = {};
+		const optionsMapByName: { [s: string]: CategoryOption } = {};
 		(this.listItems || [])
 			.map((it) => it.category)
 			.filter((c) => !!c.name)
-			.forEach((c) => (optionsMap[c.name.toLowerCase()] = c));
+			.forEach((c) => (optionsMapByName[c.name.toLowerCase()] = c));
 		const reserved = Object.keys(reservedCategories).map((catKey) => {
 			return {
 				id: catKey,
@@ -27,11 +27,11 @@ export class CategoryOptionManager {
 			.filter((c) => !!c.name)
 			.forEach((c) => {
 				const n = c.name.toLowerCase();
-				if (!optionsMap[n]) {
-					optionsMap[n] = c;
+				if (!optionsMapByName[n]) {
+					optionsMapByName[n] = c;
 				}
 			});
-		const res = Object.values(optionsMap);
+		const res = Object.values(optionsMapByName);
 		this.sortCategories(res);
 		return res;
 	}

@@ -3,7 +3,7 @@
 	import { offline } from '../../stores/offline-mode/offline-mode.store.js';
 	import OfflineBar from '../../lib/OfflineBar.svelte';
 	import { page } from '$app/stores';
-	import { derived, get } from 'svelte/store';
+	import { derived } from 'svelte/store';
 	import { isChecklistDetailsClientRoute } from '../../utils/client-routes';
 	import InitConfigPopup from '../../lib/InitConfigPopup.svelte';
 	import { AppSettingsStore } from '../../stores/app/app-settings';

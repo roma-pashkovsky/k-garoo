@@ -1,5 +1,6 @@
 import type { CheckList, CheckListItem, ChecklistWithSettings, PersistedList } from '../../types';
-import { get, writable } from 'svelte/store';
+import type { Readable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import { auth } from '../login/auth';
 import { getListData, getListIds, setListData, setListIds } from '../../utils/local-storage-state';
 import type {
@@ -8,13 +9,15 @@ import type {
 } from '../../utils/api/client/create-update-list';
 import type { UpdateChecklistSettingsRequest } from '../../utils/api/client/checklist-settings';
 import { appFetch } from '../../utils/app-fetch';
-import { goto } from '$app/navigation';
-import { checklistDetailsClientRoute } from '../../utils/client-routes';
 import { acceptList } from '../my-shared-lists/my-shared-list.store';
 import { getUID } from '../../utils/get-uid';
 import { offline } from '../offline-mode/offline-mode.store';
 
 export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
+
+export const getChecklist = (id: string): Readable<ChecklistWithSettings | null> => {
+	return derived(listDataStore, (data) => data[id] || null);
+};
 
 export const getList = async (
 	listId: string,

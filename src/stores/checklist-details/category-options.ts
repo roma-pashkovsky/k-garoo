@@ -24,7 +24,7 @@ export const loadCategoryOptions = async (browser: boolean, f = fetch): Promise<
 export const addCategoryOption = async (option: CategoryOption): Promise<void> => {
 	const user = get(auth).user;
 	await addCategoryOptionLocal(option);
-	categoryOptionsByUser.update((old) => [option, ...old]);
+	categoryOptionsByUser.update((old) => [option, ...(old || [])]);
 	if (user) {
 		try {
 			await appFetch(
@@ -44,7 +44,7 @@ async function addCategoryOptionLocal(option: CategoryOption): Promise<void> {
 	return new Promise((resolve) => {
 		requestAnimationFrame(() => {
 			const oldOptions = getCategoryOptionsLocalStorage();
-			const newOptions = [option, ...oldOptions];
+			const newOptions = [option, ...(oldOptions || [])];
 			setCategoryOptionsLocalStorage(newOptions);
 			resolve();
 		});
@@ -68,7 +68,7 @@ export const removeCategoryOptionLocal = (optionId: string): Promise<void> => {
 	return new Promise<void>((resolve) => {
 		requestAnimationFrame(() => {
 			const options = getCategoryOptionsLocalStorage();
-			const newOptions = options.filter((op) => op.id !== optionId);
+			const newOptions = (options || []).filter((op) => op.id !== optionId);
 			setCategoryOptionsLocalStorage(newOptions);
 			resolve();
 		});

@@ -22,7 +22,7 @@
 	onMount(() => {
 		player = new rive.Rive({
 			canvas,
-			src: theme === 'dark' ? '/checkmark.riv' : '/checkmark-black.riv',
+			src: theme === 'dark' ? '/white-check.riv' : '/black-check.riv',
 			autoplay: true,
 			layout: new rive.Layout({ fit: rive.Fit.Cover, alignment: rive.Alignment.TopCenter }),
 			stateMachines: 'check-state-machine',

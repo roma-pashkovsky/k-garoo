@@ -89,11 +89,11 @@
 					<div
 						class="item checkbox-wrapper flex items-center pl-0.5 pr-2 py-1.5 space-x-1 my-2 rounded ring-1 ring-blue-200"
 					>
-						<div class="overflow-hidden h-[30px] w-[30px] flex items-center justify-center">
+						<div class="overflow-hidden h-[30px] w-[25px] flex items-center justify-center">
 							<Checkbox checked={item.selected} />
 						</div>
 						<div
-							class="px-1 w-fit text-base font-normal {item?.checked
+							class="px-1 w-fit text-base font-normal rounded {item?.checked
 								? 'line-through'
 								: ''} {addClass}"
 						>
@@ -120,7 +120,7 @@
 					data-long-press-delay="400"
 					ondblclick="event.stopPropagation();"
 				>
-					<div class="h-[30px] w-[30px] overflow-hidden">
+					<div class="h-[30px] w-[25px] overflow-hidden flex items-center">
 						<ChecklistItemCheckAnimate {theme} checked={item.checked} />
 					</div>
 					<div class="flex-1 px-1 rounded {isJustChanged ? 'ring-1 ring-blue-200' : ''} {addClass}">

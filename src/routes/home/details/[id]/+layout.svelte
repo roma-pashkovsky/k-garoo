@@ -1,10 +1,7 @@
 <script lang="ts">
 	import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
-	import { getDefaultListName } from '../../../../../utils/get-default-list-name';
-	import type { ChecklistWithSettings } from '../../../../../types';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { checklistDetailsClientRoute } from '../../../../../utils/client-routes';
+	import { getDefaultListName } from '../../../../utils/get-default-list-name';
+	import type { ChecklistWithSettings } from '../../../../types';
 
 	export let data: ChecklistDetailsLoadData;
 

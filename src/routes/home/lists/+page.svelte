@@ -105,7 +105,7 @@
 	}
 
 	// means moving to the top of the list
-	function onListInsertBefore(beforeId: string): void {
+	function onListInsertBefore(): void {
 		const currList = [...get(items)];
 		const newList: MainListItem[] = [{ id: movedChecklist.id, name: movedChecklist.name }];
 		currList.forEach((it) => {

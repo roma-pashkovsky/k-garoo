@@ -8,6 +8,8 @@
 	import { sineIn } from 'svelte/easing';
 	import { click_outside } from '../utils/click-outside';
 	import { stopMouseEvent } from '../utils/stop-mouse-event.js';
+	import { get } from 'svelte/store';
+	import { standalone } from '../stores/app/app-settings';
 
 	export let open: boolean;
 
@@ -40,7 +42,12 @@
 	};
 
 	function onStep1Submit(): void {
-		step = 2;
+		if (get(standalone)) {
+			open = false;
+			dispatch('complete');
+		} else {
+			step = 2;
+		}
 	}
 
 	function onStep2Submit(): void {

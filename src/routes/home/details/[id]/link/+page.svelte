@@ -1,11 +1,11 @@
 <script lang="ts">
-	import ChecklistDetailsReadOnly from '../../../../../../lib/checklist-details/ChecklistDetailsReadOnly.svelte';
+	import ChecklistDetailsReadOnly from '../../../../../lib/checklist-details/ChecklistDetailsReadOnly.svelte';
 	import { Button } from 'flowbite-svelte';
-	import { t } from '../../../../../../stores/app/translate';
+	import { t } from '../../../../../stores/app/translate';
 	import type { ChecklistDetailsLoadData } from '../checklist-details-load-data';
 	import { goto } from '$app/navigation';
-	import { checklistDetailsClientRoute } from '../../../../../../utils/client-routes';
-	import { addListToMyCollection } from '../../../../../../stores/checklist-details/checklist-details-data';
+	import { checklistDetailsClientRoute } from '../../../../../utils/client-routes';
+	import { addListToMyCollection } from '../../../../../stores/checklist-details/checklist-details-data';
 
 	export let data: ChecklistDetailsLoadData;
 	const listId = data.listId;

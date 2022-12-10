@@ -5,7 +5,7 @@
 	import {
 		checklistDetailsClientEditRoute,
 		checklistDetailsClientLinkRoute
-	} from '../../../../../utils/client-routes';
+	} from '../../../../utils/client-routes';
 
 	export let data: ChecklistDetailsLoadData;
 

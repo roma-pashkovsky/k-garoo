@@ -22,7 +22,7 @@
 	onMount(() => {
 		player = new rive.Rive({
 			canvas,
-			src: theme === 'dark' ? '/white-check.riv' : '/black-check.riv',
+			src: theme === 'dark' ? '/white-new.riv' : '/black-new.riv',
 			autoplay: true,
 			layout: new rive.Layout({ fit: rive.Fit.Cover, alignment: rive.Alignment.TopCenter }),
 			stateMachines: 'check-state-machine',
@@ -62,8 +62,8 @@
 	}
 </script>
 
-<div class="relative -top-[2px]">
-	<canvas class="canvas" bind:this={canvas} width="60" height="60" />
+<div class="relative top-[3px]">
+	<canvas class="canvas" bind:this={canvas} width="36" height="24" />
 </div>
 
 <style>

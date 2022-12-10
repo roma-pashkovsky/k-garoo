@@ -1,24 +1,24 @@
 <script lang="ts">
-	import ChecklistDetailsReadOnly from '../../../../../../../lib/checklist-details/ChecklistDetailsReadOnly.svelte';
+	import ChecklistDetailsReadOnly from '../../../../../../lib/checklist-details/ChecklistDetailsReadOnly.svelte';
 	import { onMount } from 'svelte';
 	import type { ChecklistDetailsLoadData } from '../../checklist-details-load-data';
 	import type { SharedListTokenLoadData } from './shared-list-token-load-data';
 	import { sineIn } from 'svelte/easing';
-	import { click_outside } from '../../../../../../../utils/click-outside';
-	import { t } from '../../../../../../../stores/app/translate.js';
+	import { click_outside } from '../../../../../../utils/click-outside';
+	import { t } from '../../../../../../stores/app/translate.js';
 	import { Alert, CloseButton, Drawer } from 'flowbite-svelte';
-	import Login from '../../../../../../../lib/Login.svelte';
+	import Login from '../../../../../../lib/Login.svelte';
 	import { goto } from '$app/navigation';
 	import {
 		checklistDetailsClientEditRoute,
 		checklistDetailsClientLinkRoute,
 		mainListClientRoute
-	} from '../../../../../../../utils/client-routes';
+	} from '../../../../../../utils/client-routes';
 	import { get } from 'svelte/store';
-	import { auth } from '../../../../../../../stores/login/auth';
-	import { ShareListStore } from '../../../../../../../stores/share-list/share-list.store';
-	import { ToastService } from '../../../../../../../utils/toasts';
-	import { getList } from '../../../../../../../stores/checklist-details/checklist-details-data';
+	import { auth } from '../../../../../../stores/login/auth';
+	import { ShareListStore } from '../../../../../../stores/share-list/share-list.store';
+	import { ToastService } from '../../../../../../utils/toasts';
+	import { getList } from '../../../../../../stores/checklist-details/checklist-details-data';
 
 	export let data: ChecklistDetailsLoadData & SharedListTokenLoadData;
 

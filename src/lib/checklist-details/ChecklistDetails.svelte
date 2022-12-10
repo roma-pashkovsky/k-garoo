@@ -1027,7 +1027,6 @@
 		</div>
 	</DetailsTopBar>
 	<DetailsBody
-		addPaddingClass={isByCategoryView ? 'md:px-28' : 'md:px-8'}
 		on:body-swipe-left={onBodySwipeLeft}
 		on:body-swipe-right={onBodySwipeRight}
 		on:dbltap={onListBodyDoubleClick}

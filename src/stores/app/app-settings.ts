@@ -17,6 +17,11 @@ export const appSettings = writable<AppSettings>({
 	version: currentAppVersion
 });
 
+/**
+ * If displayed as a PWA
+ */
+export const standalone = writable<boolean>(false);
+
 const getResetAppSettings = (): AppSettings => {
 	return {
 		isLocaleSet: false,

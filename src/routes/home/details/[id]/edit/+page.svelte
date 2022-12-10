@@ -1,13 +1,13 @@
 <script lang="ts">
-	import ChecklistDetails from '../../../../../../lib/checklist-details/ChecklistDetails.svelte';
-	import type { ChecklistWithSettings } from '../../../../../../types';
+	import ChecklistDetails from '../../../../../lib/checklist-details/ChecklistDetails.svelte';
+	import type { ChecklistWithSettings } from '../../../../../types';
 	import type { ChecklistDetailsLoadData } from '../checklist-details-load-data';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import {
 		checklistDetailsClientEditRoute,
 		checklistDetailsClientLinkRoute
-	} from '../../../../../../utils/client-routes';
+	} from '../../../../../utils/client-routes';
 
 	export let data: ChecklistDetailsLoadData;
 

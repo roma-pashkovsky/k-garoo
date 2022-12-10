@@ -1,4 +1,4 @@
-import type { ChecklistWithSettings } from '../../../../../types';
+import type { ChecklistWithSettings } from '../../../../types';
 
 export interface ChecklistDetailsLoadData {
 	listId: string;

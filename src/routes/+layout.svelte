@@ -4,7 +4,6 @@
 	import { ToastService } from '../utils/toasts';
 	import AppToast from '../lib/AppToast.svelte';
 	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
-	import InitConfigPopup from '../lib/InitConfigPopup.svelte';
 	import { AppReloader } from '../stores/app/app-reloader';
 	import { AppSettingsStore } from '../stores/app/app-settings';
 	import { get } from 'svelte/store';
@@ -17,13 +16,13 @@
 	import UsersByListDrawer from '../lib/UsersByListDrawer.svelte';
 	import { loadSharedListIds } from '../stores/my-shared-lists/my-shared-list.store';
 	import { initPropositions } from '../stores/checklist-details/propositions';
-	import { t } from '../stores/app/translate';
 	import { offline, startOfflineListener } from '../stores/offline-mode/offline-mode.store';
 	import ShareList from '../lib/checklist-details/ShareList.svelte';
 	import { processedSyncTasks, processSyncTasks } from '../utils/process-sync-tasks';
 	import { invalidAuthEventStore } from '../utils/app-fetch';
 	import { cleanLocalDataOnLogout } from '../utils/local-storage-state';
 	import { syncLocalDataEvent } from '../stores/login/sync.store';
+	import { t } from '../stores/app/translate';
 
 	const toastStore = ToastService.getInstance().toasts;
 	const isAppReloading = AppReloader.isReloading;

@@ -1,5 +1,4 @@
-import type { ChecklistDetailsLoadData } from '../../checklist-details-load-data';
-import type { AppUser } from '../../../../../../../types/auth';
+import type { AppUser } from '../../../../../../types/auth';
 
 export type VerifiedToken = {
 	user?: AppUser;

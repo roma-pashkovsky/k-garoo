@@ -164,34 +164,35 @@
 	<meta name="twitter:title" content={$t('app.my_lists')} />
 </svelte:head>
 
-<div class="hidden md:flex absolute top-8 right-8 z-10 flex-col items-end">
-	<button
-		use:doubleTap
-		on:tap={onAddButtonClicked}
-		class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
-		><Plus class="w-7 h-7" /></button
-	>
-	<div class="mt-4 h-[42px] w-[44px] relative">
-		<div class="absolute right-0">
-			<ChecklistSearch />
-		</div>
-	</div>
-</div>
-<div class="flex md:hidden absolute bottom-4 right-4 p-2 z-10 flex-col items-end">
-	<div class="mb-4 h-[42px] w-[44px] relative">
-		<div class="absolute right-0">
-			<ChecklistSearch />
-		</div>
-	</div>
-	<button
-		use:doubleTap
-		on:tap={onAddButtonClicked}
-		class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
-		><Plus class="w-7 h-7" /></button
-	>
-</div>
-
 <Page>
+	<svelte:fragment slot="float">
+		<div class="hidden md:flex absolute top-8 right-8 z-10 flex-col items-end">
+			<button
+				use:doubleTap
+				on:tap={onAddButtonClicked}
+				class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
+				><Plus class="w-7 h-7" /></button
+			>
+			<div class="mt-4 h-[42px] w-[44px] relative">
+				<div class="absolute right-0">
+					<ChecklistSearch />
+				</div>
+			</div>
+		</div>
+		<div class="flex md:hidden absolute bottom-6 right-4 z-10 flex-col items-end">
+			<div class="mb-4 h-[42px] w-[44px] relative">
+				<div class="absolute right-0">
+					<ChecklistSearch />
+				</div>
+			</div>
+			<button
+				use:doubleTap
+				on:tap={onAddButtonClicked}
+				class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
+				><Plus class="w-7 h-7" /></button
+			>
+		</div>
+	</svelte:fragment>
 	<div
 		class="flex items-start justify-center"
 		on:dblclick={() => {

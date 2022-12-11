@@ -48,6 +48,7 @@ export default {
 		'lists.no_lists_cta_link': 'add one.',
 		'lists.remove-list': 'Remove',
 		'lists.remove-warning': '{{list}} will be removed. Are you sure?',
+		'lists.search.input-placeholder': 'Search checklists...',
 		// move list
 		'list.move.menu': 'Move list...',
 		'list.move.drawer-label': 'Moving list',
@@ -198,6 +199,7 @@ export default {
 		'lists.no_lists_cta_link': 'створимо список.',
 		'lists.remove-list': 'Видалити',
 		'lists.remove-warning': 'Видаляємо {{list}}. Впевнені?',
+		'lists.search.input-placeholder': 'Пошук у списках...',
 		// move list
 		'list.move.menu': 'Перемістити...',
 		'list.move.drawer-label': 'Переміщуємо список',

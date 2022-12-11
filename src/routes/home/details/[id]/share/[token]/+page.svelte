@@ -18,7 +18,7 @@
 	import { auth } from '../../../../../../stores/login/auth';
 	import { ShareListStore } from '../../../../../../stores/share-list/share-list.store';
 	import { ToastService } from '../../../../../../utils/toasts';
-	import { getList } from '../../../../../../stores/checklist-details/checklist-details-data';
+	import { loadList } from '../../../../../../stores/checklist-details/checklist-details-data';
 
 	export let data: ChecklistDetailsLoadData & SharedListTokenLoadData;
 
@@ -54,7 +54,7 @@
 	async function applyShareListInviteToken(): Promise<void> {
 		try {
 			await new ShareListStore().applyShareListInviteToken(listId, data.token.value);
-			await getList(listId, true);
+			await loadList(listId, true);
 			goto(checklistDetailsClientEditRoute(data.listId));
 		} catch (err) {
 			console.error(err);

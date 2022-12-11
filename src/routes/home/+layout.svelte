@@ -49,12 +49,7 @@
 			<OfflineBar />
 		{/if}
 		{#if !$isHideNavBar}
-			<div
-				in:slide={{ duration: 300 }}
-				out:slide={{ duration: 300 }}
-				class="z-20 w-full"
-				style="contain: layout style;"
-			>
+			<div in:slide={{ duration: 300 }} class="z-20 w-full" style="contain: layout style;">
 				<NavBar />
 			</div>
 		{/if}

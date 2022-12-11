@@ -19,7 +19,7 @@ export const getChecklist = (id: string): Readable<ChecklistWithSettings | null>
 	return derived(listDataStore, (data) => data[id] || null);
 };
 
-export const getList = async (
+export const loadList = async (
 	listId: string,
 	browser: boolean,
 	f = fetch
@@ -53,11 +53,11 @@ export const getList = async (
 };
 
 async function getListLocal(listId: string): Promise<CheckList | null> {
+	const myLists = await getListIds();
 	return new Promise<CheckList | null>((resolve) => {
 		requestAnimationFrame(() => {
 			const listData = getListData(listId);
 			if (listData) {
-				const myLists = getListIds();
 				const isMyList = !!myLists[listData.id];
 				resolve({ ...listData, isMyList } as CheckList);
 			} else {
@@ -128,9 +128,9 @@ async function addListToUserCollectionLocal(
 	ts: number,
 	parentListId?: string
 ): Promise<void> {
+	const listIds = await getListIds();
 	return new Promise<void>((resolve) => {
 		requestAnimationFrame(() => {
-			const listIds = getListIds();
 			const record: PersistedList[string] = {
 				updated_ts: ts,
 				order: getNewListInsertOrder(listIds)
@@ -383,10 +383,10 @@ export function getListIdByParentListId(
 	}
 }
 
-function getListIdByParentListIdLocal(parentListId: string): Promise<string | null> {
+async function getListIdByParentListIdLocal(parentListId: string): Promise<string | null> {
+	const listIds = await getListIds();
 	return new Promise<string | null>((resolve) => {
 		requestAnimationFrame(() => {
-			const listIds = getListIds();
 			if (listIds) {
 				const listId = Object.keys(listIds).find((id) => listIds[id].parentListId === parentListId);
 				resolve(listId || null);

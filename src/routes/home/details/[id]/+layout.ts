@@ -4,7 +4,7 @@ import { loadUserIfNotResolved } from '../../../../stores/login/auth';
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
 import {
-	getList,
+	loadList,
 	getListIdByParentListId,
 	listDataStore
 } from '../../../../stores/checklist-details/checklist-details-data';
@@ -14,7 +14,7 @@ export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData |
 	const listId: string = event.params.id as string;
 	let list = get(listDataStore)[listId];
 	if (!list) {
-		list = await getList(listId, browser, event.fetch);
+		list = await loadList(listId, browser, event.fetch);
 	} else {
 		console.log('fetched list from cache');
 	}

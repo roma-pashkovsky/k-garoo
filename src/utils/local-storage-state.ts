@@ -66,9 +66,14 @@ export const setAppSettings = (settings: AppSettings): void => {
 	}
 };
 
-export const getListIds = (): PersistedList => {
-	const raw = localStorage.getItem('k-garoo/list');
-	return JSON.parse(raw || '{}') as PersistedList;
+export const getListIds = (): Promise<PersistedList> => {
+	return new Promise<PersistedList>((resolve) => {
+		requestAnimationFrame(() => {
+			const raw = localStorage.getItem('k-garoo/list');
+			const result = JSON.parse(raw || '{}') as PersistedList;
+			resolve(result);
+		});
+	});
 };
 
 export const setListIds = (list: PersistedList | null): void => {

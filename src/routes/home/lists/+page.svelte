@@ -6,27 +6,33 @@
 	import { ToastService } from '../../../utils/toasts';
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
 	import {
-		items,
+		listItems as items,
 		lastVisitedListId,
 		removeList,
 		reorderList
 	} from '../../../stores/checklist-main-list/checklist-main-list-store';
 	import { t } from '../../../stores/app/translate';
-	import { get } from 'svelte/store';
+	import { derived, get, writable } from 'svelte/store';
 	import { getUID } from '../../../utils/get-uid';
 	import Page from '../../../lib/Page.svelte';
 	import { Plus } from 'svelte-heros-v2';
 	import { doubleTap } from '../../../utils/double-tap';
 	import MoveCheckListBottomDrawer from '../../../lib/main-list/MoveCheckListBottomDrawer.svelte';
 	import { checklistDetailsClientEditRoute } from '../../../utils/client-routes';
+	import ChecklistSearch from '../../../lib/main-list/ChecklistSearch.svelte';
 
 	const toastManager = ToastService.getInstance();
 	const url = 'https://www.garoo.fun/home/lists';
 
 	let draggingItemId: string | null = null;
 	let hoverItemId: string | null = null;
-	let movedChecklist: MainListItem | null = null;
-	let movedIndex = -1;
+	const movedChecklist = writable<MainListItem | null>(null);
+	const movedIndex = derived([movedChecklist, items], ([moved, list]) => {
+		if (!moved) {
+			return -1;
+		}
+		return list.findIndex((it) => it.id === moved.id);
+	});
 
 	function onListRemove(listId: string, list: CheckList): void {
 		if (confirm(get(t)('lists.remove-warning', { list: list.name }))) {
@@ -84,16 +90,15 @@
 		const currList = [...get(items)];
 		const newList = [];
 		currList.forEach((it) => {
-			if (it.id !== movedChecklist.id) {
+			if (it.id !== $movedChecklist.id) {
 				newList.push(it);
 			}
 			if (it.id === afterId) {
-				newList.push({ id: movedChecklist.id, name: movedChecklist.name });
+				newList.push({ id: $movedChecklist.id, name: $movedChecklist.name });
 			}
 		});
 		reorderList(newList);
-		movedChecklist = null;
-		movedIndex = -1;
+		movedChecklist.set(null);
 		toastManager.push({
 			text: get(t)('app.toasts.success'),
 			color: 'success',
@@ -107,15 +112,14 @@
 	// means moving to the top of the list
 	function onListInsertBefore(): void {
 		const currList = [...get(items)];
-		const newList: MainListItem[] = [{ id: movedChecklist.id, name: movedChecklist.name }];
+		const newList: MainListItem[] = [{ id: $movedChecklist.id, name: $movedChecklist.name }];
 		currList.forEach((it) => {
-			if (it.id !== movedChecklist.id) {
+			if (it.id !== $movedChecklist.id) {
 				newList.push(it);
 			}
 		});
 		reorderList(newList);
-		movedChecklist = null;
-		movedIndex = -1;
+		movedChecklist.set(null);
 		toastManager.push({
 			text: get(t)('app.toasts.success'),
 			color: 'success',
@@ -141,15 +145,25 @@
 	<meta name="twitter:title" content={$t('app.my_lists')} />
 </svelte:head>
 
-<div class="hidden md:block absolute top-8 right-8 z-10">
+<div class="hidden md:flex absolute top-8 right-8 z-10 flex-col items-end">
 	<button
 		use:doubleTap
 		on:tap={onAddButtonClicked}
 		class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
 		><Plus class="w-7 h-7" /></button
 	>
+	<div class="mt-4 h-[42px] w-[44px] relative">
+		<div class="absolute right-0">
+			<ChecklistSearch />
+		</div>
+	</div>
 </div>
-<div class="block md:hidden absolute bottom-4 right-4 p-2 z-10">
+<div class="flex md:hidden absolute bottom-4 right-4 p-2 z-10 flex-col items-end">
+	<div class="mb-4 h-[42px] w-[44px] relative">
+		<div class="absolute right-0">
+			<ChecklistSearch />
+		</div>
+	</div>
 	<button
 		use:doubleTap
 		on:tap={onAddButtonClicked}
@@ -162,8 +176,7 @@
 	<div
 		class="flex items-start justify-center"
 		on:dblclick={() => {
-			movedChecklist = null;
-			movedIndex = -1;
+			movedChecklist.set(null);
 		}}
 	>
 		{#if !$items?.length}
@@ -184,7 +197,7 @@
 					{hoverItemId}
 					lastVisitedId={$lastVisitedListId}
 					{index}
-					{movedIndex}
+					movedIndex={$movedIndex}
 					on:remove={(event) => onListRemove(item.id, event.detail.card)}
 					on:card-click={() => onCardClicked(item.id)}
 					on:get-link={(event) => onListGetLink(event.detail.card)}
@@ -198,8 +211,7 @@
 					}}
 					on:drop={onDragItemDropped}
 					on:move={() => {
-						movedChecklist = item;
-						movedIndex = index;
+						movedChecklist.set(item);
 					}}
 					on:insert-after={() => onListInsertAfter(item.id)}
 					on:insert-before={() => onListInsertBefore(item.id)}
@@ -209,9 +221,8 @@
 	</div>
 </Page>
 <MoveCheckListBottomDrawer
-	{movedChecklist}
+	movedChecklist={$movedChecklist}
 	on:drawer-close={() => {
-		movedChecklist = null;
-		movedIndex = -1;
+		movedChecklist.set(null);
 	}}
 />

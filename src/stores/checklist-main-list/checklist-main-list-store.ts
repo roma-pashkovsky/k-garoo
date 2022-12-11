@@ -1,18 +1,27 @@
 import type { MainListItem, PersistedList } from '../../types';
-import { get, writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import { getListIds, removeListData, setListIds } from '../../utils/local-storage-state';
 import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-ids-from-persisted-list';
 import { auth } from '../login/auth';
 import { appFetch } from '../../utils/app-fetch';
 import { offline } from '../offline-mode/offline-mode.store';
+import { searchedIds } from './checklist-search.store';
 
-export const items = writable<MainListItem[]>([]);
+const items = writable<MainListItem[]>([]);
+
+export const listItems = derived([items, searchedIds], ([list, search]) => {
+	if (!search) {
+		return list;
+	}
+	return list.filter((l) => !!search[l.id]);
+});
 
 export const lastVisitedListId = writable<string | null>(null);
 
 export const loadListItems = async (browser: boolean, f = fetch): Promise<void> => {
 	if (browser) {
-		items.set(getSortedListIdsFromPersistedList(getListIds()));
+		const localIds = await getListIds();
+		items.set(getSortedListIdsFromPersistedList(localIds));
 	}
 	const user = get(auth).user;
 	if (user && !get(offline)) {
@@ -43,7 +52,7 @@ async function removeListAPI(listId: string): Promise<void> {
 }
 
 async function removeListLocal(listId: string): Promise<void> {
-	const ids = getListIds();
+	const ids = await getListIds();
 	delete ids[listId];
 	setListIds(ids);
 	removeListData(listId);
@@ -73,9 +82,9 @@ async function reorderListAPI(listIds: string[]): Promise<void> {
 }
 
 async function reorderListLocal(listIds: string[] = []): Promise<void> {
+	const listIdsObj = await getListIds();
 	return new Promise((resolve) => {
 		requestAnimationFrame(() => {
-			const listIdsObj = getListIds();
 			const l = listIds?.length - 1;
 			listIds.forEach((listId: string, ind) => {
 				listIdsObj[listId].order = (l - ind) * 1000;

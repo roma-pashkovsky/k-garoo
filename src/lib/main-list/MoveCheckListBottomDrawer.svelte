@@ -52,7 +52,7 @@
 		<BottomMenu isCloseBtn={true} on:close-click={onDrawerClose}>
 			<h5
 				id="drawer-label"
-				class="mb-4 text-base font-semibold text-gray-500 dark:text-gray-400 h-20"
+				class="mb-4 text-base font-semibold text-gray-500 dark:text-gray-400 h-10"
 			>
 				{$t('list.move.drawer-label')} "{$movedListData?.name}"...
 			</h5>

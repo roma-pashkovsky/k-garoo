@@ -111,19 +111,21 @@
 				<div
 					on:swiped-left
 					on:swiped-right
-					on:long-press={onItemLongPress}
 					class="flex items-start space-x-1 item py-1.5 pl-0.5 pr-2 my-2 rounded {item?.checked
 						? 'line-through'
 						: ''}"
 					on:mouseup|preventDefault|stopPropagation={onItemMouseDown}
 					style="min-width: 120px; user-select: none"
-					data-long-press-delay="400"
 					ondblclick="event.stopPropagation();"
 				>
 					<div class="h-[30px] w-[25px] overflow-hidden flex items-center">
 						<ChecklistItemCheckAnimate {theme} checked={item.checked} />
 					</div>
-					<div class="flex-1 px-1 rounded {isJustChanged ? 'ring-1 ring-blue-200' : ''} {addClass}">
+					<div
+						on:long-press={onItemLongPress}
+						data-long-press-delay="600"
+						class="flex-1 px-1 rounded {isJustChanged ? 'ring-1 ring-blue-200' : ''} {addClass}"
+					>
 						{item?.itemDescription}<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
 					</div>
 				</div>

@@ -17,13 +17,15 @@
 		if (get(searchValue)) {
 			open = true;
 		}
-		const onMouseDownListener = (event: MouseEvent) => {
-			event.stopPropagation();
-			event.preventDefault();
-			inputEl.focus({ preventScroll: true });
-			inputEl.removeEventListener('mousedown', onMouseDownListener);
-		};
-		inputEl.addEventListener('mousedown', onMouseDownListener);
+		if (inputEl) {
+			const onMouseDownListener = (event: MouseEvent) => {
+				event.stopPropagation();
+				event.preventDefault();
+				inputEl.focus({ preventScroll: true });
+				inputEl.removeEventListener('mousedown', onMouseDownListener);
+			};
+			inputEl.addEventListener('mousedown', onMouseDownListener);
+		}
 	});
 
 	function onToggleOpen(): void {

@@ -517,6 +517,12 @@
 		if (isCheckboxView) {
 			return;
 		}
+		if (itemsToBeDeleted && itemsToBeDeleted[item.id]) {
+			return;
+		}
+		if (!items.some((it) => it.id === item.id)) {
+			return;
+		}
 		isAddToListMode = false;
 		addToCategoryId = undefined;
 		editedItem = { ...item };

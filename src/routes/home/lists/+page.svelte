@@ -110,14 +110,33 @@
 	}
 
 	// means moving to the top of the list
-	function onListInsertBefore(): void {
+	function onListInsertBefore(beforeId: string, beforeInd: number): void {
 		const currList = [...get(items)];
-		const newList: MainListItem[] = [{ id: $movedChecklist.id, name: $movedChecklist.name }];
-		currList.forEach((it) => {
-			if (it.id !== $movedChecklist.id) {
-				newList.push(it);
-			}
-		});
+		let newList: MainListItem[] = [];
+		if (beforeInd === $movedIndex + 1) {
+			newList = [...currList];
+			const temp = newList[$movedIndex];
+			newList[$movedIndex] = currList[beforeInd];
+			newList[beforeInd] = temp;
+		} else if (beforeInd > $movedIndex) {
+			currList.forEach((it) => {
+				if (it.id !== $movedChecklist.id) {
+					newList.push(it);
+				}
+				if (it.id === beforeId) {
+					newList.push($movedChecklist);
+				}
+			});
+		} else {
+			currList.forEach((it) => {
+				if (it.id === beforeId) {
+					newList.push($movedChecklist);
+				}
+				if (it.id !== $movedChecklist.id) {
+					newList.push(it);
+				}
+			});
+		}
 		reorderList(newList);
 		movedChecklist.set(null);
 		toastManager.push({
@@ -214,7 +233,7 @@
 						movedChecklist.set(item);
 					}}
 					on:insert-after={() => onListInsertAfter(item.id)}
-					on:insert-before={() => onListInsertBefore(item.id)}
+					on:insert-before={() => onListInsertBefore(item.id, index)}
 				/>
 			{/each}
 		</div>

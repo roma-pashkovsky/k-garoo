@@ -2,7 +2,15 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { Badge, Button, Card, DropdownItem } from 'flowbite-svelte';
 	import DotMenu from '../DotMenu.svelte';
-	import { ArrowDown, ArrowLeft, ArrowsUpDown, DocumentMinus, Link, Share } from 'svelte-heros-v2';
+	import {
+		ArrowDown,
+		ArrowDownOnSquare,
+		ArrowLeft,
+		ArrowsUpDown,
+		DocumentMinus,
+		Link,
+		Share
+	} from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
 	import ListCardPreview from '../ListCardPreview.svelte';
 	import type { MainListItem } from '../../types';
@@ -37,6 +45,7 @@
 	$: isMovingMe = movedIndex === index;
 	$: isFirst = index === 0;
 	$: isMovedAfterMe = movedIndex === index + 1;
+	$: isMovingBeforeMe = movedIndex === index - 1;
 
 	onMount(async () => {
 		listId = listItem?.id;
@@ -111,6 +120,19 @@
 			? 'bg-gray-100 dark:bg-gray-700'
 			: ''} {isMovingMe ? '!border-blue-600' : ''}"
 	>
+		{#if isMoving && !isMovingMe}
+			<div
+				class="absolute top-0 bottom-0 left-0 right-0 rounded flex items-center justify-center bg-white dark:bg-gray bg-opacity-60 dark:bg-opacity-20 z-10"
+				on:click|stopPropagation|preventDefault={stopMouseEvent}
+			>
+				<div
+					on:click|stopPropagation={onInsertBefore}
+					class="px-4 py-2 rounded bg-white dark:bg-gray-700"
+				>
+					<ArrowDownOnSquare color="rgb(28 100 242)" size={30} />
+				</div>
+			</div>
+		{/if}
 		<div style="min-height: 112px;">
 			<div class="absolute top-1 right-1" onclick="event.stopPropagation()">
 				<DotMenu bind:open={dotMenuOpen} widthClass="w-56">
@@ -175,46 +197,46 @@
 				</div>
 			{/if}
 		</div>
-		{#if isMoving && !isMovedAfterMe && !isMovingMe}
-			<div
-				class="insert-after mobile absolute -bottom-7 -right-4 md:hidden"
-				on:click={stopMouseEvent}
-				on:mousedown={stopMouseEvent}
-			>
-				<div on:click|stopPropagation|preventDefault={onInsertAfter}>
-					<ArrowLeft color="#1a56db" />
-				</div>
-			</div>
-			<div
-				class="insert-after desktop absolute -top-4 -right-7 hidden md:block"
-				on:click={stopMouseEvent}
-				on:mousedown={stopMouseEvent}
-			>
-				<div on:click|stopPropagation|preventDefault={onInsertAfter}>
-					<ArrowDown color="#1a56db" />
-				</div>
-			</div>
-		{/if}
-		{#if isMoving && !isMovingMe && isFirst}
-			<div
-				class="insert-before mobile md:hidden absolute -top-6 -right-4 "
-				on:click={stopMouseEvent}
-				on:mousedown={stopMouseEvent}
-			>
-				<div on:click|stopPropagation|preventDefault={onInsertBefore}>
-					<ArrowLeft color="#1a56db" />
-				</div>
-			</div>
-			<div
-				class="insert-before desktop hidden md:block absolute -top-4 -left-7 "
-				on:click={stopMouseEvent}
-				on:mousedown={stopMouseEvent}
-			>
-				<div on:click|stopPropagation|preventDefault={onInsertBefore}>
-					<ArrowDown color="#1a56db" />
-				</div>
-			</div>
-		{/if}
+		<!--{#if isMoving && !isMovedAfterMe && !isMovingMe}-->
+		<!--	<div-->
+		<!--		class="insert-after mobile absolute -bottom-7 -right-4 md:hidden"-->
+		<!--		on:click={stopMouseEvent}-->
+		<!--		on:mousedown={stopMouseEvent}-->
+		<!--	>-->
+		<!--		<div on:click|stopPropagation|preventDefault={onInsertAfter}>-->
+		<!--			<ArrowLeft color="#1a56db" />-->
+		<!--		</div>-->
+		<!--	</div>-->
+		<!--	<div-->
+		<!--		class="insert-after desktop absolute -top-4 -right-7 hidden md:block"-->
+		<!--		on:click={stopMouseEvent}-->
+		<!--		on:mousedown={stopMouseEvent}-->
+		<!--	>-->
+		<!--		<div on:click|stopPropagation|preventDefault={onInsertAfter}>-->
+		<!--			<ArrowDown color="#1a56db" />-->
+		<!--		</div>-->
+		<!--	</div>-->
+		<!--{/if}-->
+		<!--{#if isMoving && !isMovingMe && isFirst}-->
+		<!--	<div-->
+		<!--		class="insert-before mobile md:hidden absolute -top-6 -right-4 "-->
+		<!--		on:click={stopMouseEvent}-->
+		<!--		on:mousedown={stopMouseEvent}-->
+		<!--	>-->
+		<!--		<div on:click|stopPropagation|preventDefault={onInsertBefore}>-->
+		<!--			<ArrowLeft color="#1a56db" />-->
+		<!--		</div>-->
+		<!--	</div>-->
+		<!--	<div-->
+		<!--		class="insert-before desktop hidden md:block absolute -top-4 -left-7 "-->
+		<!--		on:click={stopMouseEvent}-->
+		<!--		on:mousedown={stopMouseEvent}-->
+		<!--	>-->
+		<!--		<div on:click|stopPropagation|preventDefault={onInsertBefore}>-->
+		<!--			<ArrowDown color="#1a56db" />-->
+		<!--		</div>-->
+		<!--	</div>-->
+		<!--{/if}-->
 	</Card>
 </div>
 

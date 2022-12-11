@@ -70,7 +70,6 @@
 
 <div
 	in:fly={{ y: 100 }}
-	out:fly={{ y: 100 }}
 	class="grid grid-cols-3 md:grid-cols-4 grid-rows-2 sm:grid-rows-1"
 	onclick={stopMouseEvent}
 >

@@ -12,6 +12,8 @@ import { appFetch } from '../../utils/app-fetch';
 import { acceptList } from '../my-shared-lists/my-shared-list.store';
 import { getUID } from '../../utils/get-uid';
 import { offline } from '../offline-mode/offline-mode.store';
+import { translateChecklistCategories } from '../../utils/translate-checklist-categories';
+import { AppSettingsStore } from '../app/app-settings';
 
 export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
 
@@ -27,6 +29,12 @@ export const loadList = async (
 	let list: ChecklistWithSettings | null = null;
 	if (browser) {
 		list = await getListLocal(listId);
+		if (list) {
+			list = {
+				...list,
+				items: translateChecklistCategories(get(AppSettingsStore.lang), list.items)
+			};
+		}
 		listDataStore.update((prev) => ({ ...prev, [listId]: list }));
 	}
 	if (get(offline)) {
@@ -40,7 +48,10 @@ export const loadList = async (
 			10000
 		);
 		if (fromApi) {
-			list = fromApi;
+			list = {
+				...fromApi,
+				items: translateChecklistCategories(get(AppSettingsStore.lang), fromApi.items)
+			};
 			listDataStore.update((prev) => ({ ...prev, [listId]: list }));
 			if (browser) {
 				setListData(list);

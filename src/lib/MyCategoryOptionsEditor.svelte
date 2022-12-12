@@ -68,7 +68,10 @@
 
 <div>
 	<div class="add-input mb-4">
-		<form on:submit={onAddCategoryOption} class="flex space-x-2 items-center max-w-[360px]">
+		<form
+			on:submit={onAddCategoryOption}
+			class="flex space-x-2 items-center w-[260px] sm:w-[275px]"
+		>
 			<Input placeholder={$t('settings.categories.add-input-label')} bind:value={inputValue} />
 			<Button type="submit">{$t('settings.categories.add-button-label')}</Button>
 		</form>
@@ -79,10 +82,10 @@
 				<EmptyPage>{$t('settings.categories.empty-label')}</EmptyPage>
 			{/if}
 			{#each $sorted as option}
-				<Card rounded={true} border={true} class="!py-4">
+				<Card rounded={true} border={true} class="!py-4 !shadow-sm">
 					<div
 						on:swiped-left={() => onRemoveCategoryOptionClicked(option.id)}
-						class="w-full flex space-x-2 justify-start items-center min-w-[170px]"
+						class="w-full flex space-x-2 justify-start items-center w-[227px]"
 					>
 						<div>
 							<CloseButton on:click={() => onRemoveCategoryOptionClicked(option.id)} />

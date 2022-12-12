@@ -1164,7 +1164,7 @@
 			{/if}
 			<!--			Users by list for mini screens-->
 			<div class="absolute top-4 right-4 md:right-8 md:top-20">
-				<UsersByListMini {listId} border="true" />
+				<UsersByListMini {listId} border={true} bg={true} />
 			</div>
 		</svelte:fragment>
 	</DetailsBody>

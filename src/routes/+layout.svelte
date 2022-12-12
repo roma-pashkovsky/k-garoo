@@ -42,6 +42,9 @@
 				document.body.classList.remove(prevTheme);
 			}
 			document.body.classList.add(themeVal);
+			document
+				.querySelector('meta[name="theme-color"]')
+				.setAttribute('content', themeVal === 'dark' ? '#111827' : '#FFFFFF');
 			prevTheme = themeVal;
 		});
 		viewPort.addEventListener('resize', () => {

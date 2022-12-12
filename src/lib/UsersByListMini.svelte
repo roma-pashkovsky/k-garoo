@@ -35,8 +35,8 @@
 		class="inline-flex {position === 'vertical'
 			? 'flex-col pt-1'
 			: 'items-center pr-1'} rounded-md {border
-			? 'border border-gray-200  dark:border-gray-600'
-			: ''} {bg ? 'bg-gray-200 dark:bg-gray-600' : ''} {addWrapperClass}"
+			? 'border border-gray-300  dark:border-gray-600'
+			: ''} {bg ? 'bg-white dark:bg-gray-800' : ''} {addWrapperClass}"
 		on:click|stopPropagation|preventDefault={onClick}
 	>
 		{#each $displayUsers as user}

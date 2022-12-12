@@ -200,6 +200,7 @@
 		// update proposition last used utc
 		prop.lastUsedUTC = new Date().getTime();
 		updateProposition(prop);
+		forceIncludeCategoryOptions.set([prop.category]);
 	}
 
 	function onCloseClick(): void {

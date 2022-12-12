@@ -4,6 +4,7 @@
   "display": "standalone",
   "scope": "./",
   "start_url": "./?standalone=true",
+  "theme_color": "#FFFFFF",
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",

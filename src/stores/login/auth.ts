@@ -30,15 +30,17 @@ export const loadUserIfNotResolved = async (f = fetch, browser: boolean): Promis
 };
 
 export const loadUserFromSession = async (f = fetch, browser: boolean): Promise<void> => {
+	console.log('loading user from session');
 	try {
 		const userResp = await f('/api/v1/session', { method: 'GET' });
 		const user = await userResp.json();
 		auth.set({ isResolved: true, user });
 		if (browser) {
 			const localUser = await getUserLocalStorage();
+			console.log({ user, localUser });
 			if (!user && !!localUser) {
 				cleanLocalDataOnLogout();
-				auth.update((prev) => ({ ...prev, isSessionExpired: true }));
+				auth.set({ ...get(auth), isSessionExpired: true });
 				loginClickEvents.set(new Date().getTime());
 			}
 			if (!localUser && !!user) {

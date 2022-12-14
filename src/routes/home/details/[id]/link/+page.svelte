@@ -5,11 +5,41 @@
 	import type { ChecklistDetailsLoadData } from '../checklist-details-load-data';
 	import { goto } from '$app/navigation';
 	import { checklistDetailsClientRoute } from '../../../../../utils/client-routes';
-	import { addListToMyCollection } from '../../../../../stores/checklist-details/checklist-details-data';
+	import {
+		addListToMyCollection,
+		loadList
+	} from '../../../../../stores/checklist-details/checklist-details-data';
+	import { onDestroy, onMount } from 'svelte';
+	import { auth } from '../../../../../stores/login/auth';
+	import { get } from 'svelte/store';
+	import type { Unsubscriber } from 'svelte/store';
 
 	export let data: ChecklistDetailsLoadData;
 	const listId = data.listId;
 	const list = data.list;
+	let unsub: Unsubscriber;
+
+	onMount(() => {
+		let prevId = get(auth)?.user?.id;
+		unsub = auth.subscribe(async (a) => {
+			console.log(a);
+			const { user } = a;
+			if (user?.id !== prevId) {
+				prevId = user?.id;
+				if (user?.id) {
+					await loadList(listId, true);
+					await goto(checklistDetailsClientRoute(listId));
+					location.reload();
+				}
+			}
+		});
+	});
+
+	onDestroy(() => {
+		if (unsub) {
+			unsub();
+		}
+	});
 
 	async function onAddListToMyCollectionClicked(): Promise<void> {
 		const id = await addListToMyCollection(list, listId);

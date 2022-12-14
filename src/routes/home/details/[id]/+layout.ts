@@ -8,19 +8,18 @@ import {
 	getListIdByParentListId,
 	listDataStore
 } from '../../../../stores/checklist-details/checklist-details-data';
+import type { LayoutLoad } from '../../../../../.svelte-kit/types/src/routes/$types';
 
-export async function load(event: LoadEvent): Promise<ChecklistDetailsLoadData | undefined> {
-	await loadUserIfNotResolved(event.fetch, browser);
-	const listId: string = event.params.id as string;
-	let list = get(listDataStore)[listId];
-	if (!list) {
-		list = await loadList(listId, browser, event.fetch);
-	} else {
-		console.log('fetched list from cache');
-	}
+export const load: LayoutLoad = async ({
+	fetch,
+	parent,
+	params
+}): Promise<ChecklistDetailsLoadData | undefined> => {
+	await parent();
+	const listId: string = params.id as string;
 	return {
 		listId,
-		list,
-		childListId: await getListIdByParentListId(listId, browser, event.fetch)
+		list: await loadList(listId, browser, fetch),
+		childListId: await getListIdByParentListId(listId, browser, fetch)
 	};
-}
+};

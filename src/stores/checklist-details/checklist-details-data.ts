@@ -386,7 +386,10 @@ export function getListIdByParentListId(
 	f = fetch
 ): Promise<string | null> {
 	if (get(auth).user) {
-		return getListIdByParentListIdAPI(parentListId, f);
+		return getListIdByParentListIdAPI(parentListId, f).catch((err) => {
+			console.error(err);
+			return null;
+		});
 	} else if (browser) {
 		return getListIdByParentListIdLocal(parentListId);
 	} else {

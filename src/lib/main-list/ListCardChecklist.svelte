@@ -7,6 +7,7 @@
 		ArrowDownOnSquare,
 		ArrowLeft,
 		ArrowsUpDown,
+		ChevronDown,
 		DocumentMinus,
 		Link,
 		Share
@@ -120,16 +121,22 @@
 			? 'bg-gray-100 dark:bg-gray-700'
 			: ''} {isMovingMe ? '!border-blue-600' : ''}"
 	>
-		{#if isMoving && !isMovingMe}
+		{#if isMoving && !isMovingMe && !isMovingBeforeMe}
 			<div
-				class="absolute top-0 bottom-0 left-0 right-0 rounded flex items-center justify-center bg-white dark:bg-gray bg-opacity-60 dark:bg-opacity-20 z-10"
+				class="absolute top-0 bottom-0 left-0 right-0 rounded flex bg-white dark:bg-gray bg-opacity-60 dark:bg-opacity-20 z-10"
 				on:click|stopPropagation|preventDefault={stopMouseEvent}
 			>
+				<!--				insert before mobile-->
+				<div on:click|stopPropagation={onInsertBefore} class="md:hidden absolute -top-6 -right-4">
+					<img src="/img/insert-card-left.svg" />
+				</div>
+
+				<!--				insert before desktop-->
 				<div
 					on:click|stopPropagation={onInsertBefore}
-					class="px-4 py-2 rounded bg-white dark:bg-gray-700"
+					class="hidden md:block absolute -top-6 -left-8"
 				>
-					<ArrowDownOnSquare color="rgb(28 100 242)" size={30} />
+					<img src="/img/insert-card-down.svg" />
 				</div>
 			</div>
 		{/if}

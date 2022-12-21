@@ -147,6 +147,15 @@ export const addSyncTask = async (task: ApiSyncTask): Promise<void> => {
 	});
 };
 
+export const removeSyncTask = (task: ApiSyncTask): Promise<void> => {
+	return new Promise<void>((resolve) => {
+		requestAnimationFrame(() => {
+			localStorage.removeItem(`k-garoo/syncTasks/${task.groupId}%${task.ts}`);
+			resolve();
+		});
+	});
+};
+
 export const getSyncTasks = (): Promise<ApiSyncTask[]> => {
 	return new Promise<ApiSyncTask[]>((resolve) => {
 		requestAnimationFrame(() => {
@@ -161,7 +170,6 @@ export const getSyncTasks = (): Promise<ApiSyncTask[]> => {
 			const tasks = syncTaskKeys
 				.map((k) => localStorage.getItem(k))
 				.map((str) => JSON.parse(str || ''));
-			syncTaskKeys.forEach((k) => localStorage.removeItem(k));
 			resolve(tasks);
 		});
 	});

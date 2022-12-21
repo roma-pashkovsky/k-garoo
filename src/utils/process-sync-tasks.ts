@@ -1,4 +1,4 @@
-import { addSyncTask, getSyncTasks } from './local-storage-state';
+import { addSyncTask, getSyncTasks, removeSyncTask } from './local-storage-state';
 import { appFetch, NoConnectionError, TimeoutError, UnauthorizedError } from './app-fetch';
 import type { ApiSyncTask } from '../types/api-sync-task';
 import { writable } from 'svelte/store';
@@ -42,17 +42,20 @@ export async function processSyncTasks(): Promise<void> {
 						10000,
 						groupId
 					);
+					await removeSyncTask(task);
 					hasProcessedTasks = true;
 				} catch (err) {
+					// remove next tasks in the group, if the error is not recoverable
 					if (
-						err instanceof NoConnectionError ||
-						err instanceof TimeoutError ||
-						err instanceof UnauthorizedError
+						!(
+							err instanceof NoConnectionError ||
+							err instanceof TimeoutError ||
+							err instanceof UnauthorizedError
+						)
 					) {
-						// save rest of the tasks to retry later
 						for (let j = i + 1; j < groupTasks.length; j++) {
 							const nextTask = groupTasks[j];
-							await addSyncTask(nextTask);
+							await removeSyncTask(nextTask);
 						}
 					}
 					break;

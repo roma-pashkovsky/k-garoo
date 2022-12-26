@@ -8,7 +8,7 @@
 	import ChecklistBatchEditor from './ChecklistBatchEditor.svelte';
 	import DotMenu from '../DotMenu.svelte';
 	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
-	import { Badge, Button, DropdownItem } from 'flowbite-svelte';
+	import { Badge, Button, DropdownItem, Spinner } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
@@ -120,6 +120,9 @@
 	const darkBG = darkEquivalents;
 	// paste list functionality
 	let pasteDiv: HTMLDivElement;
+	let isPasteFocused = true;
+	let isPasting: boolean;
+
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: selectCategoryOptions = ($categoryOptions || []).map((o) => ({ name: o.name, value: o.id }));
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
@@ -127,6 +130,8 @@
 	$: isListReadOnly = !shouldCreateNewList && !list?.isMyList;
 	$: categoryBgColor = (cat: CategoryOption) =>
 		(get(AppSettingsStore.theme) === 'light' ? cat.color : darkBG[cat.color]) || '';
+	$: isLoading = isPasting;
+
 	let propositionsFuzzySearch: Readable<FuzzySearch<Proposition>>;
 	const theme = AppSettingsStore.theme;
 
@@ -183,13 +188,13 @@
 		if (!l.items?.length) {
 			return null;
 		}
-		const unchecked = l.items.filter((it) => !it.checked);
+		const itemsToSelect = isHideCrossedOut ? l.items.filter((it) => !it.checked) : l.items;
 		if (isByCategoryView) {
-			const grouped = getChecklistGroupedByCategory(unchecked);
+			const grouped = getChecklistGroupedByCategory(itemsToSelect);
 			const lastGroup = grouped[grouped.length - 1];
 			return lastGroup?.category;
 		} else {
-			return unchecked.length ? unchecked[unchecked.length - 1].category : undefined;
+			return itemsToSelect.length ? itemsToSelect[itemsToSelect.length - 1].category : undefined;
 		}
 	}
 
@@ -663,6 +668,7 @@
 		if (pasteEvent && pasteEvent.clipboardData) {
 			const text = pasteEvent.clipboardData.getData('text/plain');
 			if (text && text.length) {
+				isPasting = true;
 				try {
 					const parsed = parseListFromText(text);
 					await addListItems(parsed);
@@ -673,6 +679,8 @@
 						type: 'page-bottom'
 					});
 					console.error(err);
+				} finally {
+					isPasting = false;
 				}
 			}
 		}
@@ -794,6 +802,7 @@
 		}
 		updatePropositionsFuzzySearch();
 		highlightJustChanged(updated.id);
+		isPasteFocused = true;
 	}
 
 	function highlightJustChanged(id: string): void {
@@ -1045,17 +1054,14 @@
 				<div
 					in:receive={{ key: catItem.category.id }}
 					out:send={{ key: catItem.category.id }}
+					on:dblclick|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
 					class="relative rounded-lg bg-{categoryBgColor(catItem.category)} {catIndex === 0
 						? ''
 						: 'mt-6'}"
 				>
 					<div onclick="event.stopPropagation()">
 						<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
-							<span
-								class="p-2"
-								on:long-press={() => onAddToCategoryClicked(catItem.category)}
-								data-long-press-delay="400"
-							>
+							<span class="p-2" data-long-press-delay="400">
 								{catItem.category.name}
 							</span>
 							{#if isCheckboxView}
@@ -1166,6 +1172,12 @@
 			<div class="absolute top-4 right-4 md:right-8 md:top-20">
 				<UsersByListMini {listId} border={true} bg={true} />
 			</div>
+
+			{#if isLoading}
+				<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+					<Spinner />
+				</div>
+			{/if}
 		</svelte:fragment>
 	</DetailsBody>
 
@@ -1214,5 +1226,5 @@
 
 <!--Paste event listener. Enables CTRL+V paste items, Hide for mobile -->
 <div class="hidden md:block">
-	<PasteListener bind:pasteDiv on:paste={onPasteText} />
+	<PasteListener bind:pasteDiv on:paste={onPasteText} focused={isPasteFocused} />
 </div>

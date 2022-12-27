@@ -1,0 +1,6 @@
+[{
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target" : { "namespace": "android_app", "package_name": "garoo.www.twa",
+                     "sha256_cert_fingerprints": ["85:43:42:92:85:94:78:2F:E0:8E:FF:2E:FD:95:09:EB:BE:E7:34:2B:04:6E:08:3E:D2:61:0B:AD:DB:FF:47:31"] }
+      }
+]

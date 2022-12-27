@@ -83,6 +83,7 @@
 	} from '../../utils/category-ordering';
 	import { arrayToMap } from '../../utils/array-to-map';
 	import { getCategoryOptionsForChecklist } from '../../stores/checklist-details/category-options-for-checklist';
+	import { doubleTap } from '../../utils/double-tap';
 
 	const [send, receive] = crossfade({});
 
@@ -1054,12 +1055,16 @@
 				<div
 					in:receive={{ key: catItem.category.id }}
 					out:send={{ key: catItem.category.id }}
-					on:dblclick|stopPropagation={() => onAddToCategoryClicked(catItem.category)}
 					class="relative rounded-lg bg-{categoryBgColor(catItem.category)} {catIndex === 0
 						? ''
 						: 'mt-6'}"
 				>
-					<div onclick="event.stopPropagation()">
+					<div
+						onclick="event.stopPropagation()"
+						use:doubleTap
+						on:dbltap|stopPropagation|preventDefault={() =>
+							onAddToCategoryClicked(catItem.category)}
+					>
 						<h5 class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
 							<span class="p-2" data-long-press-delay="400">
 								{catItem.category.name}

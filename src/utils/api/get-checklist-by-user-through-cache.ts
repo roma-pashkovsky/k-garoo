@@ -11,6 +11,7 @@ import {
 import type { ListsSharedWithMe } from '../../types/fb-database';
 import type { AppUser } from '../../types/auth';
 import { redisGet, redisSet } from './redis';
+import { validateChecklist } from './validate-checklist';
 
 export const getChecklistByUserThroughCache = async (
 	listId: string,
@@ -29,6 +30,7 @@ export const getChecklistByUserThroughCache = async (
 	if (!listData) {
 		return null;
 	}
+	listData = await validateChecklist(listData);
 	let isMyList = false;
 	let sharedBy = null;
 	let byUserIsGroupByCategory: boolean | undefined;

@@ -104,7 +104,7 @@
 			>
 				<div class="flex items-center space-x-2">
 					{#if scrollValue > scrollBreak}
-						<img in:fade|local src="/garoo-logo-white.svg" class="h-[35px] md:h-[45px]" />
+						<img in:fade|local src="/garoo-logo-white.svg" class="h-[32px] md:h-[45px] mr-2" />
 					{/if}
 				</div>
 				<div class="flex justify-end items-center space-x-2">
@@ -371,6 +371,14 @@
 			padding: 0 15px;
 		}
 
+		.standard-pad-right {
+			padding-right: 1rem;
+		}
+
+		.standard-pad-left {
+			padding-left: 1rem;
+		}
+
 		.height-btn {
 			height: calc(50px * var(--scroll-ind));
 		}
@@ -411,6 +419,14 @@
 
 		.pad-btn {
 			padding: 0 42px;
+		}
+
+		.standard-pad-right {
+			padding-right: 2rem;
+		}
+
+		.standard-pad-left {
+			padding-left: 2rem;
 		}
 
 		.height-btn {
@@ -526,14 +542,6 @@
 
 	.standard-pad-top {
 		padding-top: 2rem;
-	}
-
-	.standard-pad-right {
-		padding-right: 2rem;
-	}
-
-	.standard-pad-left {
-		padding-left: 2rem;
 	}
 
 	.standard-pad-bottom {

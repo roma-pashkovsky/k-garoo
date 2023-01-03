@@ -2,11 +2,14 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { AppSettingsStore } from '../../../stores/app/app-settings';
+	import GooglePlayLinkButton from '../../../lib/GooglePlayLinkButton.svelte';
+	import { fade } from 'svelte/transition';
 
 	let innerScrollDiv: HTMLDivElement;
 	let scrollDivHeight: number;
 	let isAnimating = false;
 	let isInit = false;
+	const scrollBreak = 350;
 
 	async function onScrollDiv(): Promise<void> {
 		if (isAnimating) {
@@ -23,10 +26,11 @@
 	}
 
 	let prevInd = 0;
+	let scrollValue;
 	async function doOnScroll(): Promise<void> {
 		return new Promise((resolve) => {
 			window.requestAnimationFrame(() => {
-				const scrollValue = innerScrollDiv.scrollTop;
+				scrollValue = innerScrollDiv.scrollTop;
 				if (scrollValue < 400) {
 					const scrollPercent = scrollValue / scrollDivHeight;
 					let scrollInd = 1 - scrollPercent;
@@ -101,17 +105,31 @@
 				class="top-bar crisp-blue-bg standard-pad-right standard-pad-left flex justify-between items-center"
 			>
 				<div class="flex items-center space-x-2">
-					<div class="top-bar-label">Garoo Checklists</div>
+					{#if scrollValue > scrollBreak}
+						<img in:fade|local src="/garoo-logo-white.svg" class="h-[35px] md:h-[45px]" />
+					{/if}
 				</div>
-				<div class="flex justify-end items-center">
-					<a
-						class="top-bar-button change-lang font-regular height-btn pad-btn flex justify-center items-center text-white"
-						href="/welcome/ua">UA</a
-					>
-					<a
-						class="top-bar-button font-sb height-btn pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap"
-						href="/home/lists">Go to the app</a
-					>
+				<div class="flex justify-end items-center space-x-2">
+					{#if scrollValue > scrollBreak}
+						<a
+							in:fade|local
+							class="font-sb pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap h-[38px] md:h-[49px] relative w-[120px] md:w-[180px] text-sm"
+							href="/home/lists"
+						>
+							Web app
+						</a>
+						<div in:fade|local class="hidden md:block">
+							<GooglePlayLinkButton height={52} />
+						</div>
+						<div in:fade|local class="md:hidden">
+							<GooglePlayLinkButton height={41} />
+						</div>
+					{:else}
+						<a
+							class="top-bar-button change-lang font-regular height-btn pad-btn flex justify-center items-center text-white"
+							href="/welcome/ua">UA</a
+						>
+					{/if}
 				</div>
 			</div>
 			<!--		EOF Top bar-->
@@ -124,15 +142,26 @@
 			<!--			Caption-->
 			<div class="jumbo-caption flex flex-col items-center space-y-9">
 				<div class="jumbo-text font-bold">Garoo Checklists</div>
-				<div class="jumbo-subtext font-medium text-center pb-2">
+				<div class="jumbo-subtext font-medium text-center">
 					Checklists should be fun and easy. Try our free app to create and share checklists for
 					shopping, work or personal development
+				</div>
+				<div
+					class="pb-2 flex flex-col space-y-4 items-center md:flex-row md:space-x-4 md:space-y-0"
+				>
+					<a
+						class="font-sb pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap h-[46px] w-[160px] text-sm"
+						href="/home/lists"
+					>
+						Web app
+					</a>
+					<GooglePlayLinkButton />
 				</div>
 			</div>
 			<!--			EOF Caption-->
 			<!--			Devices-->
 			<div class="jumbo-devices-container relative hidden md:block">
-				<div class="absolute w-full flex items-center justify-center" style="bottom: -500px">
+				<div class="absolute w-full flex items-center justify-center" style="bottom: -470px">
 					<div class="device-1">
 						<img src="/landing/caption-iphone-1.png" alt="device caption" width="180" />
 					</div>
@@ -252,10 +281,21 @@
 					<div class="feature-item">
 						<div class="feature-bullet crisp-blue-bg" />
 						<div class="feature-text">
-							<div class="title font-md font-black">No need to install</div>
+							<div class="title font-md font-black">Great offline capabilities</div>
 							<div class="text font-regular font-gray">
-								Basically it’s a website that looks nice on any platform. You can add it to your
-								home screen for quick access and a native app experience. <a
+								Our app goes a long way to let you work offline. In most cases you'll be able to use
+								your lists without the internet connection. Your changes will be saved, when the
+								internet is back.
+							</div>
+						</div>
+					</div>
+					<div class="feature-item">
+						<div class="feature-bullet crisp-blue-bg" />
+						<div class="feature-text">
+							<div class="title font-md font-black">Works on every platform</div>
+							<div class="text font-regular font-gray">
+								We have an android app. You can also add our website to your home screen for quick
+								access and a native app experience. <a
 									class="text-blue-600"
 									href="/home/add-app-to-main-screen">How to add to the home screen.</a
 								>
@@ -270,7 +310,7 @@
 		<div
 			class="footer crisp-blue-bg standard-pad-bottom standard-pad-right standard-pad-left standard-pad-top font-regular text-sm"
 		>
-			Copyright (c) 2022. <a href="mailto:pashkovsky.roma@gmail.com"
+			Copyright (c) 2023. <a href="mailto:pashkovsky.roma@gmail.com"
 				>Developed by Roman Pashkovsky.</a
 			>
 		</div>
@@ -341,10 +381,6 @@
 			height: calc(50px * var(--scroll-ind));
 		}
 
-		.change-lang {
-			margin-right: 20px;
-		}
-
 		.device-box {
 			height: 435px;
 			width: 300px;
@@ -385,10 +421,6 @@
 
 		.height-btn {
 			height: calc(65px * var(--scroll-ind));
-		}
-
-		.change-lang {
-			margin-right: 30px;
 		}
 
 		.device-box {
@@ -456,8 +488,8 @@
 	}
 
 	.jumbo {
-		height: 70vh;
-		min-height: 500px;
+		height: 75vh;
+		min-height: 570px;
 	}
 
 	.jumbo-caption {

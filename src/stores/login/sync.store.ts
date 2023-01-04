@@ -12,7 +12,7 @@ import { writable } from 'svelte/store';
 export const syncLocalDataEvent = writable<number | null>(null);
 
 export async function syncLocalDataToDb(): Promise<any> {
-	const listsObj = getListIds();
+	const listsObj = await getListIds();
 	const listIds = Object.keys(listsObj);
 	listIds.sort((a, b) => listsObj[b].updated_ts - listsObj[a].updated_ts);
 	const listIdsToSync = listIds.slice(0, 10);

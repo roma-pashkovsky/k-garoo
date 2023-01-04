@@ -107,6 +107,7 @@
 				<div class="flex items-center space-x-2">
 					{#if scrollValue > scrollBreak}
 						<img in:fade|local src="/garoo-logo-white.svg" class="h-[32px] md:h-[45px] mr-2" />
+						<div class="hidden md:block top-bar-label">Garoo</div>
 					{/if}
 				</div>
 				<div class="flex justify-end items-center space-x-2">

@@ -151,12 +151,12 @@
 					class="pb-2 flex flex-col space-y-4 items-center md:flex-row md:space-x-4 md:space-y-0"
 				>
 					<a
-						class="font-sb pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap h-[46px] w-[160px] text-sm"
+						class="font-sb text-lg pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap h-[65px] w-[228px] text-sm"
 						href="/home/lists"
 					>
 						Web app
 					</a>
-					<GooglePlayLinkButton />
+					<GooglePlayLinkButton height="70" />
 				</div>
 			</div>
 			<!--			EOF Caption-->
@@ -295,7 +295,7 @@
 						<div class="feature-text">
 							<div class="title font-md font-black">Works on every platform</div>
 							<div class="text font-regular font-gray">
-								We have an android app. You can also add our website to your home screen for quick
+								We have an Android app. You can also add our website to your home screen for quick
 								access and a native app experience. <a
 									class="text-blue-600"
 									href="/home/add-app-to-main-screen">How to add to the home screen.</a

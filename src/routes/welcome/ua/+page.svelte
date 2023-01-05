@@ -149,12 +149,12 @@
 					class="pb-2 flex flex-col space-y-4 items-center md:flex-row md:space-x-4 md:space-y-0"
 				>
 					<a
-						class="font-sb pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap h-[46px] w-[160px] text-sm"
+						class="font-sb text-lg pad-btn bg-white flex items-center justify-center text-black rounded-md whitespace-nowrap h-[64px] w-[228px] text-sm"
 						href="/home/lists"
 					>
 						Веб-застосунок
 					</a>
-					<GooglePlayLinkButton lang="ua" />
+					<GooglePlayLinkButton lang="ua" height="70" />
 				</div>
 			</div>
 			<!--			EOF Caption-->
@@ -291,7 +291,7 @@
 						<div class="feature-text">
 							<div class="title font-md font-black">Працюємо на всіх платформах</div>
 							<div class="text font-regular font-gray">
-								У нас є затосунок під андроїд. Крім того, наш сайт можна додати на головний екран
+								У нас є затосунок під Андроїд. Крім того, наш сайт можна додати на головний екран
 								телефону, щоб швидко заходити і користуватись ним як мобільним застуосунком. <a
 									class="text-blue-600"
 									href="/home/add-app-to-main-screen">Як додати на головний екран.</a

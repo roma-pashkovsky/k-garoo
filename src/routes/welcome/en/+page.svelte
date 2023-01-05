@@ -142,7 +142,7 @@
 		>
 			<!--			Caption-->
 			<div class="jumbo-caption flex flex-col items-center space-y-9">
-				<div class="jumbo-text font-bold">Garoo Checklists</div>
+				<div class="jumbo-text font-bold text-center">Garoo Checklists</div>
 				<div class="jumbo-subtext font-medium text-center">
 					Checklists should be fun and easy. Try our free app to create and share checklists for
 					shopping, work or personal development

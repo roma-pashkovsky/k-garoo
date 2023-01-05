@@ -120,6 +120,7 @@ export default {
 		'settings.header.language': 'Language',
 		'settings.header.theme': 'Theme',
 		'settings.header.my-categories': 'My categories',
+		'settings.header.add-home-screen': 'Add to home screen',
 		'settings.header.theme-dark': 'Dark',
 		'settings.header.theme-light': 'Light',
 		'settings.header.data': 'Data',
@@ -133,6 +134,7 @@ export default {
 		'settings.categories.add-input-label': 'Type category name',
 		'settings.categories.add-button-label': 'Add',
 		'settings.categories.empty-label': "You haven't added any categories yet",
+		'settings.add-home-screen.link-label': "How do I add this site to my phone's home screen?",
 		// share list
 		'share-list.modal.title': 'Share this list',
 		'share-list.modal.user-search-placeholder': 'Start typing user name...',
@@ -274,6 +276,7 @@ export default {
 		'settings.header.theme-dark': 'Темна',
 		'settings.header.theme-light': 'Світла',
 		'settings.header.data': 'Дані',
+		'settings.header.add-home-screen': 'Додати на головний екран',
 		'settings.data.clean-data-button': 'Видалити всі дані',
 		'settings.data.clean-data.warning-title': 'Цю дію не можна скасувати',
 		'settings.data.clean-data.warning-body':
@@ -284,6 +287,7 @@ export default {
 		'settings.categories.add-input-label': 'Назва категорії',
 		'settings.categories.add-button-label': 'Додати',
 		'settings.categories.empty-label': 'У Вас поки немає доданих категорій',
+		'settings.add-home-screen.link-label': 'Як додати цей сайт на головний екран мого телефону?',
 		// share list
 		'share-list.modal.title': 'Поділитися списком',
 		'share-list.modal.user-search-placeholder': 'Почніть вводити імʼя...',

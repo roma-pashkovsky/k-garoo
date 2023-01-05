@@ -2,11 +2,12 @@
 	import Page from '../../../lib/Page.svelte';
 	import LocaleSelector from '../../../lib/LocaleSelector.svelte';
 	import ThemeSelector from '../../../lib/ThemeSelector.svelte';
-	import { Alert, Button, Spinner } from 'flowbite-svelte';
+	import { A, Alert, Button, Spinner } from 'flowbite-svelte';
 	import { CleanDataStore } from '../../../stores/app/clean-data-store.js';
 	import { ToastService } from '../../../utils/toasts';
 	import { t } from '../../../stores/app/translate';
 	import MyCategoryOptionsEditor from '../../../lib/MyCategoryOptionsEditor.svelte';
+	import { standalone } from '../../../stores/app/app-settings.js';
 
 	const cleanDataStore = new CleanDataStore();
 	const toastManager = ToastService.getInstance();
@@ -63,6 +64,17 @@
 			<MyCategoryOptionsEditor />
 		</p>
 	</div>
+	{#if !$standalone}
+		<!--	Adding to home screen -->
+		<div class="mb-8">
+			<h4 class="font-medium mb-4">{$t('settings.header.add-home-screen')}</h4>
+			<p class="pl-10">
+				<img class="w-36 mb-2" src="/add-to-main-screen.png" />
+				<A href="/home/add-app-to-main-screen">{$t('settings.add-home-screen.link-label')}</A>
+			</p>
+		</div>
+	{/if}
+
 	<!--	Clean data-->
 	<div id="clean" name="clean" class="mb-8">
 		<h4 class="font-medium mb-4">{$t('settings.header.data')}</h4>

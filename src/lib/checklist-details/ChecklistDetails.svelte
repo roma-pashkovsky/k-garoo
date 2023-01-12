@@ -85,7 +85,10 @@
 	import { arrayToMap } from '../../utils/array-to-map';
 	import { getCategoryOptionsForChecklist } from '../../stores/checklist-details/category-options-for-checklist';
 	import { doubleTap } from '../../utils/double-tap';
-	import { removeList } from '../../stores/checklist-main-list/checklist-main-list-store';
+	import {
+		lastVisitedListId,
+		removeList
+	} from '../../stores/checklist-main-list/checklist-main-list-store';
 
 	const [send, receive] = crossfade({});
 
@@ -139,6 +142,7 @@
 	const theme = AppSettingsStore.theme;
 
 	onMount(() => {
+		lastVisitedListId.set(listId);
 		isFirstTimeUse = !get(AppSettingsStore.hasSeenListDemo) && (!list || list?.isMyList);
 		categoryOptions = getCategoryOptionsForChecklist(listId);
 		propositions = propositionStore;

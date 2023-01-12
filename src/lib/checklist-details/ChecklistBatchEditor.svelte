@@ -71,7 +71,7 @@
 <div
 	in:fly|local={{ y: 100 }}
 	out:fly|local={{ y: 100 }}
-	class="grid grid-cols-3 md:grid-cols-4 grid-rows-2 sm:grid-rows-1"
+	class="grid grid-cols-3 md:grid-cols-4 grid-rows-2 md:grid-rows-1"
 	onclick={stopMouseEvent}
 >
 	<button
@@ -102,7 +102,7 @@
 			style="height: 56px;"
 			on:swiped-right={onChangeCategory}
 		>
-			<div style="min-width: 200px;">
+			<div style="min-width: 180px;">
 				<ChecklistItemCategoryInput
 					{categoryOptions}
 					addWrapClass="!rounded-lg"

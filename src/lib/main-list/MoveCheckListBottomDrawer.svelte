@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CloseButton, Drawer } from 'flowbite-svelte';
+	import { Drawer } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { sineIn } from 'svelte/easing';
 	import type { MainListItem } from '../../types';

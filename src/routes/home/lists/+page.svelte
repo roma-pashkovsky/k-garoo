@@ -27,6 +27,7 @@
 	let draggingItemId: string | null = null;
 	let hoverItemId: string | null = null;
 	const movedChecklist = writable<MainListItem | null>(null);
+	const addRoute = checklistDetailsClientEditRoute(getUID());
 	const movedIndex = derived([movedChecklist, items], ([moved, list]) => {
 		if (!moved) {
 			return -1;
@@ -58,17 +59,6 @@
 				color: 'warning'
 			});
 		}
-	}
-
-	function onCardClicked(id: string): void {
-		lastVisitedListId.set(id);
-		goto(checklistDetailsClientEditRoute(id));
-	}
-
-	function onAddButtonClicked() {
-		const id = getUID();
-		lastVisitedListId.set(id);
-		goto(checklistDetailsClientEditRoute(id));
 	}
 
 	function onDragItemDropped(): void {
@@ -150,12 +140,14 @@
 <Page>
 	<svelte:fragment slot="float">
 		<div class="hidden md:flex absolute top-8 right-8 z-10 flex-col items-end">
-			<button
-				use:doubleTap
-				on:tap={onAddButtonClicked}
-				class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
-				><Plus class="w-7 h-7" /></button
-			>
+			<a sveltekit:prefetch href={addRoute}>
+				<button
+					use:doubleTap
+					class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
+					><Plus class="w-7 h-7" /></button
+				>
+			</a>
+
 			<div class="mt-4 h-[42px] w-[44px] relative">
 				<div class="absolute right-0">
 					<ChecklistSearch />
@@ -168,12 +160,13 @@
 					<ChecklistSearch />
 				</div>
 			</div>
-			<button
-				use:doubleTap
-				on:tap={onAddButtonClicked}
-				class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
-				><Plus class="w-7 h-7" /></button
-			>
+			<a sveltekit:prefetch href={addRoute}>
+				<button
+					use:doubleTap
+					class="text-center font-medium focus:ring-4 inline-flex items-center justify-center px-5 py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 rounded-lg !p-2 shadow-md"
+					><Plus class="w-7 h-7" /></button
+				>
+			</a>
 		</div>
 	</svelte:fragment>
 	<div
@@ -187,9 +180,9 @@
 				{$t('lists.no_lists')}
 				<br />
 				{@html $t('lists.no_lists_cta_1')}
-				<span class="underline cursor-pointer" on:click={onAddButtonClicked}
-					>{$t('lists.no_lists_cta_link')}</span
-				>
+				<a sveltekit:prefetch href={addRoute}>
+					<span class="underline cursor-pointer">{$t('lists.no_lists_cta_link')}</span>
+				</a>
 			</EmptyPage>
 		{/if}
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-36">
@@ -202,7 +195,6 @@
 					{index}
 					movedIndex={$movedIndex}
 					on:remove={(event) => onListRemove(item.id, event.detail.card)}
-					on:card-click={() => onCardClicked(item.id)}
 					on:get-link={(event) => onListGetLink(event.detail.card)}
 					on:dragstart={() => {
 						draggingItemId = item.id;

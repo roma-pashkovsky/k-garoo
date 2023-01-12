@@ -68,16 +68,8 @@
 		dispatch('move');
 	}
 
-	function onCardClicked() {
-		dispatch('card-click');
-	}
-
 	function onListGetLink() {
 		dispatch('get-link', { card: $card });
-	}
-
-	function onInsertAfter() {
-		dispatch('insert-after');
 	}
 
 	function onInsertBefore() {
@@ -192,7 +184,10 @@
 							</div>
 						</DropdownItem>
 						<DropdownItem>
-							<div class="flex items-center" on:click={() => onListRemove()}>
+							<div
+								class="flex items-center"
+								on:click|stopPropagation|preventDefault={() => onListRemove()}
+							>
 								<Button class="!p-2 mr-2" color="light">
 									<DocumentMinus size="15" />
 								</Button>

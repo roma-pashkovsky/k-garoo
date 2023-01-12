@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import type { CheckList, MainListItem } from '../../../types';
 	import EmptyPage from '../../../lib/EmptyPage.svelte';
 	import { getDecodeLinkToList } from '../../../utils/get-decode-link-to-list';
 	import { ToastService } from '../../../utils/toasts';
 	import ListCardChecklist from '../../../lib/main-list/ListCardChecklist.svelte';
 	import {
-		listItems as items,
 		lastVisitedListId,
+		listItems as items,
 		removeList,
 		reorderList
 	} from '../../../stores/checklist-main-list/checklist-main-list-store';

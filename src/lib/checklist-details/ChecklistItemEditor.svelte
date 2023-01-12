@@ -130,6 +130,8 @@
 		if (shouldAutodetectCategory) {
 			debounce(() => {
 				const detected = categoryAutodetector.detect(editedItem.itemDescription);
+				console.log(detected);
+				console.log(initialCategoryId);
 				if (detected) {
 					editedCategoryId = detected.id;
 					forceIncludeCategoryOptions.set([detected]);

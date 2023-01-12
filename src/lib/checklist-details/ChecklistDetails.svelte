@@ -8,7 +8,7 @@
 	import ChecklistBatchEditor from './ChecklistBatchEditor.svelte';
 	import DotMenu from '../DotMenu.svelte';
 	import ChecklistDetailsDemoBody from '../checklist-details-demo/ChecklistDetailsDemoBody.svelte';
-	import { Badge, Button, DropdownItem, Spinner } from 'flowbite-svelte';
+	import { Badge, Button, DropdownDivider, DropdownItem, Spinner } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { otherCategoryId } from '../../utils/local-storage-state';
 	import { getChecklistGroupedByCategory } from '../../utils/get-checklist-grouped-by-category';
@@ -19,6 +19,7 @@
 		Briefcase,
 		Calculator,
 		DocumentDuplicate,
+		DocumentMinus,
 		Eye,
 		EyeSlash,
 		InformationCircle,
@@ -75,7 +76,7 @@
 	import { parseListFromText } from '../../utils/parse-list-from-text';
 	import { shareList } from '../../stores/app/share-list-drawer.store';
 	import { getNumericValueFromDescription } from '../../utils/get-numeric-value-from-description';
-	import { checklistDetailsClientRoute } from '../../utils/client-routes';
+	import { checklistDetailsClientRoute, mainListClientRoute } from '../../utils/client-routes';
 	import {
 		getCategoryOrderInTheList,
 		moveCategoryDown,
@@ -84,6 +85,7 @@
 	import { arrayToMap } from '../../utils/array-to-map';
 	import { getCategoryOptionsForChecklist } from '../../stores/checklist-details/category-options-for-checklist';
 	import { doubleTap } from '../../utils/double-tap';
+	import { removeList } from '../../stores/checklist-main-list/checklist-main-list-store';
 
 	const [send, receive] = crossfade({});
 
@@ -396,6 +398,18 @@
 	function onShowMeAround() {
 		closeAllEdits();
 		setTimeout(() => (isFirstTimeUse = true));
+	}
+
+	function onRemoveList() {
+		if (confirm(get(t)('lists.remove-warning', { list: listName }))) {
+			removeList(listId);
+			toastManager.push({
+				type: 'page-bottom',
+				color: 'success',
+				text: get(t)('app.toasts.removed')
+			});
+			setTimeout(() => goto(mainListClientRoute()), 2000);
+		}
 	}
 
 	function onAddToListClicked(): void {
@@ -849,12 +863,15 @@
 	}
 
 	function getNewListItem(category?: CategoryOption): CheckListItemEditModel {
-		const targetCategory = category ||
-			lastAddToCategory || {
-				id: otherCategoryId,
-				color: 'bg-grey-100',
-				name: ($t as any)('lists.create_new_list.other-category')
-			};
+		const otherCategory = {
+			id: otherCategoryId,
+			color: 'bg-grey-100',
+			name: ($t as any)('lists.create_new_list.other-category')
+		};
+		const targetLastCategory = isByCategoryView
+			? lastAddToCategory || otherCategory
+			: otherCategory;
+		const targetCategory = category || targetLastCategory;
 		return {
 			id: getUID(),
 			itemDescription: '',
@@ -984,6 +1001,7 @@
 							{$t('lists.details.calculator')}
 						</div>
 					</DropdownItem>
+					<DropdownDivider />
 					<DropdownItem>
 						{#if $isShareEnabled}
 							<div on:click={onShareClicked} class="w-full flex items-center">
@@ -1012,6 +1030,7 @@
 							{$t('lists.details.link-to-list')}
 						</div>
 					</DropdownItem>
+					<DropdownDivider />
 					<DropdownItem>
 						<div on:click={onDuplicateListClicked} class="w-full flex items-center">
 							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
@@ -1028,6 +1047,15 @@
 							{$t('lists.details.add-as-text')}
 						</div>
 					</DropdownItem>
+					<DropdownItem>
+						<div on:click={onRemoveList} class="w-full flex items-center">
+							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">
+								<DocumentMinus size="15" />
+							</Button>
+							{$t('lists.remove-list')}
+						</div>
+					</DropdownItem>
+					<DropdownDivider />
 					<DropdownItem>
 						<div on:click={onShowMeAround} class="w-full flex items-center">
 							<Button class="!p-1.5 mr-2 w-7 h-7" color="light">

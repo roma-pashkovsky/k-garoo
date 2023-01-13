@@ -2,27 +2,18 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { Badge, Button, Card, DropdownItem } from 'flowbite-svelte';
 	import DotMenu from '../DotMenu.svelte';
-	import {
-		ArrowDown,
-		ArrowDownOnSquare,
-		ArrowLeft,
-		ArrowsUpDown,
-		ChevronDown,
-		DocumentMinus,
-		Link,
-		Share
-	} from 'svelte-heros-v2';
+	import { ArrowsUpDown, DocumentMinus, Link, Share } from 'svelte-heros-v2';
 	import { t } from '../../stores/app/translate';
 	import ListCardPreview from '../ListCardPreview.svelte';
 	import type { MainListItem } from '../../types';
 	import { derived } from 'svelte/store';
-	import { loadList, listDataStore } from '../../stores/checklist-details/checklist-details-data';
+	import { listDataStore, loadList } from '../../stores/checklist-details/checklist-details-data';
 	import UsersByListMini from '../UsersByListMini.svelte';
 	import { slide } from 'svelte/transition';
 	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 	import { AuthStore } from '../../stores/login/auth.store';
 	import { shareList } from '../../stores/app/share-list-drawer.store';
-	import { checklistDetailsClientRoute } from '../../utils/client-routes';
+	import { checklistDetailsClientEditRoute } from '../../utils/client-routes';
 
 	export let index: number;
 	export let movedIndex: number;
@@ -40,7 +31,7 @@
 	});
 	let dotMenuOpen: boolean;
 	const isShareEnabled = AuthStore.isLoggedIn;
-	const detailsRoute = checklistDetailsClientRoute(listItem.id);
+	const detailsRoute = checklistDetailsClientEditRoute(listItem.id);
 	$: isDraggedOver = hoverItemId === listId;
 	$: isDragged = draggingItemId === listId;
 	$: isLastVisited = lastVisitedId === listId;

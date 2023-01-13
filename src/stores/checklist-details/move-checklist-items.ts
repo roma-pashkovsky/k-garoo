@@ -36,13 +36,12 @@ export const moveChecklistItemsListOptions = derived(
 	[
 		moveChecklistItemsSearchValue,
 		moveChecklistItemsAllListOptions,
-		moveChecklistItemsSearchedOptions
+		moveChecklistItemsSearchedOptions,
+		moveChecklistItemsEvent
 	],
-	([search, all, searched]) => {
-		if (search?.length) {
-			return searched;
-		} else {
-			return all;
-		}
+	([search, all, searched, event]) => {
+		const res = search?.length ? searched : all;
+		// we don't want to move to the same list
+		return res.filter(s => s.id !== event?.listId);
 	}
 );

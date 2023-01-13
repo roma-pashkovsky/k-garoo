@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { MagnifyingGlass, XMark } from 'svelte-heros-v2';
 	import {
-		createChecklistSearchIndices,
+		onChecklistMainListSearch,
 		searchValue
 	} from '../../stores/checklist-main-list/checklist-search.store';
 	import { onMount } from 'svelte';
@@ -31,7 +31,6 @@
 	function onToggleOpen(): void {
 		open = !open;
 		if (open) {
-			createChecklistSearchIndices();
 			setTimeout(() => {
 				inputEl.focus({ preventScroll: true });
 				setTimeout(() => {
@@ -54,7 +53,7 @@
 	}
 
 	function onSearchInput(event: any): void {
-		debounce(() => searchValue.set(event.target.value));
+		debounce(() => onChecklistMainListSearch(event.target.value));
 	}
 </script>
 

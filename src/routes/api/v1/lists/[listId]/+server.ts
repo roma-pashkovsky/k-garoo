@@ -23,6 +23,7 @@ import type { UsersByList } from '../../../../../types/fb-database';
 import { redisSet } from '../../../../../utils/api/redis';
 import type { DbChecklist } from '../../../../../types/db-checklist';
 import { getListInsertOrderByUser } from '../../../../../utils/api/get-last-list-order-by-user';
+import { cleanUserChecklistsCache } from '../../../../../utils/api/get-user-checklists-through-cache';
 
 export const POST: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -66,6 +67,7 @@ export const POST: RequestHandler = async ({ request, params }): Promise<Respons
 					value: { utc: getTimestamp(), status: UserByListStatus.AUTHOR } as UsersByList[string]
 				}
 			]);
+			await cleanUserChecklistsCache(user.uid);
 			const result = await getChecklistByUserThroughCache(listId, user.uid);
 			return json(result);
 		}
@@ -181,6 +183,7 @@ export const DELETE: RequestHandler = async ({ request, params }): Promise<Respo
 			{ path: listByMePath(user.uid, listId), value: null },
 			{ path: userByListPath(listId, user.uid), value: null }
 		]);
+		await cleanUserChecklistsCache(user.uid);
 		return ok();
 	} catch (err) {
 		return serverError();

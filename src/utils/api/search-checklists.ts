@@ -1,8 +1,7 @@
 import type { ListsByUser } from '../../types/fb-database';
 import type { DbChecklist } from '../../types/db-checklist';
-import { readOnceAdmin } from './firebase-admin-utils';
-import { listsByMePath } from './db-paths';
 import { getChecklistDataThroughCache } from './get-checklist-by-user-through-cache';
+import { getUserChecklistsThroughCache } from './get-user-checklists-through-cache';
 
 export const searchChecklists = async (
 	userId: string,
@@ -12,11 +11,10 @@ export const searchChecklists = async (
 		return {};
 	}
 	const lowerCaseQuery = query.toLowerCase();
-	const listIdsByUser = (await readOnceAdmin<ListsByUser>(listsByMePath(userId))) as {
+	const listIdsByUser = (await getUserChecklistsThroughCache(userId)) as {
 		[listId: string]: ListsByUser[string] & { name: string };
 	};
 	const listIds = Object.keys(listIdsByUser || {});
-	const resultIds: (ListsByUser[string] & { name: string })[] = [];
 	for (const listId of listIds) {
 		const list = await getChecklistDataThroughCache(listId);
 		const searchIndex = getDbChecklistSearchIndex(list);

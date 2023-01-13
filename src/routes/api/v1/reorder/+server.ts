@@ -4,6 +4,7 @@ import { getUserFromRequest } from '../../../../utils/api/get-user-from-request'
 import { invalidAuth, ok, serverError } from '../../../../utils/api/responses';
 import { setAdmin } from '../../../../utils/api/firebase-admin-utils';
 import { listByMePath } from '../../../../utils/api/db-paths';
+import { cleanUserChecklistsCache } from '../../../../utils/api/get-user-checklists-through-cache';
 
 export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -20,6 +21,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 			} as FirebaseSetItem;
 		});
 		await setAdmin(updates);
+		await cleanUserChecklistsCache(user.uid);
 		return ok();
 	} catch (err) {
 		console.log(err);

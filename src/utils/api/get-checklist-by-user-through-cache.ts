@@ -16,13 +16,10 @@ import { validateChecklist } from './validate-checklist';
 export const getChecklistDataThroughCache = async (listId: string): Promise<DbChecklist> => {
 	let listData = await redisGet<DbChecklist>(listId);
 	if (!listData) {
-		console.log('fetched list data from db');
 		listData = await readOnceAdmin<DbChecklist>(listPath(listId));
 		if (listData) {
 			redisSet(listId, listData);
 		}
-	} else {
-		console.log('fetched list data from redis');
 	}
 	return listData;
 };

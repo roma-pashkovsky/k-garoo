@@ -50,3 +50,13 @@ export async function redisSet(key: string, val: any, expiryTimeSeconds?: number
 			console.log('redis set error: ', err);
 		}) as Promise<void>;
 }
+
+export async function redisRemove(key: string): Promise<void> {
+	return getRedis()
+		.then((client) => {
+			return client.del(key);
+		})
+		.catch((err) => {
+			console.log('redis remove error: ', err);
+		}) as Promise<void>;
+}

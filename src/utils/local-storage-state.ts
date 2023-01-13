@@ -70,7 +70,7 @@ export const setAppSettings = (settings: AppSettings): void => {
 	}
 };
 
-export const getListIds = (search: string | null): Promise<PersistedList> => {
+export const getListIds = (search?: string | null): Promise<PersistedList> => {
 	return new Promise<PersistedList>((resolve) => {
 		requestAnimationFrame(() => {
 			const raw = localStorage.getItem('k-garoo/list');

@@ -5,15 +5,15 @@ import { getSortedListIdsFromPersistedList } from '../../utils/get-sorted-list-i
 import { auth } from '../login/auth';
 import { appFetch } from '../../utils/app-fetch';
 import { offline } from '../offline-mode/offline-mode.store';
-import { searchedIds } from './checklist-search.store';
+import { searchedItems, searchValue } from './checklist-search.store';
 
 const items = writable<MainListItem[]>([]);
 
-export const listItems = derived([items, searchedIds], ([list, search]) => {
-	if (!search) {
+export const listItems = derived([searchValue, items, searchedItems], ([sValue, list, sItems]) => {
+	if (!sValue) {
 		return list;
 	}
-	return list.filter((l) => !!search[l.id]);
+	return sItems;
 });
 
 export const lastVisitedListId = writable<string | null>(null);

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { CheckListItem, MainListItem } from '../../types';
-	import { derived, writable } from 'svelte/store';
+	import {derived, get, writable} from 'svelte/store';
 	import {
 		listDataStore,
 		loadList,
@@ -12,6 +12,7 @@
 	import { checklistDetailsClientRoute } from '../../utils/client-routes';
 	import {t} from "../../stores/app/translate";
 	import {slide} from "svelte/transition";
+	import {getUID} from "../../utils/get-uid";
 
 	export let list: MainListItem;
 	export let movedItems: CheckListItem[];
@@ -61,7 +62,21 @@
 
 	function onMoveClicked(): void {
 		if (!$isMoved) {
-			updateList({ id: listId, items: { added: movedItems } });
+			const existingItems = get(cardItems);
+			const existingMap = existingItems.reduce((p, c) => ({...p, [c.itemDescription.toLowerCase()]: true }), {})
+			const toBeAdded = [];
+			movedItems.forEach((it, ind) => {
+				const isExisting = existingMap[it.itemDescription.toLowerCase()];
+				if (!isExisting) {
+					toBeAdded.push({
+						id: getUID(),
+						itemDescription: it.itemDescription,
+						category: {...it.category},
+						orderAdded: existingItems.length + ind
+					} as CheckListItem)
+				}
+			})
+			updateList({ id: listId, items: { added: toBeAdded } });
 		}
 	}
 

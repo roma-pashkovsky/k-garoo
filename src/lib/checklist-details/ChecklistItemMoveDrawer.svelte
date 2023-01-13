@@ -20,6 +20,7 @@
 	import { checklistDetailsClientRoute } from '../../utils/client-routes';
 	import { createList } from '../../stores/checklist-details/checklist-details-data';
 	import {click_outside} from "../../utils/click-outside";
+	import type {CheckListItem} from "../../types";
 
 	const items = derived(moveChecklistItemsEvent, (event$) => event$?.items);
 	let isCreatingNewList: boolean;
@@ -50,7 +51,14 @@
 
 	async function onCreateNewListClicked(): Promise<void> {
 		const listId = getUID();
-		const newItems = $items;
+		const newItems = $items.map((s, ind) => {
+			return {
+				id: getUID(),
+				itemDescription: s.itemDescription,
+				category: {...s.category},
+				orderAdded: ind
+			} as CheckListItem;
+		});
 		const newName = getDefaultListName();
 		isCreatingNewList = true;
 		try {

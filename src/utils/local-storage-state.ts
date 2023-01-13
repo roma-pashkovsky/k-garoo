@@ -9,6 +9,7 @@ import type {
 import type { AppUser } from '../types/auth';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
 import type { ApiSyncTask } from '../types/api-sync-task';
+import { getChecklistSearchIndex } from './get-checklist-search-index';
 
 export { customCategoryId, otherCategoryId };
 
@@ -16,6 +17,9 @@ export const specialCategories = {
 	[customCategoryId]: {},
 	[otherCategoryId]: {}
 };
+
+// use for rapid access, when searching
+const listDataLocalCache: { [id: string]: ChecklistWithSettings | null } = {};
 
 export const setUserLocalStorage = (user: AppUser): Promise<void> => {
 	return new Promise<void>((resolve) => {
@@ -66,11 +70,23 @@ export const setAppSettings = (settings: AppSettings): void => {
 	}
 };
 
-export const getListIds = (): Promise<PersistedList> => {
+export const getListIds = (search: string | null): Promise<PersistedList> => {
 	return new Promise<PersistedList>((resolve) => {
 		requestAnimationFrame(() => {
 			const raw = localStorage.getItem('k-garoo/list');
 			const result = JSON.parse(raw || '{}') as PersistedList;
+			if (search?.length) {
+				const lowerCaseSearch = search.toLowerCase();
+				for (const listId in result) {
+					const list = getListDataThroughLocalCache(listId);
+					const searchIndex = getChecklistSearchIndex(list);
+					if (searchIndex.indexOf(lowerCaseSearch) >= 0) {
+						result[listId].name = list?.name;
+					} else {
+						delete result[listId];
+					}
+				}
+			}
 			resolve(result);
 		});
 	});
@@ -89,12 +105,20 @@ export const getListData = (id: string): ChecklistWithSettings | null => {
 	return null;
 };
 
+const getListDataThroughLocalCache = (id: string): ChecklistWithSettings | null => {
+	if (!listDataLocalCache[id]) {
+		listDataLocalCache[id] = getListData(id);
+	}
+	return listDataLocalCache[id];
+};
+
 export const removeListData = (id: string): void => {
 	localStorage.removeItem(`k-garoo/listData/${id}`);
 };
 
 export const setListData = (list: ChecklistWithSettings): void => {
 	const raw = JSON.stringify(list);
+	delete listDataLocalCache[list.id];
 	localStorage.setItem(`k-garoo/listData/${list.id}`, raw);
 };
 

@@ -13,10 +13,7 @@ import type { AppUser } from '../../types/auth';
 import { redisGet, redisSet } from './redis';
 import { validateChecklist } from './validate-checklist';
 
-export const getChecklistByUserThroughCache = async (
-	listId: string,
-	userId: string | undefined
-): Promise<ChecklistWithSettings | null> => {
+export const getChecklistDataThroughCache = async (listId: string): Promise<DbChecklist> => {
 	let listData = await redisGet<DbChecklist>(listId);
 	if (!listData) {
 		console.log('fetched list data from db');
@@ -27,6 +24,14 @@ export const getChecklistByUserThroughCache = async (
 	} else {
 		console.log('fetched list data from redis');
 	}
+	return listData;
+};
+
+export const getChecklistByUserThroughCache = async (
+	listId: string,
+	userId: string | undefined
+): Promise<ChecklistWithSettings | null> => {
+	let listData = await getChecklistDataThroughCache(listId);
 	if (!listData) {
 		return null;
 	}

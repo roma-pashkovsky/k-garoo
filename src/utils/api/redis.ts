@@ -37,9 +37,15 @@ export async function redisGet<T>(key: string): Promise<T | null> {
 		}) as Promise<T | null>;
 }
 
-export async function redisSet(key: string, val: any): Promise<void> {
+export async function redisSet(key: string, val: any, expiryTimeSeconds?: number): Promise<void> {
 	return getRedis()
-		.then((client) => client.set(key, JSON.stringify(val)))
+		.then((client) => {
+			if (expiryTimeSeconds) {
+				return client.set(key, JSON.stringify(val), { EX: expiryTimeSeconds });
+			} else {
+				return client.set(key, JSON.stringify(val));
+			}
+		})
 		.catch((err) => {
 			console.log('redis set error: ', err);
 		}) as Promise<void>;

@@ -11,6 +11,7 @@ export const listItemPropertyPath = (
 	itemId: string,
 	propertyName: keyof CheckListItem
 ) => `listData/${listId}/items/${itemId}/${propertyName}`;
+export const listSearchPath = (listId: string) => `listSearch/${listId}`;
 
 export const usersBySharedListPath = (listId: string) => `usersBySharedList/${listId}`;
 export const userBySharedListPath = (listId: string, userId: string) =>

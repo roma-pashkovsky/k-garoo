@@ -1,6 +1,4 @@
-import type { CategoryOption } from './index';
-import type { UserByListStatus } from './index';
-import { getTimestamp } from '../utils/api/firebase-admin-utils';
+import type { CategoryOption, UserByListStatus } from './index';
 
 export type ListsSharedWithMe = {
 	[listId: string]: {

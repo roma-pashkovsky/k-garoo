@@ -101,7 +101,7 @@ export default {
 		// batch edit
 		'lists.details.batch-remove-button': 'Remove',
 		'lists.details.move-to-new-list': 'Move to list...',
-		'lists.details.copy-items': 'Copy items',
+		'lists.details.copy-items': 'Copy as text',
 		'lists.details.removed-toast': 'Removed',
 		'lists.details.changed-category-toast': 'Changed category',
 		'lists.details.demo.add': 'Double click to start adding items',
@@ -261,7 +261,7 @@ export default {
 		// batch edit
 		'lists.details.batch-remove-button': 'Видалити',
 		'lists.details.move-to-new-list': 'Перемістити до списку...',
-		'lists.details.copy-items': 'Копіювати пункти',
+		'lists.details.copy-items': 'Копіювати як текст',
 		'lists.details.removed-toast': 'Видалено',
 		'lists.details.changed-category-toast': 'Категорію змінено',
 		'lists.details.demo.add': 'Клацніть двічі, щоб додати пункт',

@@ -7,7 +7,7 @@ import { appFetch } from '../../utils/app-fetch';
 import { offline } from '../offline-mode/offline-mode.store';
 import { searchedItems, searchValue } from './checklist-search.store';
 
-const items = writable<MainListItem[]>([]);
+export const items = writable<MainListItem[]>([]);
 
 export const listItems = derived([searchValue, items, searchedItems], ([sValue, list, sItems]) => {
 	if (!sValue) {
@@ -19,22 +19,30 @@ export const listItems = derived([searchValue, items, searchedItems], ([sValue, 
 export const lastVisitedListId = writable<string | null>(null);
 
 export const loadListItems = async (browser: boolean, f = fetch): Promise<void> => {
+	const res = await getListItems(browser, f);
+	items.set(res);
+};
+
+export const getListItems = async (browser: boolean, f = fetch): Promise<MainListItem[]> => {
+	let resultIds = {};
 	if (browser) {
-		const localIds = await getListIds();
-		items.set(getSortedListIdsFromPersistedList(localIds));
+		resultIds = await getListIds();
 	}
 	const user = get(auth).user;
 	if (user && !get(offline)) {
-		appFetch<PersistedList | null>(`/lists`, { method: 'GET' }, f, 5000)
+		return appFetch<PersistedList | null>(`/lists`, { method: 'GET' }, f, 5000)
 			.then((list) => {
 				if (browser) {
 					setListIds(list);
 				}
-				items.set(getSortedListIdsFromPersistedList(list));
+				return getSortedListIdsFromPersistedList(list);
 			})
 			.catch((err) => {
 				console.error(err);
+				return getSortedListIdsFromPersistedList(resultIds);
 			});
+	} else {
+		return getSortedListIdsFromPersistedList(resultIds);
 	}
 };
 

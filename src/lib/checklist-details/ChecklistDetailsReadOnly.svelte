@@ -25,7 +25,7 @@
 	$: isHideCrossedOut = list?.hideCrossedOut || false;
 	$: listName = list?.name ?? getDefaultListName();
 	$: isCalcMode = list?.isCalcMode;
-	$: items = list?.items || [];
+	$: movedItems = list?.items || [];
 	$: displayItems = isHideCrossedOut ? items.filter((it) => !it.checked) : items;
 	$: byCategoryList = getChecklistGroupedByCategory(displayItems);
 	$: categoryBgColor = (cat: CategoryOption) =>

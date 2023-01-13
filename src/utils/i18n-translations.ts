@@ -100,7 +100,7 @@ export default {
 		'lists.details.add-from-text.add-button': 'Add',
 		// batch edit
 		'lists.details.batch-remove-button': 'Remove',
-		'lists.details.move-to-new-list': 'Add to new list',
+		'lists.details.move-to-new-list': 'Move to list...',
 		'lists.details.copy-items': 'Copy items',
 		'lists.details.removed-toast': 'Removed',
 		'lists.details.changed-category-toast': 'Changed category',
@@ -157,7 +157,13 @@ export default {
 		'stop-list.page.empty': 'No blocked users',
 		'stop-list.item.unblock-button': 'Unblock',
 		// adding app to home screen
-		'add-app-to-home-screen.go-to-lists-button': 'OK, now go to my checklists!'
+		'add-app-to-home-screen.go-to-lists-button': 'OK, now go to my checklists!',
+		// move checklist items
+		'move-checklist-items.drawer-title': 'Move items',
+		'move-checklist-items.new-list-button-label': 'Into a new list',
+		'move-checklist-items.new-list-created-link': 'New list created',
+		'move-checklist-items.search-lists-placeholder': 'Search lists',
+		'move-checklist-items.list-option-move-button-label': 'Move',
 	},
 	ua: {
 		'app.logo': 'Списки',
@@ -254,7 +260,7 @@ export default {
 		'lists.details.add-from-text.add-button': 'Додати',
 		// batch edit
 		'lists.details.batch-remove-button': 'Видалити',
-		'lists.details.move-to-new-list': 'У новий список',
+		'lists.details.move-to-new-list': 'Перемістити до списку...',
 		'lists.details.copy-items': 'Копіювати пункти',
 		'lists.details.removed-toast': 'Видалено',
 		'lists.details.changed-category-toast': 'Категорію змінено',
@@ -311,6 +317,12 @@ export default {
 		'stop-list.page.empty': 'Немає заблокованих користувачів',
 		'stop-list.item.unblock-button': 'Розблокувати',
 		// adding app to home screen
-		'add-app-to-home-screen.go-to-lists-button': 'Гаразд, а тепер до списків!'
+		'add-app-to-home-screen.go-to-lists-button': 'Гаразд, а тепер до списків!',
+		// move checklist items
+		'move-checklist-items.drawer-title': 'Перемістити пункти',
+		'move-checklist-items.new-list-button-label': 'У новий список',
+		'move-checklist-items.new-list-created-link': 'Список створено',
+		'move-checklist-items.search-lists-placeholder': 'Шукати серед списків...',
+		'move-checklist-items.list-option-move-button-label': 'Додати',
 	}
 } as Translations;

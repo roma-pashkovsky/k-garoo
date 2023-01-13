@@ -89,6 +89,8 @@
 		lastVisitedListId,
 		removeList
 	} from '../../stores/checklist-main-list/checklist-main-list-store';
+	import { openMoveChecklistItems } from '../../stores/checklist-details/move-checklist-items';
+	import ChecklistItemMoveDrawer from './ChecklistItemMoveDrawer.svelte';
 
 	const [send, receive] = crossfade({});
 
@@ -643,16 +645,19 @@
 	}
 
 	async function onBatchSaveAsNewList(): Promise<void> {
-		if (confirm(($t as any)('lists.details.save-as-new-list-warning'))) {
-			const listId = getUID();
-			const newItems = items.filter((it) => it.selected);
-			const newName = listName + ' > ' + ($p as any)('item', newItems.length);
-			await createList({ id: listId, name: newName, items: newItems });
-			await goto(checklistDetailsClientRoute(listId));
-			setTimeout(() => {
-				location.reload();
-			});
-		}
+		const selected = items.filter((it) => it.selected);
+		console.log('moving to a new list...');
+		openMoveChecklistItems(listId, selected);
+		// if (confirm(($t as any)('lists.details.save-as-new-list-warning'))) {
+		// 	const listId = getUID();
+		// 	const newItems = items.filter((it) => it.selected);
+		// 	const newName = listName + ' > ' + ($p as any)('item', newItems.length);
+		// 	await createList({ id: listId, name: newName, items: newItems });
+		// 	await goto(checklistDetailsClientRoute(listId));
+		// 	setTimeout(() => {
+		// 		location.reload();
+		// 	});
+		// }
 	}
 
 	async function onBatchCopyItems(): Promise<void> {
@@ -1265,3 +1270,5 @@
 <div class="hidden md:block">
 	<PasteListener bind:pasteDiv on:paste={onPasteText} focused={isPasteFocused} />
 </div>
+
+<ChecklistItemMoveDrawer />

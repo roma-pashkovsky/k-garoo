@@ -1,6 +1,6 @@
 import { get, writable } from 'svelte/store';
 import { offline } from '../stores/offline-mode/offline-mode.store';
-import { addSyncTask } from './local-storage-state';
+import { addSyncTask, removeSyncTask } from './local-storage-state';
 import type { ApiSyncTask } from '../types/api-sync-task';
 
 const prefix = '/api/v1';
@@ -31,11 +31,13 @@ export async function appFetch<T>(
 				...reqInit,
 				signal: abortController.signal
 			};
+			let syncTask: ApiSyncTask;
+			if (syncGroupId) {
+				syncTask = getSyncTask(urlPath, reqInit.method, reqInit.body, syncGroupId);
+				addSyncTask(syncTask);
+			}
 			const timeoutHandle = setTimeout(() => {
 				abortController.abort();
-				if (syncGroupId) {
-					addSyncTask(getSyncTask(urlPath, reqInit.method, reqInit.body, syncGroupId));
-				}
 				reject(new TimeoutError(`${urlPath} timeout`));
 			}, timeoutMillis);
 			f(prefix + urlPath, initWithController)
@@ -47,14 +49,17 @@ export async function appFetch<T>(
 								clearTimeout(timeoutHandle);
 							}
 							if (resp.ok) {
+								if (syncTask) {
+									removeSyncTask(syncTask);
+								}
 								resolve(body);
 							} else if (resp.status === 401) {
 								invalidAuthEventStore.set(new Date().getTime());
-								if (syncGroupId) {
-									addSyncTask(getSyncTask(urlPath, reqInit.method, reqInit.body, syncGroupId));
-								}
 								reject(new UnauthorizedError());
 							} else {
+								if (syncTask) {
+									removeSyncTask(syncTask);
+								}
 								reject(body.error);
 							}
 						})

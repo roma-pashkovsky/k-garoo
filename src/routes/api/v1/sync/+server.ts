@@ -22,6 +22,7 @@ import { arrayToMap } from '../../../../utils/array-to-map';
 import { getListInsertOrderByUser } from '../../../../utils/api/get-last-list-order-by-user';
 import { ORDERING_GAP } from '../../../../utils/api/ordering-gap';
 import { UserByListStatus } from '../../../../types';
+import { cleanUserChecklistsCache } from '../../../../utils/api/get-user-checklists-through-cache';
 
 export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -65,6 +66,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 					currInsertOrder += ORDERING_GAP;
 				}
 			}
+			await cleanUserChecklistsCache(user.uid);
 		}
 		if (syncData?.categoryOptions?.length) {
 			// sync up to 10 categories

@@ -53,3 +53,6 @@ export const userByListPath = (listId: string, userId: string) =>
 	`usersByLists/${listId}/${userId}`;
 
 export const shareListInviteTokenPath = (token: string) => `shareListInviteTokens/${token}`;
+
+export const processedSyncTasksPath = () => `processedSyncTasks`;
+export const processedSyncTaskPath = (taskId: string) => `${processedSyncTasksPath()}/${taskId}`;

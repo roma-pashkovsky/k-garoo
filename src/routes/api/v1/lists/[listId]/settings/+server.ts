@@ -11,6 +11,7 @@ import {
 import type { ChecklistSettings } from '../../../../../../types';
 import { readOnceAdmin, setAdmin } from '../../../../../../utils/api/firebase-admin-utils';
 import { json } from '@sveltejs/kit';
+import { updateListSettingsApi } from '../../../../../../utils/api/update-list-settings-api';
 
 export const GET: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const user = await getUserFromRequest(request);
@@ -35,33 +36,7 @@ export const PUT: RequestHandler = async ({ request, params }): Promise<Response
 	try {
 		const listId: string = params.listId as string;
 		const editRequest: UpdateChecklistSettingsRequest = await request.json();
-		const createdBy = await readOnceAdmin<string>(listPropertyPath(listId, 'createdById'));
-		const isCreatedByMe = user.uid === createdBy;
-		if (editRequest) {
-			const updated: FirebaseSetItem[] = [];
-			for (const key in editRequest) {
-				const value = (editRequest as any)[key];
-				if (key === 'isGroupByCategory' && isCreatedByMe) {
-					updated.push({
-						path: listPropertyPath(listId, 'isGroupByCategory'),
-						value
-					});
-				}
-				if (key === 'isCalcMode' && isCreatedByMe) {
-					updated.push({
-						path: listPropertyPath(listId, 'isCalcMode'),
-						value
-					});
-				}
-				const path = listSettingsByMeByListPropertyPath(
-					user.uid,
-					listId,
-					key as keyof ChecklistSettings
-				);
-				updated.push({ path, value });
-			}
-			await setAdmin(updated);
-		}
+		await updateListSettingsApi(user.uid, listId, editRequest);
 		return ok();
 	} catch (err) {
 		console.log(err);

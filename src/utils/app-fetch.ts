@@ -1,7 +1,7 @@
+import type { SyncTask } from './api/client/sync-task-types';
 import { get, writable } from 'svelte/store';
 import { offline } from '../stores/offline-mode/offline-mode.store';
 import { addSyncTask, removeSyncTask } from './local-storage-state';
-import type { ApiSyncTask } from '../types/api-sync-task';
 
 const prefix = '/api/v1';
 
@@ -18,10 +18,12 @@ export async function appFetch<T>(
 	reqInit: RequestInit = { method: 'GET' },
 	f = fetch,
 	timeoutMillis?: number,
-	syncGroupId?: string
+	syncTask?: SyncTask
 ): Promise<T> {
-	if (get(offline) && syncGroupId) {
-		await addSyncTask(getSyncTask(urlPath, reqInit.method, reqInit.body, syncGroupId));
+	if (syncTask) {
+		await addSyncTask(syncTask);
+	}
+	if (get(offline)) {
 		throw new NoConnectionError();
 	}
 	if (timeoutMillis && AbortController) {
@@ -31,11 +33,6 @@ export async function appFetch<T>(
 				...reqInit,
 				signal: abortController.signal
 			};
-			let syncTask: ApiSyncTask;
-			if (syncGroupId) {
-				syncTask = getSyncTask(urlPath, reqInit.method, reqInit.body, syncGroupId);
-				addSyncTask(syncTask);
-			}
 			const timeoutHandle = setTimeout(() => {
 				abortController.abort();
 				reject(new TimeoutError(`${urlPath} timeout`));
@@ -50,7 +47,7 @@ export async function appFetch<T>(
 							}
 							if (resp.ok) {
 								if (syncTask) {
-									removeSyncTask(syncTask);
+									removeSyncTask(syncTask.id);
 								}
 								resolve(body);
 							} else if (resp.status === 401) {
@@ -58,7 +55,7 @@ export async function appFetch<T>(
 								reject(new UnauthorizedError());
 							} else {
 								if (syncTask) {
-									removeSyncTask(syncTask);
+									removeSyncTask(syncTask.id);
 								}
 								reject(body.error);
 							}
@@ -75,8 +72,6 @@ export async function appFetch<T>(
 	} else {
 		const resp = await f(prefix + urlPath, reqInit);
 		const body = await resp.json().catch((err) => {
-			console.log('JSON parse err (2): ', err);
-			console.log(resp);
 			return null;
 		});
 		if (!resp.ok) {
@@ -84,24 +79,6 @@ export async function appFetch<T>(
 		}
 		return body;
 	}
-}
-
-function getSyncTask(
-	url: string,
-	method: string | undefined,
-	body: any | undefined,
-	groupId: string
-): ApiSyncTask {
-	const res: ApiSyncTask = {
-		groupId,
-		urlPath: url,
-		method: (method || 'GET') as any,
-		ts: new Date().getTime()
-	};
-	if (body) {
-		res.body = JSON.stringify(body);
-	}
-	return res;
 }
 
 export class TimeoutError extends Error {

@@ -14,6 +14,12 @@ import { getUID } from '../../utils/get-uid';
 import { offline } from '../offline-mode/offline-mode.store';
 import { translateChecklistCategories } from '../../utils/translate-checklist-categories';
 import { AppSettingsStore } from '../app/app-settings';
+import { SyncTaskTypes } from '../../utils/api/client/sync-task-types';
+import type {
+	CreateListSyncTask,
+	UpdateListSyncTask,
+	UpdateListSettingsSyncTask
+} from '../../utils/api/client/sync-task-types';
 
 export const listDataStore = writable<{ [listId: string]: ChecklistWithSettings | null }>({});
 
@@ -91,6 +97,13 @@ export const createList = async (request: CreateListRequest): Promise<CheckList>
 };
 
 async function createListAPI(request: CreateListRequest): Promise<CheckList | null> {
+	const syncTask: CreateListSyncTask = {
+		id: getUID(),
+		payload: request,
+		ts: new Date().getTime(),
+		type: SyncTaskTypes.CREATE_LIST,
+		groupId: request.id
+	};
 	return appFetch<CheckList>(
 		`/lists/${request.id}`,
 		{
@@ -99,7 +112,7 @@ async function createListAPI(request: CreateListRequest): Promise<CheckList | nu
 		},
 		fetch,
 		10000,
-		request.id
+		syncTask
 	).catch((err) => {
 		console.error(err);
 		return null;
@@ -108,7 +121,7 @@ async function createListAPI(request: CreateListRequest): Promise<CheckList | nu
 
 export async function createListLocal(request: CreateListRequest): Promise<CheckList> {
 	const ts = new Date().getTime();
-	await addListToUserCollectionLocal(request.id as string, ts, request.parentListId);
+	await addListToUserCollectionLocal(request.id as string, ts, request.parentListId, request.name);
 	await saveListDataLocal(
 		request.id as string,
 		request.name as string,
@@ -137,14 +150,16 @@ async function saveListDataLocal(
 async function addListToUserCollectionLocal(
 	listId: string,
 	ts: number,
-	parentListId?: string
+	parentListId?: string,
+	listName?: string
 ): Promise<void> {
 	const listIds = await getListIds();
 	return new Promise<void>((resolve) => {
 		requestAnimationFrame(() => {
 			const record: PersistedList[string] = {
 				updated_ts: ts,
-				order: getNewListInsertOrder(listIds)
+				order: getNewListInsertOrder(listIds),
+				name: listName
 			};
 			if (parentListId) {
 				record.parentListId = parentListId;
@@ -184,6 +199,13 @@ export const updateList = async (request: UpdateListRequest): Promise<CheckList>
 };
 
 async function updateListAPI(request: UpdateListRequest): Promise<CheckList | null> {
+	const syncTask: UpdateListSyncTask = {
+		id: getUID(),
+		type: SyncTaskTypes.UPDATE_LIST,
+		payload: request,
+		ts: new Date().getTime(),
+		groupId: request.id
+	};
 	return appFetch<CheckList>(
 		`/lists/${request.id}`,
 		{
@@ -192,7 +214,7 @@ async function updateListAPI(request: UpdateListRequest): Promise<CheckList | nu
 		},
 		undefined,
 		10000,
-		request.id
+		syncTask
 	).catch((err) => {
 		console.error(err);
 		return null;
@@ -268,6 +290,12 @@ async function setIsGroupedByCategorySettingsAPI(
 	const request: UpdateChecklistSettingsRequest = {
 		isGroupByCategory: isByCategory
 	};
+	const syncTask: UpdateListSettingsSyncTask = {
+		id: getUID(),
+		type: SyncTaskTypes.UPDATE_LIST_SETTINGS,
+		payload: { ...request, listId },
+		ts: new Date().getTime()
+	};
 	await appFetch(
 		`/lists/${listId}/settings`,
 		{
@@ -276,7 +304,7 @@ async function setIsGroupedByCategorySettingsAPI(
 		},
 		fetch,
 		5000,
-		listId
+		syncTask
 	).catch((err) => {
 		console.error(err);
 	});
@@ -316,6 +344,12 @@ async function setIsHideCrossedOutSettingsAPI(
 	const request: UpdateChecklistSettingsRequest = {
 		hideCrossedOut: isHideCrossedOut
 	};
+	const syncTask: UpdateListSettingsSyncTask = {
+		id: getUID(),
+		type: SyncTaskTypes.UPDATE_LIST_SETTINGS,
+		payload: { ...request, listId },
+		ts: new Date().getTime()
+	};
 	await appFetch(
 		`/lists/${listId}/settings`,
 		{
@@ -324,7 +358,7 @@ async function setIsHideCrossedOutSettingsAPI(
 		},
 		fetch,
 		5000,
-		listId
+		syncTask
 	).catch((err) => {
 		console.error(err);
 	});
@@ -363,6 +397,12 @@ async function setIsCalcModeAPI(listId: string, isCalcMode: boolean): Promise<vo
 	const request: UpdateChecklistSettingsRequest = {
 		isCalcMode
 	};
+	const syncTask: UpdateListSettingsSyncTask = {
+		id: getUID(),
+		type: SyncTaskTypes.UPDATE_LIST_SETTINGS,
+		payload: { ...request, listId },
+		ts: new Date().getTime()
+	};
 	await appFetch(
 		`/lists/${listId}/settings`,
 		{
@@ -371,7 +411,7 @@ async function setIsCalcModeAPI(listId: string, isCalcMode: boolean): Promise<vo
 		},
 		fetch,
 		5000,
-		listId
+		syncTask
 	).catch((err) => {
 		console.error(err);
 	});

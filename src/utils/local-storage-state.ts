@@ -10,6 +10,7 @@ import type { AppUser } from '../types/auth';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
 import type { ApiSyncTask } from '../types/api-sync-task';
 import { getChecklistSearchIndex } from './get-checklist-search-index';
+import type { SyncTask } from './api/client/sync-task-types';
 
 export { customCategoryId, otherCategoryId };
 
@@ -159,29 +160,29 @@ export const setCategoryOptionsLocalStorage = (options: CategoryOption[]): void 
 	localStorage.setItem('k-garoo/categoryOptions', str);
 };
 
-export const addSyncTask = async (task: ApiSyncTask): Promise<void> => {
+export const addSyncTask = async (task: SyncTask): Promise<void> => {
 	return new Promise((resolve) => {
 		if (!localStorage) {
 			resolve();
 		}
 		requestAnimationFrame(() => {
-			localStorage.setItem(`k-garoo/syncTasks/${task.groupId}%${task.ts}`, JSON.stringify(task));
+			localStorage.setItem(`k-garoo/syncTasks/${task.id}`, JSON.stringify(task));
 			resolve();
 		});
 	});
 };
 
-export const removeSyncTask = (task: ApiSyncTask): Promise<void> => {
+export const removeSyncTask = (taskId: string): Promise<void> => {
 	return new Promise<void>((resolve) => {
 		requestAnimationFrame(() => {
-			localStorage.removeItem(`k-garoo/syncTasks/${task.groupId}%${task.ts}`);
+			localStorage.removeItem(`k-garoo/syncTasks/${taskId}`);
 			resolve();
 		});
 	});
 };
 
-export const getSyncTasks = (): Promise<ApiSyncTask[]> => {
-	return new Promise<ApiSyncTask[]>((resolve) => {
+export const getSyncTasks = (): Promise<SyncTask[]> => {
+	return new Promise<SyncTask[]>((resolve) => {
 		requestAnimationFrame(() => {
 			const l = localStorage.length;
 			const syncTaskKeys: string[] = [];

@@ -1,6 +1,11 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { getUserFromRequest } from '../../../../../../utils/api/get-user-from-request';
-import { badRequest, invalidAuth, serverError } from '../../../../../../utils/api/responses';
+import {
+	badRequest,
+	invalidAuth,
+	notYourResource,
+	serverError
+} from '../../../../../../utils/api/responses';
 import { existsAdmin, readOnceAdmin } from '../../../../../../utils/api/firebase-admin-utils';
 import {
 	listByMePath,
@@ -22,7 +27,7 @@ export const GET: RequestHandler = async ({ request, params }): Promise<Response
 		if (!isMyList) {
 			isMyList = await existsAdmin(listByMePath(user.uid, listId));
 			if (!isMyList) {
-				return badRequest('Not your list');
+				return notYourResource('Not your list');
 			}
 		}
 		const users = await readOnceAdmin<UsersByList>(usersByListPath(listId));

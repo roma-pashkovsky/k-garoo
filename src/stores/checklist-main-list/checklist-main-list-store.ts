@@ -6,6 +6,12 @@ import { auth } from '../login/auth';
 import { appFetch } from '../../utils/app-fetch';
 import { offline } from '../offline-mode/offline-mode.store';
 import { searchedItems, searchValue } from './checklist-search.store';
+import { SyncTaskTypes } from '../../utils/api/client/sync-task-types';
+import type {
+	DeleteListSyncTask,
+	ReorderListSyncTask
+} from '../../utils/api/client/sync-task-types';
+import { getUID } from '../../utils/get-uid';
 
 export const items = writable<MainListItem[]>([]);
 
@@ -56,7 +62,14 @@ export const removeList = async (listId: string): Promise<void> => {
 };
 
 async function removeListAPI(listId: string): Promise<void> {
-	await appFetch(`/lists/${listId}`, { method: 'DELETE' }, fetch, 10000, listId);
+	const syncTask: DeleteListSyncTask = {
+		id: getUID(),
+		type: SyncTaskTypes.DELETE_LIST,
+		payload: listId,
+		ts: new Date().getTime(),
+		groupId: listId
+	};
+	await appFetch(`/lists/${listId}`, { method: 'DELETE' }, fetch, 10000, syncTask);
 }
 
 async function removeListLocal(listId: string): Promise<void> {
@@ -80,12 +93,18 @@ export const reorderList = async (list: MainListItem[]): Promise<void> => {
 };
 
 async function reorderListAPI(listIds: string[]): Promise<void> {
+	const syncTask: ReorderListSyncTask = {
+		id: getUID(),
+		type: SyncTaskTypes.REORDER_LIST,
+		payload: listIds,
+		ts: new Date().getTime()
+	};
 	await appFetch(
 		`/reorder`,
 		{ method: 'POST', body: JSON.stringify(listIds) },
 		fetch,
 		10000,
-		'reorder' + new Date().getTime()
+		syncTask
 	);
 }
 

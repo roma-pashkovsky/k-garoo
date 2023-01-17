@@ -380,15 +380,19 @@ async function setIsCalcModeAPI(listId: string, isCalcMode: boolean): Promise<vo
 /**
  * Get list id by parent list id
  */
-export function getListIdByParentListId(
+export async function getListIdByParentListId(
 	parentListId: string,
 	browser: boolean,
 	f = fetch
 ): Promise<string | null> {
-	if (get(auth).user) {
+	if (get(auth).user && !get(offline)) {
 		return getListIdByParentListIdAPI(parentListId, f).catch((err) => {
 			console.error(err);
-			return null;
+			if (browser) {
+				return getListIdByParentListIdLocal(parentListId);
+			} else {
+				return null;
+			}
 		});
 	} else if (browser) {
 		return getListIdByParentListIdLocal(parentListId);
@@ -412,7 +416,7 @@ async function getListIdByParentListIdLocal(parentListId: string): Promise<strin
 }
 
 function getListIdByParentListIdAPI(parentListId: string, f: any): Promise<string | null> {
-	return appFetch(`/list-by-parent-id/${parentListId}`, { method: 'GET' }, f);
+	return appFetch(`/list-by-parent-id/${parentListId}`, { method: 'GET' }, f, 5000);
 }
 
 /**

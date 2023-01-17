@@ -10,6 +10,8 @@
 	import { goto } from '$app/navigation';
 	import type { Page } from '@sveltejs/kit';
 	import { fade, slide } from 'svelte/transition';
+	import TopStatusBar from '../../lib/TopStatusBar.svelte';
+	import { syncTaskProcessing } from '../../utils/process-sync-tasks.js';
 
 	const isSetLocalePopupOpen = derived(
 		[AppSettingsStore.isLocaleSet, page],
@@ -46,11 +48,14 @@
 <div class="w-full h-full flex justify-center bg-gray-200 dark:bg-gray-800">
 	<div class="flex flex-col max-w-screen-lg w-full shadow-md bg-white dark:bg-slate-900">
 		{#if $offline}
-			<OfflineBar />
+			<TopStatusBar>No Internet connection</TopStatusBar>
+		{/if}
+		{#if $syncTaskProcessing}
+			<TopStatusBar>Synchronizing data...</TopStatusBar>
 		{/if}
 		{#if !$isHideNavBar}
 			<div
-				in:slide={{ delay: 200, duration: 300 }}
+				in:slide|local={{ delay: 200, duration: 300 }}
 				class="z-20 w-full"
 				style="contain: layout style;"
 			>

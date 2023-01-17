@@ -1,15 +1,15 @@
-import { addSyncTask, getSyncTasks, removeSyncTask } from './local-storage-state';
+import { getSyncTasks, removeSyncTask } from './local-storage-state';
 import { appFetch, NoConnectionError, TimeoutError, UnauthorizedError } from './app-fetch';
 import type { ApiSyncTask } from '../types/api-sync-task';
 import { writable } from 'svelte/store';
 
 export const processedSyncTasks = writable<number | null>(null);
 
-const processing = writable<boolean>(false);
+export const syncTaskProcessing = writable<boolean>(false);
 
 function waitForProcessingFinished(): Promise<void> {
 	return new Promise<void>((resolve) => {
-		processing.subscribe((processing) => {
+		syncTaskProcessing.subscribe((processing) => {
 			if (!processing) resolve();
 		});
 	});
@@ -17,7 +17,7 @@ function waitForProcessingFinished(): Promise<void> {
 
 export async function processSyncTasks(): Promise<void> {
 	await waitForProcessingFinished();
-	processing.set(true);
+	syncTaskProcessing.set(true);
 	const syncTasks = await getSyncTasks();
 	if (syncTasks?.length) {
 		const groups: { [id: string]: ApiSyncTask[] } = {};
@@ -66,5 +66,5 @@ export async function processSyncTasks(): Promise<void> {
 			}
 		}
 	}
-	processing.set(false);
+	syncTaskProcessing.set(false);
 }

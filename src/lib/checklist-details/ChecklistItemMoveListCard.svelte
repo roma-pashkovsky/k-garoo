@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { CheckListItem, MainListItem } from '../../types';
-	import {derived, get, writable} from 'svelte/store';
+	import { derived, get, writable } from 'svelte/store';
 	import {
 		listDataStore,
 		loadList,
@@ -10,9 +10,10 @@
 	import { A, Button } from 'flowbite-svelte';
 	import { ChevronDown, ChevronUp } from 'svelte-heros-v2';
 	import { checklistDetailsClientRoute } from '../../utils/client-routes';
-	import {t} from "../../stores/app/translate";
-	import {slide} from "svelte/transition";
-	import {getUID} from "../../utils/get-uid";
+	import { t } from '../../stores/app/translate';
+	import { slide } from 'svelte/transition';
+	import { getUID } from '../../utils/get-uid';
+	import { getChecklistNextItemOrderAdded } from '../../utils/get-checklist-next-order-added';
 
 	export let list: MainListItem;
 	export let movedItems: CheckListItem[];
@@ -30,14 +31,14 @@
 		return card$?.items || [];
 	});
 	const displayCardItems = derived([cardItems, itemsMap], ([cardItems$, itemsMap$]) => {
-		return cardItems$.map(s => {
+		return cardItems$.map((s) => {
 			return {
 				id: s.id,
 				itemDescription: s.itemDescription,
 				isMoved: !!itemsMap$[s.itemDescription.toLowerCase()]
-			}
-		})
-	})
+			};
+		});
+	});
 	const isMoved = derived([cardItems, itemsMap], ([cardItems$, itemsMap$]) => {
 		const mapCopy = { ...itemsMap$ };
 		cardItems$.forEach((it) => {
@@ -63,19 +64,23 @@
 	function onMoveClicked(): void {
 		if (!$isMoved) {
 			const existingItems = get(cardItems);
-			const existingMap = existingItems.reduce((p, c) => ({...p, [c.itemDescription.toLowerCase()]: true }), {})
+			const existingMap = existingItems.reduce(
+				(p, c) => ({ ...p, [c.itemDescription.toLowerCase()]: true }),
+				{}
+			);
 			const toBeAdded = [];
+			const nextAddInd = getChecklistNextItemOrderAdded(existingItems);
 			movedItems.forEach((it, ind) => {
 				const isExisting = existingMap[it.itemDescription.toLowerCase()];
 				if (!isExisting) {
 					toBeAdded.push({
 						id: getUID(),
 						itemDescription: it.itemDescription,
-						category: {...it.category},
-						orderAdded: existingItems.length + ind
-					} as CheckListItem)
+						category: { ...it.category },
+						orderAdded: nextAddInd + ind
+					} as CheckListItem);
 				}
-			})
+			});
 			updateList({ id: listId, items: { added: toBeAdded } });
 		}
 	}
@@ -112,7 +117,7 @@
 	{#if isExpanded}
 		<div in:slide|local out:slide|local>
 			{#each $displayCardItems as listItem (listItem.id)}
-				<div class="pl-4 mb-2 text-sm { listItem.isMoved ? 'text-blue-600' : ''}">
+				<div class="pl-4 mb-2 text-sm {listItem.isMoved ? 'text-blue-600' : ''}">
 					{listItem.itemDescription}
 				</div>
 			{/each}

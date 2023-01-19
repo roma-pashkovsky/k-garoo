@@ -53,7 +53,6 @@
 	import type { Readable, Writable } from 'svelte/store';
 	import { derived, get, writable } from 'svelte/store';
 	import { t } from '../../stores/app/translate';
-	import { p } from '../../stores/app/plurals';
 	import { getDefaultListName } from '../../utils/get-default-list-name';
 	import { AuthStore } from '../../stores/login/auth.store';
 	import { AppSettingsStore, setHasSeenDemo } from '../../stores/app/app-settings';
@@ -91,6 +90,7 @@
 	} from '../../stores/checklist-main-list/checklist-main-list-store';
 	import { openMoveChecklistItems } from '../../stores/checklist-details/move-checklist-items';
 	import ChecklistItemMoveDrawer from './ChecklistItemMoveDrawer.svelte';
+	import { getChecklistNextItemOrderAdded } from '../../utils/get-checklist-next-order-added';
 
 	const [send, receive] = crossfade({});
 
@@ -646,18 +646,7 @@
 
 	async function onBatchSaveAsNewList(): Promise<void> {
 		const selected = items.filter((it) => it.selected);
-		console.log('moving to a new list...');
 		openMoveChecklistItems(listId, selected);
-		// if (confirm(($t as any)('lists.details.save-as-new-list-warning'))) {
-		// 	const listId = getUID();
-		// 	const newItems = items.filter((it) => it.selected);
-		// 	const newName = listName + ' > ' + ($p as any)('item', newItems.length);
-		// 	await createList({ id: listId, name: newName, items: newItems });
-		// 	await goto(checklistDetailsClientRoute(listId));
-		// 	setTimeout(() => {
-		// 		location.reload();
-		// 	});
-		// }
 	}
 
 	async function onBatchCopyItems(): Promise<void> {
@@ -711,8 +700,13 @@
 	}
 
 	async function addListItems(addItems: CheckListItemType[]): Promise<void> {
-		const prevLen = items.length;
-		addItems.forEach((it, ind) => (it.orderAdded = (prevLen + ind) * 1000));
+		const nextAddInd = getChecklistNextItemOrderAdded(items);
+		addItems.forEach((it, ind) => (it.orderAdded = nextAddInd + ind));
+		const itemsWithCategoryOrderDetected = [...items] as CheckListItemType[];
+		addItems.forEach((it) => {
+			it.category.order = getCategoryOrderInTheList(it.category.id, itemsWithCategoryOrderDetected);
+			itemsWithCategoryOrderDetected.push(it);
+		});
 		if (addItems.length) {
 			if (list) {
 				list = await updateList({ id: listId, items: { added: addItems } });
@@ -888,7 +882,7 @@
 			checked: false,
 			selected: false,
 			isEdited: false,
-			orderAdded: items.length + 1
+			orderAdded: getChecklistNextItemOrderAdded(items)
 		};
 	}
 

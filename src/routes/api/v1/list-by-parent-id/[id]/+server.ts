@@ -1,7 +1,6 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import { getUserFromRequest } from '../../../../../utils/api/get-user-from-request';
-import { getChecklistByUserThroughCache } from '../../../../../utils/api/get-checklist-by-user-through-cache';
 import { invalidAuth, serverError } from '../../../../../utils/api/responses';
 import { readOnceAdmin } from '../../../../../utils/api/firebase-admin-utils';
 import { listsByMePath } from '../../../../../utils/api/db-paths';

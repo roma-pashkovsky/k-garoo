@@ -1,28 +1,14 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
-import type { CheckList, CheckListItem } from '../../../../../types';
-import { UserByListStatus } from '../../../../../types';
 import type {
 	CreateListRequest,
 	UpdateListRequest
 } from '../../../../../utils/api/client/create-update-list';
-import type { FirebaseSetItem } from '../../../../../types/firebase-utils';
 import { badRequest, invalidAuth, ok, serverError } from '../../../../../utils/api/responses';
-import { existsAdmin, getTimestamp, setAdmin } from '../../../../../utils/api/firebase-admin-utils';
-import {
-	listByMePath,
-	listItemPropertyPath,
-	listPath,
-	listPropertyPath,
-	userByListPath
-} from '../../../../../utils/api/db-paths';
+import { existsAdmin } from '../../../../../utils/api/firebase-admin-utils';
+import { listByMePath, listPath } from '../../../../../utils/api/db-paths';
 import { getUserFromRequest } from '../../../../../utils/api/get-user-from-request';
-import { arrayToMap } from '../../../../../utils/array-to-map';
 import { getChecklistByUserThroughCache } from '../../../../../utils/api/get-checklist-by-user-through-cache';
-import type { UsersByList } from '../../../../../types/fb-database';
-import { redisSet } from '../../../../../utils/api/redis';
-import type { DbChecklist } from '../../../../../types/db-checklist';
-import { getListInsertOrderByUser } from '../../../../../utils/api/get-last-list-order-by-user';
 import { cleanUserChecklistsCache } from '../../../../../utils/api/get-user-checklists-through-cache';
 import { createListApi } from '../../../../../utils/api/create-list-api';
 import { updateListApi } from '../../../../../utils/api/update-list-api';

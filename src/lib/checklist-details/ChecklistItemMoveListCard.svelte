@@ -7,13 +7,14 @@
 		updateList
 	} from '../../stores/checklist-details/checklist-details-data';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { A, Button } from 'flowbite-svelte';
+	import { A, Button, Spinner } from 'flowbite-svelte';
 	import { ChevronDown, ChevronUp } from 'svelte-heros-v2';
 	import { checklistDetailsClientRoute } from '../../utils/client-routes';
 	import { t } from '../../stores/app/translate';
 	import { slide } from 'svelte/transition';
 	import { getUID } from '../../utils/get-uid';
 	import { getChecklistNextItemOrderAdded } from '../../utils/get-checklist-next-order-added';
+	import { getCategoryOrderInTheList } from '../../utils/category-ordering';
 
 	export let list: MainListItem;
 	export let movedItems: CheckListItem[];
@@ -46,6 +47,9 @@
 		});
 		return Object.keys(mapCopy).length === 0;
 	});
+	let isMoving = false;
+	let isCancelling = false;
+	let justAddedItemIds: string[];
 
 	onMount(() => {
 		listId = list.id;
@@ -61,27 +65,55 @@
 		loadList(listId, true, fetch);
 	});
 
-	function onMoveClicked(): void {
+	async function onMoveClicked(): Promise<void> {
 		if (!$isMoved) {
-			const existingItems = get(cardItems);
-			const existingMap = existingItems.reduce(
-				(p, c) => ({ ...p, [c.itemDescription.toLowerCase()]: true }),
-				{}
-			);
-			const toBeAdded = [];
-			const nextAddInd = getChecklistNextItemOrderAdded(existingItems);
-			movedItems.forEach((it, ind) => {
-				const isExisting = existingMap[it.itemDescription.toLowerCase()];
-				if (!isExisting) {
-					toBeAdded.push({
-						id: getUID(),
-						itemDescription: it.itemDescription,
-						category: { ...it.category },
-						orderAdded: nextAddInd + ind
-					} as CheckListItem);
-				}
-			});
-			updateList({ id: listId, items: { added: toBeAdded } });
+			try {
+				isMoving = true;
+				const existingItems = get(cardItems);
+				const existingMap = existingItems.reduce(
+					(p, c) => ({ ...p, [c.itemDescription.toLowerCase()]: true }),
+					{}
+				);
+				const toBeAdded: CheckListItem[] = [];
+				const nextAddInd = getChecklistNextItemOrderAdded(existingItems);
+				const itemsWithCategoryOrder = [...existingItems];
+				movedItems.forEach((it, ind) => {
+					const isExisting = existingMap[it.itemDescription.toLowerCase()];
+					if (!isExisting) {
+						const itemToAdd = {
+							id: getUID(),
+							itemDescription: it.itemDescription,
+							category: {
+								...it.category,
+								order: getCategoryOrderInTheList(it.category.id, itemsWithCategoryOrder)
+							},
+							orderAdded: nextAddInd + ind
+						} as CheckListItem;
+						toBeAdded.push(itemToAdd);
+						itemsWithCategoryOrder.push(itemToAdd);
+					}
+				});
+				await updateList({ id: listId, items: { added: toBeAdded } });
+				justAddedItemIds = toBeAdded.map((it) => it.id);
+			} catch (e) {
+				console.error(e);
+			} finally {
+				isMoving = false;
+			}
+		}
+	}
+
+	async function onMoveCanceled(): Promise<void> {
+		if (justAddedItemIds?.length) {
+			try {
+				isCancelling = true;
+				await updateList({ id: listId, items: { removed: justAddedItemIds } });
+				justAddedItemIds = undefined;
+			} catch (e) {
+				console.error(e);
+			} finally {
+				isCancelling = false;
+			}
 		}
 	}
 
@@ -100,9 +132,22 @@
 			</A>
 		</div>
 		<div class="flex items-center space-x-2">
-			<Button outline={!$isMoved} disabled={$isMoved} on:click={onMoveClicked} class="!px-2">
-				{$t('move-checklist-items.list-option-move-button-label')}
-			</Button>
+			{#if justAddedItemIds?.length}
+				<Button outline={!$isMoved} on:click={onMoveCanceled} class="!px-2">
+					{#if isCancelling}
+						<Spinner class="mr-2" size="3" />
+					{/if}
+					{$t('app.common.cancel')}
+				</Button>
+			{:else}
+				<Button outline={!$isMoved} disabled={$isMoved} on:click={onMoveClicked} class="!px-2">
+					{#if isMoving}
+						<Spinner class="mr-2" size="3" />
+					{/if}
+					{$t('move-checklist-items.list-option-move-button-label')}
+				</Button>
+			{/if}
+
 			<Button class="!p-2" color="light" pill={true} on:click={() => (isExpanded = !isExpanded)}>
 				<div class="relative -bottom-1/2">
 					{#if isExpanded}

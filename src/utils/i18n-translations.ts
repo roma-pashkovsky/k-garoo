@@ -18,6 +18,7 @@ export default {
 		'app.toasts.moved': 'Moved',
 		'app.toasts.removed': 'Removed',
 		'app.toasts.failed': 'Failed',
+		'app.common.cancel': 'Cancel',
 		'app.user-menu.logout': 'Logout',
 		'app.lang-placeholder': 'Language',
 		'app.initial-popup.title': 'Welcome to K-garoo of the Checklists!',
@@ -163,7 +164,7 @@ export default {
 		'move-checklist-items.new-list-button-label': 'Into a new list',
 		'move-checklist-items.new-list-created-link': 'New list created',
 		'move-checklist-items.search-lists-placeholder': 'Search lists',
-		'move-checklist-items.list-option-move-button-label': 'Move',
+		'move-checklist-items.list-option-move-button-label': 'Move'
 	},
 	ua: {
 		'app.logo': 'Списки',
@@ -178,6 +179,7 @@ export default {
 		'app.toasts.moved': 'Переміщено',
 		'app.toasts.removed': 'Видалено',
 		'app.toasts.failed': 'Помилка',
+		'app.common.cancel': 'Скасувати',
 		'app.user-menu.logout': 'Вихід',
 		'app.lang-placeholder': 'Мова',
 		'app.initial-popup.title': 'Вітаємо, це K-garoo - Майстер Списків!',
@@ -323,6 +325,6 @@ export default {
 		'move-checklist-items.new-list-button-label': 'У новий список',
 		'move-checklist-items.new-list-created-link': 'Список створено',
 		'move-checklist-items.search-lists-placeholder': 'Шукати серед списків...',
-		'move-checklist-items.list-option-move-button-label': 'Додати',
+		'move-checklist-items.list-option-move-button-label': 'Додати'
 	}
 } as Translations;

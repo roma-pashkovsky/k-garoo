@@ -69,7 +69,7 @@
 		<div class="mb-8">
 			<h4 class="font-medium mb-4">{$t('settings.header.add-home-screen')}</h4>
 			<p class="pl-10">
-				<img class="w-36 mb-2" src="/add-to-main-screen.png" />
+				<img class="w-36 mb-2" src="/add-to-main-screen.webp" />
 				<A href="/home/add-app-to-main-screen">{$t('settings.add-home-screen.link-label')}</A>
 			</p>
 		</div>

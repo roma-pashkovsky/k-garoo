@@ -36,14 +36,14 @@
 >
 	<NavBrand href="/home/lists">
 		<img
-			src="/logo-blue.png"
+			src="/logo-blue.webp"
 			width="30"
 			height="24"
 			class="mr-3 block sm:hidden"
 			alt="K-garoo logo"
 		/>
 		<img
-			src="/logo-blue.png"
+			src="/logo-blue.webp"
 			width="45"
 			height="36"
 			class="mr-3 hidden sm:block"
@@ -55,7 +55,7 @@
 			Garoo
 			<a href="/home/support-ukraine"
 				><img
-					src="/flag-Ukraine.png"
+					src="/flag-Ukraine.webp"
 					height="24"
 					alt="support Ukraine"
 					class="h-6 inline-block"

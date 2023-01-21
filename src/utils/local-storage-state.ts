@@ -8,7 +8,6 @@ import type {
 } from '../types';
 import type { AppUser } from '../types/auth';
 import { customCategoryId, otherCategoryId } from './autodetect-data';
-import type { ApiSyncTask } from '../types/api-sync-task';
 import { getChecklistSearchIndex } from './get-checklist-search-index';
 import type { SyncTask } from './api/client/sync-task-types';
 

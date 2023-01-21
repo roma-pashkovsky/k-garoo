@@ -17,9 +17,14 @@ export const load: LayoutLoad = async ({
 }): Promise<ChecklistDetailsLoadData | undefined> => {
 	await parent();
 	const listId: string = params.id as string;
+	const list = await loadList(listId, browser, fetch);
+	let childListId: string | undefined | null;
+	if (list && !list?.isMyList) {
+		childListId = await getListIdByParentListId(listId, browser, fetch);
+	}
 	return {
 		listId,
-		list: await loadList(listId, browser, fetch),
-		childListId: await getListIdByParentListId(listId, browser, fetch)
+		list,
+		childListId
 	};
 };

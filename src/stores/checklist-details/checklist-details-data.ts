@@ -76,7 +76,12 @@ async function getListLocal(listId: string): Promise<CheckList | null> {
 			const listData = getListData(listId);
 			if (listData) {
 				const isMyList = !!myLists[listData.id];
-				resolve({ ...listData, isMyList } as CheckList);
+				let childListId: string | null = null;
+				if (isMyList) {
+					childListId =
+						Object.keys(myLists || {}).find((id) => myLists[id].parentListId === listId) || null;
+				}
+				resolve({ ...listData, isMyList, childListId } as CheckList);
 			} else {
 				resolve(null);
 			}

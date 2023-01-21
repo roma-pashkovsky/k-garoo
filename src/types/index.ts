@@ -20,6 +20,7 @@ export type CheckList = {
 	isMyList?: boolean;
 	sharedBy?: AppUser;
 	createdById?: string;
+	childListId?: string | null;
 };
 
 export type ChecklistWithSettings = CheckList & ChecklistSettings;

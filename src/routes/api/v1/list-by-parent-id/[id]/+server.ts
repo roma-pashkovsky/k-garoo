@@ -4,6 +4,7 @@ import { getUserFromRequest } from '../../../../../utils/api/get-user-from-reque
 import { invalidAuth, serverError } from '../../../../../utils/api/responses';
 import { readOnceAdmin } from '../../../../../utils/api/firebase-admin-utils';
 import { listsByMePath } from '../../../../../utils/api/db-paths';
+import { getChildListIdForList } from '../../../../../utils/api/get-child-list-id-for-list';
 
 export const GET: RequestHandler = async ({ request, params }): Promise<Response> => {
 	const parentListId: string = params.id as string;
@@ -12,19 +13,8 @@ export const GET: RequestHandler = async ({ request, params }): Promise<Response
 		return invalidAuth();
 	}
 	try {
-		const entryByParent = await readOnceAdmin(
-			listsByMePath(user.uid),
-			'parentListId',
-			1,
-			undefined,
-			parentListId
-		);
-		if (entryByParent && Object.keys(entryByParent).length) {
-			const listId = Object.keys(entryByParent)[0];
-			return json(listId);
-		} else {
-			return json(null);
-		}
+		const childListId = await getChildListIdForList(user.uid, parentListId);
+		return json(childListId);
 	} catch (err) {
 		console.log(err);
 		return serverError();

@@ -12,6 +12,7 @@ import type { ListsSharedWithMe } from '../../types/fb-database';
 import type { AppUser } from '../../types/auth';
 import { redisGet, redisSet } from './redis';
 import { validateChecklist } from './validate-checklist';
+import { getChildListIdForList } from './get-child-list-id-for-list';
 
 export const getChecklistDataThroughCache = async (listId: string): Promise<DbChecklist> => {
 	let listData = await redisGet<DbChecklist>(listId);
@@ -34,6 +35,7 @@ export const getChecklistByUserThroughCache = async (
 	}
 	listData = await validateChecklist(listData);
 	let isMyList = false;
+	let childListId: string | null = null;
 	let sharedBy = null;
 	let byUserIsGroupByCategory: boolean | undefined;
 	let byUserHideCrossedOut: boolean | undefined;
@@ -41,6 +43,7 @@ export const getChecklistByUserThroughCache = async (
 	if (userId) {
 		isMyList = await existsAdmin(listByMePath(userId, listId));
 		if (!isMyList) {
+			childListId = await getChildListIdForList(userId, listId);
 			const sharedByObj = await readOnceAdmin<ListsSharedWithMe[string]>(
 				listSharedWithMePath(userId, listId)
 			);
@@ -48,7 +51,6 @@ export const getChecklistByUserThroughCache = async (
 				sharedBy = await readOnceAdmin<AppUser>(userPath(sharedByObj.sharedById));
 			}
 		}
-
 		const byUserSettings = await readOnceAdmin<ChecklistSettings>(
 			listSettingsByMeByListPath(userId, listId)
 		);
@@ -64,7 +66,8 @@ export const getChecklistByUserThroughCache = async (
 		isMyList,
 		isGroupByCategory: byUserIsGroupByCategory ?? listData.isGroupByCategory,
 		hideCrossedOut: byUserHideCrossedOut ?? false,
-		isCalcMode: byUserIsCalcMode ?? listData.isCalcMode ?? false
+		isCalcMode: byUserIsCalcMode ?? listData.isCalcMode ?? false,
+		childListId
 	};
 	if (sharedBy) {
 		result = { ...result, sharedBy };

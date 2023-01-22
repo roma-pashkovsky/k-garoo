@@ -104,7 +104,7 @@
 			>
 				<div class="flex items-center space-x-2">
 					{#if scrollValue > scrollBreak}
-						<img in:fade|local src="/garoo-logo-white.svg" class="h-[32px] md:h-[45px] mr-2" />
+						<img in:fade|local src="/garoo-logo-white.svg" class="h-[32px] md:h-[40px] mr-2" />
 						<div class="hidden md:block top-bar-label">Garoo</div>
 					{/if}
 				</div>
@@ -307,7 +307,9 @@
 		<div
 			class="footer crisp-blue-bg standard-pad-bottom standard-pad-right standard-pad-left standard-pad-top font-regular text-sm"
 		>
-			Copyright (c) 2023. Розробив <a href="mailto:pashkovsky.roma@gmail.com">Роман Пашковський</a>.
+			Copyright (c) 2023. Розробили <a href="mailto:pashkovsky.roma@gmail.com"
+				>Анна і Роман Пашковські</a
+			>.
 		</div>
 		<!--		EOF Footer-->
 	</div>

@@ -1,14 +1,10 @@
-import type { LoadEvent } from '@sveltejs/kit';
 import type { ChecklistDetailsLoadData } from './checklist-details-load-data';
-import { loadUserIfNotResolved } from '../../../../stores/login/auth';
 import { browser } from '$app/environment';
-import { get } from 'svelte/store';
 import {
-	loadList,
 	getListIdByParentListId,
-	listDataStore
+	loadList
 } from '../../../../stores/checklist-details/checklist-details-data';
-import type { LayoutLoad } from '../../../../../.svelte-kit/types/src/routes/$types';
+import type { LayoutLoad } from '../../../../../.svelte-kit/types/src/routes/home/$types';
 
 export const load: LayoutLoad = async ({
 	fetch,

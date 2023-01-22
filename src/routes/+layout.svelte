@@ -6,22 +6,7 @@
 	import FullPageSpinner from '../lib/FullPageSpinner.svelte';
 	import { AppReloader } from '../stores/app/app-reloader';
 	import { AppSettingsStore } from '../stores/app/app-settings';
-	import { get } from 'svelte/store';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { loadListItems } from '../stores/checklist-main-list/checklist-main-list-store';
-	import { auth, loginClickEvents } from '../stores/login/auth';
-	import { loadCategoryOptions } from '../stores/checklist-details/category-options';
-	import LoginModal from '../lib/LoginModal.svelte';
-	import UsersByListDrawer from '../lib/UsersByListDrawer.svelte';
-	import { loadSharedListIds } from '../stores/my-shared-lists/my-shared-list.store';
-	import { initPropositions } from '../stores/checklist-details/propositions';
-	import { offline, startOfflineListener } from '../stores/offline-mode/offline-mode.store';
-	import ShareList from '../lib/checklist-details/ShareList.svelte';
-	import { processedSyncTasks, processSyncTasks } from '../utils/process-sync-tasks';
-	import { invalidAuthEventStore } from '../utils/app-fetch';
-	import { cleanLocalDataOnLogout } from '../utils/local-storage-state';
-	import { syncLocalDataEvent } from '../stores/login/sync.store';
 	import { t } from '../stores/app/translate';
 
 	const toastStore = ToastService.getInstance().toasts;
@@ -32,8 +17,6 @@
 	$: topToasts = $toastStore.filter((t) => t.type === 'details-top');
 
 	onMount(() => {
-		initPropositions();
-		startOfflineListener();
 		viewPort = window.visualViewport;
 		setViewportHeightProperty();
 		let prevTheme: string | null = null;
@@ -50,59 +33,12 @@
 		viewPort.addEventListener('resize', () => {
 			setViewportHeightProperty();
 		});
-		invalidAuthEventStore.subscribe((ev) => {
-			if (ev) {
-				console.log('invalid auth event');
-				auth.set({ user: null, isResolved: true, isSessionExpired: true });
-				loginClickEvents.set(new Date().getTime());
-			}
-		});
-		let prevUserId = get(auth)?.user?.id;
-		auth.subscribe((a) => {
-			const newUserId = a?.user?.id;
-			if (newUserId !== prevUserId) {
-				loadListItems(true);
-				loadCategoryOptions(true);
-				if (a.user) {
-					loadSharedListIds();
-					processSyncTasks();
-				}
-			}
-			prevUserId = newUserId;
-		});
-		let prevOffline;
-		offline.subscribe((offline) => {
-			if (offline !== prevOffline) {
-				prevOffline = offline;
-				if (!offline) {
-					processSyncTasks();
-				}
-			}
-		});
-		processedSyncTasks.subscribe((event) => {
-			if (event) {
-				loadListItems(true);
-			}
-		});
-		syncLocalDataEvent.subscribe((event) => {
-			if (event) {
-				loadListItems(true);
-			}
-		});
 	});
 
 	function setViewportHeightProperty(): void {
 		let vh = viewPort.height * 0.01;
 		// Then we set the value in the --vh custom property to the root of the document
 		document.documentElement.style.setProperty('--vh', `${vh}px`);
-	}
-
-	async function onCloseLoginModal() {
-		if (get(auth).isSessionExpired) {
-			await cleanLocalDataOnLogout();
-			await goto('/home/lists');
-			location.reload();
-		}
 	}
 </script>
 
@@ -144,12 +80,6 @@
 				</div>
 			{/each}
 		</div>
-
-		<LoginModal on:dismiss={onCloseLoginModal} />
-
-		<UsersByListDrawer />
-
-		<ShareList />
 
 		<slot />
 	</div>

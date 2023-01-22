@@ -1,17 +1,32 @@
 <script lang="ts">
 	import NavBar from '../../lib/NavBar.svelte';
-	import { offline } from '../../stores/offline-mode/offline-mode.store.js';
-	import OfflineBar from '../../lib/OfflineBar.svelte';
+	import { offline, startOfflineListener } from '../../stores/offline-mode/offline-mode.store.js';
 	import { page } from '$app/stores';
-	import { derived } from 'svelte/store';
+	import { derived, get } from 'svelte/store';
 	import { isChecklistDetailsClientRoute } from '../../utils/client-routes';
 	import InitConfigPopup from '../../lib/InitConfigPopup.svelte';
 	import { AppSettingsStore } from '../../stores/app/app-settings';
 	import { goto } from '$app/navigation';
 	import type { Page } from '@sveltejs/kit';
-	import { fade, slide } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import TopStatusBar from '../../lib/TopStatusBar.svelte';
-	import { syncTaskProcessing } from '../../utils/process-sync-tasks.js';
+	import {
+		processedSyncTasks,
+		processSyncTasks,
+		syncTaskProcessing
+	} from '../../utils/process-sync-tasks.js';
+	import { onMount } from 'svelte';
+	import { initPropositions } from '../../stores/checklist-details/propositions';
+	import { invalidAuthEventStore } from '../../utils/app-fetch';
+	import { auth, loginClickEvents } from '../../stores/login/auth';
+	import { loadListItems } from '../../stores/checklist-main-list/checklist-main-list-store';
+	import { loadCategoryOptions } from '../../stores/checklist-details/category-options';
+	import { loadSharedListIds } from '../../stores/my-shared-lists/my-shared-list.store';
+	import { syncLocalDataEvent } from '../../stores/login/sync.store';
+	import { cleanLocalDataOnLogout } from '../../utils/local-storage-state';
+	import LoginModal from '../../lib/LoginModal.svelte';
+	import UsersByListDrawer from '../../lib/UsersByListDrawer.svelte';
+	import ShareList from '../../lib/checklist-details/ShareList.svelte';
 
 	const isSetLocalePopupOpen = derived(
 		[AppSettingsStore.isLocaleSet, page],
@@ -21,6 +36,50 @@
 	);
 	const isHideNavBar = derived(page, ($page) => {
 		return isChecklistDetailsClientRoute($page.url.pathname);
+	});
+
+	onMount(() => {
+		initPropositions();
+		startOfflineListener();
+		invalidAuthEventStore.subscribe((ev) => {
+			if (ev) {
+				console.log('invalid auth event');
+				auth.set({ user: null, isResolved: true, isSessionExpired: true });
+				loginClickEvents.set(new Date().getTime());
+			}
+		});
+		let prevUserId = get(auth)?.user?.id;
+		auth.subscribe((a) => {
+			const newUserId = a?.user?.id;
+			if (newUserId !== prevUserId) {
+				loadListItems(true);
+				loadCategoryOptions(true);
+				if (a.user) {
+					loadSharedListIds();
+					processSyncTasks();
+				}
+			}
+			prevUserId = newUserId;
+		});
+		let prevOffline;
+		offline.subscribe((offline) => {
+			if (offline !== prevOffline) {
+				prevOffline = offline;
+				if (!offline) {
+					processSyncTasks();
+				}
+			}
+		});
+		processedSyncTasks.subscribe((event) => {
+			if (event) {
+				loadListItems(true);
+			}
+		});
+		syncLocalDataEvent.subscribe((event) => {
+			if (event) {
+				loadListItems(true);
+			}
+		});
 	});
 
 	function canShowInitConfigPopup(p: Page): boolean {
@@ -34,6 +93,14 @@
 	function onShowHowAddToMain(): void {
 		AppSettingsStore.markIsLocaleSet();
 		goto('/home/add-app-to-main-screen');
+	}
+
+	async function onCloseLoginModal() {
+		if (get(auth).isSessionExpired) {
+			await cleanLocalDataOnLogout();
+			await goto('/home/lists');
+			location.reload();
+		}
 	}
 </script>
 
@@ -73,3 +140,9 @@
 	on:complete={onCloseSettingsPopup}
 	on:show-how-add-to-main={onShowHowAddToMain}
 />
+
+<LoginModal on:dismiss={onCloseLoginModal} />
+
+<UsersByListDrawer />
+
+<ShareList />

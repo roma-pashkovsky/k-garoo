@@ -90,8 +90,7 @@
 		copyingShareInviteTokenError = false;
 		try {
 			const token = getUID();
-			const link =
-				window.origin + `/home/lists/details/${get(shareListIdStore).listId}/share/${token}`;
+			const link = window.origin + `/home/details/${get(shareListIdStore).listId}/share/${token}`;
 			await navigator.clipboard.writeText(link);
 			await store.registerShareListInviteToken(get(shareListIdStore).listId, token);
 			isCopyingShareInviteTokenSuccess = true;

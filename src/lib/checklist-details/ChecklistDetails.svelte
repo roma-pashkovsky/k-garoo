@@ -508,6 +508,10 @@
 		}
 	}
 
+	function onItemRemovePressed(item: CheckListItemEditModel): void {
+		doRemoveItems([item.id]);
+	}
+
 	function doRemoveItems(itemIds: string[]): void {
 		itemsToBeDeleted = itemIds.reduce((p, c) => ({ ...p, [c]: true }), {}) as {
 			[id: string]: true;
@@ -1144,6 +1148,7 @@
 								on:item-long-press={() => onItemLongPress(item)}
 								on:checkbox-change={() => onItemCheckboxChange(item)}
 								on:item-edit-pressed={() => onItemEditIconPressed(item)}
+								on:item-remove-pressed={() => onItemRemovePressed(item)}
 								addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
 							/>
 						{/each}
@@ -1173,6 +1178,7 @@
 					on:item-long-press={() => onItemLongPress(item)}
 					on:checkbox-change={() => onItemCheckboxChange(item)}
 					on:item-edit-pressed={() => onItemEditIconPressed(item)}
+					on:item-remove-pressed={() => onItemRemovePressed(item)}
 					addClass={item.id === editedItem?.id ? 'bg-blue-100 text-black' : ''}
 				/>
 			{/each}

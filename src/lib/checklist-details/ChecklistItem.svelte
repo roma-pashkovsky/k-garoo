@@ -4,7 +4,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import DuplicateBadge from './DuplicateBadge.svelte';
-	import { Pencil } from 'svelte-heros-v2';
+	import { Pencil, Trash } from 'svelte-heros-v2';
 	import ChecklistItemCheckAnimate from './ChecklistItemCheckAnimate.svelte';
 
 	export let disabled: boolean;
@@ -66,6 +66,11 @@
 		if (disabled) return;
 		dispatch('item-edit-pressed');
 	}
+
+	function onItemRemovePressed(): void {
+		if (disabled) return;
+		dispatch('item-remove-pressed');
+	}
 </script>
 
 <div
@@ -102,8 +107,14 @@
 						</div>
 					</div>
 				</div>
-				<div class="edit-icon ml-2" on:mousedown|preventDefault|stopPropagation={onItemEditPressed}>
+				<div class="edit-icon ml-4" on:mousedown|preventDefault|stopPropagation={onItemEditPressed}>
 					<Pencil class="w-5 h-4" />
+				</div>
+				<div
+					class="edit-icon ml-3"
+					on:mousedown|preventDefault|stopPropagation={onItemRemovePressed}
+				>
+					<Trash class="w-5 h-4" />
 				</div>
 			</div>
 		{:else}

@@ -5,6 +5,7 @@
 	import ChecklistDetailsBody_1_1 from './ChecklistDetailsBody_1_1.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import ChecklistDetailsBody_4 from './ChecklistDetailsBody_4.svelte';
+	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 
 	export let isShown;
 	export let closeOnNext: boolean;
@@ -23,6 +24,7 @@
 				dispatch('complete');
 			}
 		}
+		console.log(currentStep);
 	}
 
 	function onBack(): void {
@@ -32,7 +34,10 @@
 
 {#if isShown}
 	<div class="fixed top-0 bottom-0 left-0 right-0 bg-black bg-opacity-50 z-40" on:click={onForward}>
-		<div class="fixed top-1/3 left-1/2 -translate-y-1/2 -translate-x-1/2 z-50">
+		<div
+			on:click|stopPropagation|preventDefault={stopMouseEvent}
+			class="fixed top-1/3 left-1/2 -translate-y-1/2 -translate-x-1/2 z-50"
+		>
 			{#if currentStep === 1}
 				<ChecklistDetailsBody_1 on:forward={onForward} />
 			{/if}

@@ -48,7 +48,7 @@ export default {
 		'lists.no_lists': 'No lists.',
 		'lists.no_lists_cta_1': "Let's",
 		'lists.no_lists_cta_link': 'add one.',
-		'lists.remove-list': 'Remove',
+		'lists.remove-list': 'Remove list',
 		'lists.remove-warning': '{{list}} will be removed. Are you sure?',
 		'lists.search.input-placeholder': 'Search checklists...',
 		// move list
@@ -209,7 +209,7 @@ export default {
 		'lists.no_lists': 'Поки що тут немає списків.',
 		'lists.no_lists_cta_1': 'Нумо',
 		'lists.no_lists_cta_link': 'створимо список.',
-		'lists.remove-list': 'Видалити',
+		'lists.remove-list': 'Видалити список',
 		'lists.remove-warning': 'Видаляємо {{list}}. Впевнені?',
 		'lists.search.input-placeholder': 'Пошук у списках...',
 		// move list

@@ -33,7 +33,7 @@ const getResetAppSettings = (): AppSettings => {
 };
 
 export const loadAppSettings = async (f = fetch): Promise<void> => {
-	const settingsResp = await appFetch<AppSettings>('/settings', { method: 'GET' }, f).catch(
+	const settingsResp = await appFetch<AppSettings>('/settings', { method: 'GET' }, f, 5000).catch(
 		(err) => null
 	);
 	if (settingsResp) {

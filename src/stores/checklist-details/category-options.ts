@@ -12,19 +12,27 @@ import type {
 	CreateCategoryOptionSyncTask,
 	DeleteCategoryOptionSyncTask
 } from '../../utils/api/client/sync-task-types';
+import { offline } from '../offline-mode/offline-mode.store';
 
 export const categoryOptionsByUser = writable<CategoryOption[]>([]);
 
 export const loadCategoryOptions = async (browser: boolean, f = fetch): Promise<void> => {
-	const user = get(auth).user;
-	if (user) {
-		const res = await f('/api/v1/category-options', { method: 'GET' });
-		const options = await res.json();
-		categoryOptionsByUser.set(options);
-	} else if (browser) {
-		const state = getCategoryOptionsLocalStorage();
-		categoryOptionsByUser.set(state);
+	let resultOptions: CategoryOption[] = [];
+	if (browser) {
+		resultOptions = getCategoryOptionsLocalStorage();
 	}
+	const user = get(auth).user;
+	if (user && !get(offline)) {
+		try {
+			resultOptions = await appFetch('/category-options', { method: 'GET' }, f, 7000);
+			if (browser) {
+				setCategoryOptionsLocalStorage(resultOptions);
+			}
+		} catch (e) {
+			console.error(e);
+		}
+	}
+	categoryOptionsByUser.set(resultOptions);
 };
 
 export const addCategoryOption = async (option: CategoryOption): Promise<void> => {

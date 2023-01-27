@@ -129,7 +129,10 @@
 	<div class="flex items-center justify-between space-x-2">
 		<div class="w-24 overflow-ellipsis whitespace-nowrap">
 			<A href={listRoute} class="!underline">
-				<span on:click={onListLinkClicked}>
+				<span
+					on:click={onListLinkClicked}
+					class="inline-block max-w-[135px] whitespace-nowrap text-ellipsis overflow-hidden"
+				>
 					{listName}
 				</span>
 			</A>

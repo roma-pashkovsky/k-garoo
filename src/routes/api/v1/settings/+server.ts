@@ -12,7 +12,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 		const base64data = buff.toString('base64');
 		return new Response(JSON.stringify({ status: 'ok' }), {
 			headers: {
-				'Set-Cookie': `settings=${base64data}; SameSite=Strict; path=/; Secure; HttpOnly;`
+				'Set-Cookie': `settings=${base64data}; SameSite=lax; path=/; Secure; HttpOnly;`
 			}
 		});
 	} catch (err) {
@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 export const DELETE: RequestHandler = async (): Promise<Response> => {
 	try {
 		return new Response(JSON.stringify({ status: 'ok' }), {
-			headers: { 'Set-Cookie': `settings=; SameSite=Strict; path=/; Secure; HttpOnly; Max-Age=0` }
+			headers: { 'Set-Cookie': `settings=; SameSite=lax; path=/; Secure; HttpOnly; Max-Age=0` }
 		});
 	} catch (err) {
 		return serverError();

@@ -51,10 +51,7 @@
 	let isCancelling = false;
 	let justAddedItemIds: string[];
 
-	onMount(() => {
-		listId = list.id;
-		listName = list.name;
-		listRoute = checklistDetailsClientRoute(listId);
+	$: {
 		itemsMap.set(
 			(movedItems || [])
 				.filter((it) => !!it.itemDescription)
@@ -62,6 +59,12 @@
 					return { ...p, [c.itemDescription.toLowerCase()]: true };
 				}, {})
 		);
+	}
+
+	onMount(() => {
+		listId = list.id;
+		listName = list.name;
+		listRoute = checklistDetailsClientRoute(listId);
 		loadList(listId, true, fetch);
 	});
 

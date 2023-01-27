@@ -7,7 +7,7 @@ export const sharedListCount = derived(sharedListIds, ($listIds) => $listIds?.le
 
 export const loadSharedListIds = async (f = fetch): Promise<void> => {
 	try {
-		const listIds = await appFetch<string[]>('/my-shared-lists', { method: 'GET' }, f);
+		const listIds = await appFetch<string[]>('/my-shared-lists', { method: 'GET' }, f, 6000);
 		sharedListIds.set(listIds);
 	} catch (err) {
 		console.log(err);

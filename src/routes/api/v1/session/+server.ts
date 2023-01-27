@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ request }): Promise<Response> => {
 export const DELETE: RequestHandler = async (): Promise<Response> => {
 	return new Response('ok', {
 		headers: {
-			'Set-Cookie': `session=; SameSite=Strict; Path=/; Secure; HttpOnly; Max-Age=0; Expires=${new Date(
+			'Set-Cookie': `session=; SameSite=lax; Path=/; Secure; HttpOnly; Max-Age=0; Expires=${new Date(
 				0
 			).toUTCString()}`
 		}

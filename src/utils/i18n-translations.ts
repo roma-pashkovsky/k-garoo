@@ -164,7 +164,9 @@ export default {
 		'move-checklist-items.new-list-button-label': 'Into a new list',
 		'move-checklist-items.new-list-created-link': 'New list created',
 		'move-checklist-items.search-lists-placeholder': 'Search lists',
-		'move-checklist-items.list-option-move-button-label': 'Move'
+		'move-checklist-items.list-option-move-button-label': 'Move',
+		// share target
+		'share-target.title': 'Add items'
 	},
 	ua: {
 		'app.logo': 'Списки',
@@ -325,6 +327,8 @@ export default {
 		'move-checklist-items.new-list-button-label': 'У новий список',
 		'move-checklist-items.new-list-created-link': 'Список створено',
 		'move-checklist-items.search-lists-placeholder': 'Шукати серед списків...',
-		'move-checklist-items.list-option-move-button-label': 'Додати'
+		'move-checklist-items.list-option-move-button-label': 'Додати',
+		// share target
+		'share-target.title': 'Додати пункти'
 	}
 } as Translations;

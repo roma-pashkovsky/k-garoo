@@ -11,6 +11,11 @@ export const openMoveChecklistItems = async (
 	items: CheckListItem[]
 ): Promise<void> => {
 	moveChecklistItemsEvent.set({ listId, items });
+	await initAllListSearchOptions();
+};
+
+export const initAllListSearchOptions = async (): Promise<void> => {
+	moveChecklistItemsSearchValue.set(null);
 	const allListOptions = await getListItems(true, fetch);
 	moveChecklistItemsAllListOptions.set(allListOptions);
 };
@@ -42,6 +47,6 @@ export const moveChecklistItemsListOptions = derived(
 	([search, all, searched, event]) => {
 		const res = search?.length ? searched : all;
 		// we don't want to move to the same list
-		return res.filter(s => s.id !== event?.listId);
+		return res.filter((s) => s.id !== event?.listId);
 	}
 );

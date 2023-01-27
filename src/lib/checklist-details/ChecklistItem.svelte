@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { Checkbox } from 'flowbite-svelte';
+	import { A, Checkbox } from 'flowbite-svelte';
 	import type { CheckListItemEditModel, Theme } from '../../types/index';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import DuplicateBadge from './DuplicateBadge.svelte';
 	import { Pencil, Trash } from 'svelte-heros-v2';
 	import ChecklistItemCheckAnimate from './ChecklistItemCheckAnimate.svelte';
+	import { t } from '../../stores/app/translate.js';
+	import { stopMouseEvent } from '../../utils/stop-mouse-event.js';
 
 	export let disabled: boolean;
 	export let item: CheckListItemEditModel;
@@ -20,6 +22,7 @@
 
 	let containerDiv: HTMLDivElement;
 	let prevToBeDeleted: boolean;
+	let link: string;
 
 	$: {
 		// apply remove animation
@@ -38,6 +41,11 @@
 			if (containerDiv) {
 				containerDiv.scrollIntoView({ block: 'center' });
 			}
+		}
+		if (item?.itemDescription && item.itemDescription.startsWith('http')) {
+			link = item.itemDescription;
+		} else {
+			link = undefined;
 		}
 	}
 
@@ -137,7 +145,16 @@
 						data-long-press-delay="600"
 						class="flex-1 px-1 rounded {isJustChanged ? 'ring-1 ring-blue-200' : ''} {addClass}"
 					>
-						{item?.itemDescription}<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
+						{item?.itemDescription}{#if !!link}
+							. <span
+								class="inline-block"
+								on:mouseup|stopPropagation|preventDefault={stopMouseEvent}
+							>
+								<a class="underline text-blue-600" target="_blank" href={link}
+									>{$t('app.common.open')}</a
+								>
+							</span>
+						{/if}<DuplicateBadge class="ml-3" show={item.isDuplicate || false} />
 					</div>
 				</div>
 			</div>

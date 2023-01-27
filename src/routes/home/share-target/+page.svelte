@@ -64,5 +64,5 @@
 <Page>
 	<Heading tag="h4" class="mb-4">{$t('share-target.title')}</Heading>
 	<Textarea class="mb-4" bind:value={$sourceString} rows={4} on:keyup={onTextAreaKeyUp} />
-	<ChecklistItemMove items={$parsedItemsToAdd} />
+	<ChecklistItemMove items={$parsedItemsToAdd} newListName={title} />
 </Page>

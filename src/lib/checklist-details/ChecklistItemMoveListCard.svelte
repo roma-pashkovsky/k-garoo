@@ -128,7 +128,7 @@
 <div class="my-2 p-2 border rounded-lg">
 	<div class="flex items-center justify-between space-x-2">
 		<div class="w-24 overflow-ellipsis whitespace-nowrap">
-			<A href={listRoute}>
+			<A href={listRoute} class="!underline">
 				<span on:click={onListLinkClicked}>
 					{listName}
 				</span>

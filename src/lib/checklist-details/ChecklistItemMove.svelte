@@ -5,7 +5,10 @@
 	import { getDefaultListName } from '../../utils/get-default-list-name';
 	import { createList } from '../../stores/checklist-details/checklist-details-data';
 	import { checklistDetailsClientRoute } from '../../utils/client-routes';
-	import { onMoveChecklistItemsSearch } from '../../stores/checklist-details/move-checklist-items';
+	import {
+		initAllListSearchOptions,
+		onMoveChecklistItemsSearch
+	} from '../../stores/checklist-details/move-checklist-items';
 	import {
 		closeMoveChecklistItems,
 		moveChecklistItemsListOptions,
@@ -15,6 +18,7 @@
 	import ChecklistItemMoveListCard from './ChecklistItemMoveListCard.svelte';
 
 	export let items: CheckListItem[];
+	export let newListName: string;
 	let isCreatingNewList: boolean;
 	let newlyCreatedListId: string;
 	let newlyCreatedListLink: string;
@@ -29,7 +33,7 @@
 				orderAdded: ind
 			} as CheckListItem;
 		});
-		const newName = getDefaultListName();
+		const newName = newListName || getDefaultListName();
 		isCreatingNewList = true;
 		try {
 			await createList({ id: listId, name: newName, items: newItems });
@@ -40,6 +44,7 @@
 		}
 		newlyCreatedListId = listId;
 		newlyCreatedListLink = checklistDetailsClientRoute(newlyCreatedListId);
+		initAllListSearchOptions();
 	}
 
 	function onSearchChecklists(): void {
@@ -49,18 +54,29 @@
 
 <div class="mt-2 flex justify-center">
 	<div>
-		<Button size="md" outline disabled={!!newlyCreatedListId} on:click={onCreateNewListClicked}>
+		<Button
+			size="md"
+			class="w-[190px]"
+			outline
+			disabled={!!newlyCreatedListId}
+			on:click={onCreateNewListClicked}
+		>
 			{#if isCreatingNewList}
 				<Spinner class="mr-2" size="3" />
 			{/if}
 			{$t('move-checklist-items.new-list-button-label')}
 		</Button>
 		{#if newlyCreatedListId}
-			<A class="my-2 text-sm !block" href={newlyCreatedListLink}>
-				<span on:click={closeMoveChecklistItems}
-					>{$t('move-checklist-items.new-list-created-link')}</span
+			<div>
+				<A
+					class="my-2 text-sm flex justify-center items-center w-full !underline"
+					href={newlyCreatedListLink}
 				>
-			</A>
+					<span on:click={closeMoveChecklistItems}
+						>{$t('move-checklist-items.new-list-created-link')}</span
+					><span>. {$t('app.common.open')}</span>
+				</A>
+			</div>
 		{/if}
 	</div>
 </div>

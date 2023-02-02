@@ -23,6 +23,7 @@ import { reorderListApi } from '../../../../utils/api/reorder-list-api';
 import { existsAdmin, setAdmin } from '../../../../utils/api/firebase-admin-utils';
 import { processedSyncTaskPath } from '../../../../utils/api/db-paths';
 import { deleteCategoryOptionApi } from '../../../../utils/api/delete-category-option-api';
+import { cleanUserChecklistsCache } from '../../../../utils/api/get-user-checklists-through-cache';
 
 type SyncTaskProcessorMap = {
 	[k in SyncTaskTypes]: (userId: string, task: SyncTask) => Promise<any>;
@@ -37,9 +38,10 @@ export const syncTaskProcessors: SyncTaskProcessorMap = {
 		const c = task as UpdateListSyncTask;
 		return updateListApi(userId, c.payload.id as string, c.payload);
 	},
-	[SyncTaskTypes.DELETE_LIST]: (userId, task) => {
+	[SyncTaskTypes.DELETE_LIST]: async (userId, task) => {
 		const c = task as DeleteListSyncTask;
-		return deleteListApi(userId, c.payload);
+		await deleteListApi(userId, c.payload);
+		await cleanUserChecklistsCache(userId);
 	},
 	[SyncTaskTypes.CREATE_CATEGORY_OPTION]: (userId, task) => {
 		const c = task as CreateCategoryOptionSyncTask;

@@ -146,10 +146,7 @@
 						class="flex-1 px-1 rounded {isJustChanged ? 'ring-1 ring-blue-200' : ''} {addClass}"
 					>
 						{item?.itemDescription}{#if !!link}
-							. <span
-								class="inline-block"
-								on:mouseup|stopPropagation|preventDefault={stopMouseEvent}
-							>
+							. <span class="inline" on:mouseup|stopPropagation|preventDefault={stopMouseEvent}>
 								<a class="underline text-blue-600" target="_blank" href={link}
 									>{$t('app.common.open')}</a
 								>

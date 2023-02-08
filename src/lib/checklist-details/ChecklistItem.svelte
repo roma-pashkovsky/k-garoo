@@ -143,7 +143,10 @@
 					<div
 						on:long-press={onItemLongPress}
 						data-long-press-delay="600"
-						class="flex-1 px-1 rounded {isJustChanged ? 'ring-1 ring-blue-200' : ''} {addClass}"
+						class="flex-1 break-words px-1 rounded {isJustChanged
+							? 'ring-1 ring-blue-200'
+							: ''} {addClass}"
+						style="word-break: break-word"
 					>
 						{item?.itemDescription}{#if !!link}
 							. <span class="inline" on:mouseup|stopPropagation|preventDefault={stopMouseEvent}>

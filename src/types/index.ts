@@ -33,6 +33,19 @@ export type CheckListItem = {
 	orderAdded: number;
 };
 
+export type ChecklistItemAttachment = {
+	text?: string;
+	photos?: Photo[];
+	addedUserId: string;
+	createdTimestamp: number;
+	modifiedTimestamp: number;
+};
+
+export type Photo = {
+	data: string;
+	url?: string;
+};
+
 export type GroupedByCategoryItem = {
 	category: CategoryOption;
 	items: CheckListItemEditModel[];

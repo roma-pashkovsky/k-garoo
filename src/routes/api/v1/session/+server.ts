@@ -3,6 +3,7 @@ import { json } from '@sveltejs/kit';
 import {
 	createSessionCookie,
 	existsAdmin,
+	refreshTokenForUserId,
 	setAdmin,
 	verifyIdToken
 } from '../../../../utils/api/firebase-admin-utils';
@@ -53,11 +54,24 @@ export const DELETE: RequestHandler = async (): Promise<Response> => {
 
 export const GET: RequestHandler = async ({ request }): Promise<Response> => {
 	try {
+		console.log('checking session');
 		const user = await getUserFromRequest(request);
 		if (!user) {
 			return json(null);
 		}
 		const userDb = await UserSearchManager.getUser(user.uid);
+		console.log('token expires: ', user.exp * 1000);
+		console.log('refresh threshold: ', Date.now() + (WEEK_SECONDS * 1000) / 2);
+		if (user.exp * 1000 < Date.now() + (WEEK_SECONDS * 1000) / 2) {
+			console.log('refreshing token');
+			const token = await refreshTokenForUserId(user.uid);
+			const cookie = await createSessionCookie(token, WEEK_SECONDS);
+			return new Response(JSON.stringify(userDb), {
+				headers: {
+					'Set-Cookie': cookie
+				}
+			});
+		}
 		return json(userDb);
 	} catch (err) {
 		console.log(err);

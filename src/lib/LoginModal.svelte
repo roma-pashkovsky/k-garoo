@@ -33,6 +33,10 @@
 		hidden = true;
 		dispatch('dismiss');
 	}
+
+	function closeLoginModalOnPrivacyPolicyNavigation() {
+		hidden = true;
+	}
 </script>
 
 <Drawer
@@ -56,6 +60,9 @@
 			{$t('app.login-popup.title')}
 			<CloseButton on:click={onDismiss} class="mb-4 dark:text-white" />
 		</h5>
-		<Login on:success={onSuccessfulLogin} />
+		<Login
+			on:success={onSuccessfulLogin}
+			on:privacy-policy-click={closeLoginModalOnPrivacyPolicyNavigation}
+		/>
 	</div>
 </Drawer>

@@ -33,11 +33,14 @@ export default {
 		'app.undo': 'Undo',
 		'app.later': 'Later',
 		'app.show-me-how': 'Show me how',
+		// login
 		'app.login-popup.title': 'Login',
 		'app.login-popup.session-expired': 'Your session has expired. Please login again.',
 		'app.login-popup.facebook-button': 'Login with Facebook',
 		'app.login-popup.google-button': 'Login with Google',
 		'app.login-popup.sync-data-checkbox': 'Sync local lists to my account',
+		'app.login-popup.privacy-policy.using-this-app': 'Using this app means you agree to the',
+		'app.login-popup.privacy-policy.privacy-policy': 'Privacy Policy Statement',
 		// merge accounts
 		'app.login-popup.merge-warning':
 			"You previously logged in with a different method. You'll have to merge accounts to continue.",
@@ -196,11 +199,15 @@ export default {
 		'app.undo': 'Скасувати',
 		'app.later': 'Пізніше',
 		'app.show-me-how': 'Як це зробити?',
+		// login
 		'app.login-popup.title': 'Вхід',
 		'app.login-popup.session-expired': 'Час Вашої сесії минув. Будь ласка, увійдіть знову.',
 		'app.login-popup.facebook-button': 'Вхід через Facebook',
 		'app.login-popup.google-button': 'Вхід через Google',
 		'app.login-popup.sync-data-checkbox': 'Завантажити локальні списки у мій акаунт',
+		'app.login-popup.privacy-policy.using-this-app':
+			'Використання цього застосунку означає згоду із',
+		'app.login-popup.privacy-policy.privacy-policy': 'Політикою конфіденційності',
 		// merge accounts
 		'app.login-popup.merge-warning':
 			'Ви раніше заходили через іншу систему. Щоб продовжити, потрібно обʼєднати акаунти.',

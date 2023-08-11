@@ -111,7 +111,7 @@
 	let editedItem: CheckListItemEditModel | undefined;
 	let editedCategoryId: string;
 	let isAddToListMode: boolean;
-	let addToCategoryId: string;
+	let addToCategoryId: string | undefined;
 	let lastAddToCategory: CategoryOption | null;
 	let propositionsFuzzySearchTS: Writable<number> = writable(new Date().getTime());
 	let isFirstTimeUse = false;
@@ -203,7 +203,7 @@
 			const lastGroup = grouped[grouped.length - 1];
 			return lastGroup?.category;
 		} else {
-			return itemsToSelect.length ? itemsToSelect[itemsToSelect.length - 1].category : undefined;
+			return itemsToSelect.length ? itemsToSelect[itemsToSelect.length - 1].category : null;
 		}
 	}
 
@@ -363,12 +363,12 @@
 
 	async function duplicateList(): Promise<void> {
 		const id = getUID();
-		const targetItems = items.map((it) => ({ ...it, checked: false } as ChecklistItem));
+		const targetItems = items.map((it) => ({ ...it, checked: false } as unknown as ChecklistItem));
 		const copy = {
 			id,
 			name: listName,
 			items: targetItems
-		} as CheckList;
+		} as unknown as CheckList;
 		await createList(copy);
 		await goto(checklistDetailsClientRoute(id));
 		setTimeout(() => location.reload());
@@ -555,6 +555,7 @@
 		}
 		isAddToListMode = false;
 		addToCategoryId = undefined;
+		isCheckboxView = true;
 		editedItem = { ...item };
 		editedCategoryId = editedItem.category.id;
 	}

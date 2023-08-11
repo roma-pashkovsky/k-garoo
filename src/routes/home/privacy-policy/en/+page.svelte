@@ -327,7 +327,9 @@
 	You may have a right to request access to personal information that we hold about you, including details
 	relating to the ways in which we use and share your information.
 	<P weight="semibold">Right to Delete.</P>
-	You may have a right to request that we delete personal information we maintain about you.
+	You may have a right to request that we delete personal information we maintain about you. You can
+	delete your data yourself by pressing 'Delete data' in app settings or contact us the contact details
+	below.
 	<P weight="semibold">Right to Correct.</P>
 	You may have a right to request that we correct inaccurate personal information we maintain about you.
 	<P weight="semibold">Right of Portability.</P>
@@ -393,6 +395,7 @@
 	<P
 		>Should you have any questions about our privacy practices or this Privacy Policy, or if you
 		would like to exercise any of the rights available to you, please email us at
-		petrodzher@gmail.com or contact us at 21A Mykhaila Dontsia Str., Kyiv, Kyiv, 01033, Ukraine.</P
+		pashkovsky.roma@gmail.com or contact us at 21A Mykhaila Dontsia Str., Kyiv, Kyiv, 01033,
+		Ukraine.</P
 	>
 </Page>

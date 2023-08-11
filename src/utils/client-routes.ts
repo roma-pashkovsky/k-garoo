@@ -1,3 +1,5 @@
+import type { Language } from '../types';
+
 export const checklistDetailsClientRoute = (listId: string) => `/home/details/${listId}`;
 export const checklistDetailsClientEditRoute = (listId: string) => `/home/details/${listId}/edit`;
 export const checklistDetailsClientLinkRoute = (listId: string) => `/home/details/${listId}/link`;
@@ -11,3 +13,6 @@ export const isChecklistDetailsClientRoute = (url: string) => {
 export const mainListClientRoute = (lastVisitedId?: string) => {
 	return lastVisitedId ? `/home/lists?lastVisitedId=${lastVisitedId}` : `/home/lists`;
 };
+
+export const privacyPolicyClientRoute = (lang: Language | undefined) =>
+	`/home/privacy-policy/${lang || 'en'}`;

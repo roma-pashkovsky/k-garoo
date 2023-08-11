@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { AuthStore } from '../stores/login/auth.store';
-	import { Alert, Button, Checkbox, Spinner } from 'flowbite-svelte';
+	import { A, Alert, Button, P, Spinner } from 'flowbite-svelte';
 	import { processError } from '../utils/process-error';
 	import { t } from '../stores/app/translate';
 	import { derived, get } from 'svelte/store';
 	import { auth } from '../stores/login/auth';
+	import { privacyPolicyClientRoute } from '../utils/client-routes';
+	import { AppSettingsStore } from '../stores/app/app-settings';
 
 	const dispatch = createEventDispatcher();
 	const authStore = new AuthStore();
@@ -14,6 +16,7 @@
 	const wrongProvider = derived(auth, ($auth) => $auth.wrongProvider);
 	const error = derived(auth, ($auth) => $auth.error);
 	const sessionExpired = derived(auth, ($auth) => $auth.isSessionExpired);
+	const privacyRoute = derived(AppSettingsStore.lang, ($lang) => privacyPolicyClientRoute($lang));
 
 	async function onLoginWithFacebook(): Promise<void> {
 		state = 'facebook';
@@ -56,6 +59,10 @@
 			state = 'idle';
 		}
 	}
+
+	function onPrivacyPolicyClick(): void {
+		dispatch('privacy-policy-click');
+	}
 </script>
 
 <div>
@@ -97,4 +104,14 @@
 			{$error}
 		</Alert>
 	{/if}
+
+	<P class="mt-4 text-sm">
+		{$t('app.login-popup.privacy-policy.using-this-app')}
+
+		<A href={$privacyRoute}
+			><div class="inline-block" on:click={onPrivacyPolicyClick}>
+				{$t('app.login-popup.privacy-policy.privacy-policy')}
+			</div></A
+		>
+	</P>
 </div>

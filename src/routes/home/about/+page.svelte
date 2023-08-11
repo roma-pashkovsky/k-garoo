@@ -1,10 +1,13 @@
-<script>
+<script lang="ts">
 	import Page from '../../../lib/Page.svelte';
 	import { A, Heading, P } from 'flowbite-svelte';
 	import { AppSettingsStore } from '../../../stores/app/app-settings';
 	import { t } from '../../../stores/app/translate';
+	import { privacyPolicyClientRoute } from '../../../utils/client-routes';
+	import { get } from 'svelte/store';
 
 	const l = AppSettingsStore.lang;
+	const privacyStatementRoute: string = privacyPolicyClientRoute(get(l));
 </script>
 
 <svelte:head>
@@ -60,6 +63,10 @@
 						>будь-хто, маючи посилання на Ваш список, може читати його</strong
 					>. Тож не варто включати в списки конфіденціну інформацію.
 				</P>
+				<P class="mb-3" weight="semibold" color="text-gray-500 dark:text-gray-400">
+					Перегляньте повну версію політики конфіденційності <A href={privacyStatementRoute}>тут</A
+					>. Використання додатку означає згоду з політикою конфіденційності.
+				</P>
 			{/if}
 			{#if $l === 'en'}
 				<Heading class="mb-4" tag="h4">Privacy statement</Heading>
@@ -80,6 +87,11 @@
 					Server settings are such that <strong
 						>anyone having a link to your list can read it</strong
 					>. So you shouldn't rely on the list to store your sensitive information.
+				</P>
+				<P class="mb-3" weight="semibold" color="text-gray-500 dark:text-gray-400">
+					Please see the full version of the Privacy Statement <A href={privacyStatementRoute}
+						>here</A
+					>. Using the app means you agree to the Privacy Statement.
 				</P>
 			{/if}
 		</div>
